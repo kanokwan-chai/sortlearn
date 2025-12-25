@@ -1,0 +1,71 @@
+/* พื้นหลังไล่สี */
+.login-container {
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(
+  to bottom,
+  rgba(0, 152, 226, 0.5) 0%,
+  rgba(0, 163, 177, 0.5) 100%
+);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* กล่อง Login */
+.login-card {
+  width: 430px;
+  background: white;
+  padding: 80px 40px 40px;
+  border-radius: 28px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+/* โลโก้ลอยบนกล่อง */
+.logo-wrapper {
+  position: absolute;
+  top: -75px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.logo-circle {
+  background: white;
+  border-radius: 50%;
+  padding: 18px;
+  border: 6px solid rgba(0, 152, 226, 0.5),;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.25);
+}
+
+.logo-img {
+  width: 120px;
+}
+
+/* ข้อความ */
+.login-title {
+  margin-top: 35px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.login-subtitle {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #555;
+}
+
+/* ปุ่ม Google */
+.google-btn-wrapper {
+  margin-top: 26px;
+  display: flex;
+  justify-content: center;
+}
+
+.login-footer {
+  margin-top: 40px;
+  color: #666;
+  font-size: 13px;
+}

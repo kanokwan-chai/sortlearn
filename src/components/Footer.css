@@ -1,0 +1,11 @@
+.footer {
+  width: 100%;
+  background: #e5f5fb;
+  padding: 18px;
+  text-align: center;
+  font-size: 1rem;
+  color: #333;
+  margin-top: 40px;
+  border-top: solid 3px #a7dff2;
+  font-family: "Kanit", sans-serif;
+}

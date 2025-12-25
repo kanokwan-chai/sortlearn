@@ -1,0 +1,165 @@
+/* =========================================
+   HERO SECTION (ใช้ของเดิมได้เลยเพราะคุณชอบแบบนี้)
+   ========================================= */
+.game-hero-cyan {
+  width: 100%;
+  height: 250px;
+  position: relative;
+  background-color: #88d0e0;
+  display: flex;
+  align-items: center;
+  padding-left: 8%;
+  overflow: hidden;
+}
+
+.hero-bg-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-image: url('../assets/bg2.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.15;
+  z-index: 1;
+}
+
+.hero-content-limit {
+  z-index: 2;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  max-width: 55%;
+  position: relative;
+}
+
+.hero-sub-title {
+  font-size: 3rem;
+  font-weight: 800;
+  color: white;
+  margin: 0 0 4px 0; 
+  text-shadow: 0 3px 4px rgba(0,0,0,0.3);
+}
+
+.hero-main-title {
+  font-size: 6.5rem;
+  font-weight: 900;
+  color: white;
+  margin: 0;
+  text-shadow: 
+      0 6px 25px rgba(0,0,0,0.35),
+      0 0 30px rgba(255,255,255,0.5);
+}
+
+
+/* =========================================
+   GRID & CONTAINER
+   ========================================= */
+.game-list-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 60px 20px;
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  justify-items: center;
+}
+
+/* =========================================
+   NEW CARD DESIGN: ARCADE STYLE
+   ========================================= */
+.game-arcade-card {
+  width: 100%;
+  max-width: 320px;
+  /* สีฟ้าเข้มเดิม */
+  background-color: #76ccd9; 
+  /* เปลี่ยนกรอบ: ขอบขาวหนาขึ้น และมนน้อยลง (สไตล์เกม) */
+  border: 6px solid white;
+  border-radius: 20px; 
+  padding: 15px;
+  
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  text-decoration: none;
+  
+  /* เงาแข็งๆ แบบปุ่มกด */
+  box-shadow: 0 8px 0 #5fb0bd, 0 15px 20px rgba(0,0,0,0.15);
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform: translateY(0);
+}
+
+/* Hover Effect: ยุบลงเหมือนกดปุ่ม */
+.game-arcade-card:hover {
+  transform: translateY(4px); /* ขยับลง */
+  box-shadow: 0 4px 0 #5fb0bd, 0 8px 10px rgba(0,0,0,0.1); /* เงาหดลง */
+}
+
+/* --- ส่วนหน้าจอ (Screen) --- */
+.arcade-screen {
+  background-color: white;
+  border-radius: 12px;
+  padding: 6px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.1); /* เงาในเหมือนจอลึกเข้าไป */
+}
+
+.arcade-screen img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+/* แสงสะท้อนหน้าจอ (Glare) */
+.screen-glare {
+  position: absolute;
+  top: 0; right: 0;
+  width: 60%; height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0) 40%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 60%);
+  pointer-events: none;
+}
+
+/* --- ส่วนควบคุมด้านล่าง --- */
+.arcade-controls {
+  text-align: center;
+}
+
+.arcade-title {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0 0 12px 0;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.1);
+  letter-spacing: 0.5px;
+}
+
+/* ปุ่ม START GAME */
+.start-btn-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.arcade-start-btn {
+  background-color: white;
+  color: #76ccd9; /* ตัวหนังสือสีฟ้า */
+  border: none;
+  padding: 10px 30px;
+  font-size: 1rem;
+  font-weight: 900;
+  border-radius: 50px; /* ปุ่มรี */
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.game-arcade-card:hover .arcade-start-btn {
+  background-color: #e0f7fa; /* เปลี่ยนสีปุ่มนิดนึงตอน Hover */
+  color: #0092cc;
+}

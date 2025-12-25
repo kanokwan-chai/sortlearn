@@ -1,0 +1,324 @@
+/* ---------------- HERO SECTION ---------------- */
+
+.hero {
+  width: 100%;
+  height: 400px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ---------------- CHARACTER ---------------- */
+
+.hero-girl, .hero-boy {
+  position: absolute;
+  bottom: -20px;                     /* ทำให้เท้าติดฐานพอดี */
+  transform: translateY(20px);   /* ดันขึ้นเล็กน้อย */
+  height: 480px;
+  z-index: 50;
+}
+
+.hero-girl {
+  left: -50px;
+}
+
+.hero-boy {
+  right: -50px;
+}
+
+/* ---------------- TEXT ---------------- */
+
+.hero-center {
+  position: relative;
+  text-align: center;
+  z-index: 5;
+}
+
+.hero-sub {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+.hero-title {
+  font-size: 5rem;  /* เด่นขึ้น */
+  font-weight: 900;
+  color: white;
+  margin-top: 5px;
+  text-shadow:
+    0 6px 25px rgba(0,0,0,0.35),
+    0 0 35px rgba(255,255,255,0.75);
+}
+
+/* ---------------- BUTTON ---------------- */
+
+.hero-btn {
+  margin-top: -20px;      /* ปรับให้ใกล้ข้อความขึ้น */
+  padding: 16px 50px;
+  background: #ffffff;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: #333;
+
+  box-shadow:
+    0 8px 25px rgba(0,0,0,0.18),
+    0 0 18px rgba(255,255,255,0.8) inset;
+
+  transition: 0.28s ease;
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+/* Animation: ปุ่มเรืองแสงแบบนุ่ม */
+@keyframes glowPulse {
+  0% {
+    box-shadow:
+      0 8px 22px rgba(0,0,0,0.18),
+      0 0 14px rgba(255,255,255,0.55) inset;
+  }
+  50% {
+    box-shadow:
+      0 12px 26px rgba(0,0,0,0.22),
+      0 0 30px rgba(255,255,255,0.9) inset;
+  }
+  100% {
+    box-shadow:
+      0 8px 22px rgba(0,0,0,0.18),
+      0 0 14px rgba(255,255,255,0.55) inset;
+  }
+}
+
+.hero-btn:hover {
+  transform: translateY(-6px) scale(1.07);
+  box-shadow:
+    0 14px 35px rgba(0,0,0,0.25),
+    0 0 35px rgba(255,255,255,1) inset;
+}
+.lesson-grid {
+  width: 90%;
+  max-width: 1200px;
+  margin: 40px auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 35px;
+}
+
+.lesson-card {
+  width: 330px;
+  background: #ffffff;
+  padding: 15px 22px 20px; /* ลด padding-top จาก 20 → 15 */
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  transition: 0.3s ease;
+}
+
+.lesson-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+}
+
+.lesson-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 16px;
+  margin-bottom: 8px; /* เดิม 16px → ลดเหลือ 8px */
+}
+
+
+.lesson-list {
+  text-align: left;
+  margin: 10px 0;
+  font-size: 0.9rem;
+}
+
+/* ---------------- LESSON BUTTON (Gradient + Glow) ---------------- */
+
+.lesson-btn {
+  display: block;
+  width: 160px;
+  margin: auto;
+  padding: 12px;
+  background: linear-gradient(135deg, #4BC9FF, #1A92FF);
+  color: white;
+  text-align: center;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: none;
+
+  box-shadow: 
+    0 6px 20px rgba(0, 150, 255, 0.35),
+    0 0 12px rgba(255, 255, 255, 0.35) inset;
+
+  transition: 0.25s ease;
+}
+
+/* Hover Effect: สว่างขึ้น + เด้งนิด ๆ */
+.lesson-btn:hover {
+  background: linear-gradient(135deg, #5DD6FF, #3AA0FF);
+  transform: translateY(-4px) scale(1.05);
+
+  box-shadow:
+    0 10px 25px rgba(0, 150, 255, 0.45),
+    0 0 18px rgba(255, 255, 255, 0.6) inset;
+}
+
+/* Click Effect */
+.lesson-btn:active {
+  transform: scale(0.97);
+  box-shadow:
+    0 3px 10px rgba(0, 150, 255, 0.3),
+    0 0 10px rgba(255, 255, 255, 0.4) inset;
+}
+
+/* ---------------- LESSON GRID ---------------- */
+
+.lesson-header {
+width: 100%;         /* ให้กินพื้นที่เต็มจอ */
+  display: block;      /* บังคับให้เป็นบล็อก */
+  text-align: center;
+  font-size: 3rem;                  /* ใหญ่ขึ้นเด่นขึ้น */
+  font-weight: 900;
+  margin-top: 70px;
+  margin-bottom: 40px;
+  color: #0098e280;
+
+  /* เงาฟุ้งแบบพรีเมียม */
+  text-shadow:
+    0 3px 5px rgba(0,0,0,0.15),
+    0 0 25px rgba(120, 183, 235, 0.4);
+
+  /* เส้นไฮไลต์ด้านล่าง */
+  position: relative;
+  display: inline-block;
+  padding-bottom: 10px;
+}
+
+.lesson-header::after {
+  content: "";
+  width: 120px;
+  height: 5px;
+  background: linear-gradient(to right, #4BB5FF, #1FA4FF);
+  border-radius: 10px;
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 10px rgba(0,140,255,0.35);
+}
+
+
+.lesson-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+  gap: 40px 40px;
+  margin: 10px auto;
+  max-width: 1200px;
+}
+
+/* ---------------- CARD ---------------- */
+
+.lesson-card {
+
+  width: 330px;
+  background: #ffffff;
+  padding: 20px 22px;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  transition: 0.3s ease;
+}
+
+.lesson-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+}
+
+/* ---------------- IMAGE ---------------- */
+
+.lesson-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+/* ---------------- TITLE ---------------- */
+
+.lesson-title {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+
+  /* เอฟเฟกต์เงาสวย ๆ */
+  color: #222;
+  text-shadow:
+    0 2px 4px rgba(0,0,0,0.15),
+    0 0 10px rgba(0,123,255,0.15);
+
+  margin: 0 0 14px 0;
+  position: relative;
+  padding-bottom: 8px;
+}
+
+/* เส้นเรืองแสงใต้หัวข้อ */
+.lesson-title::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 4px;
+  background: linear-gradient(90deg, #4bb8ff, #1d8be9);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,140,255,0.4);
+}
+
+
+/* ---------------- LIST ---------------- */
+
+.lesson-list {
+  font-size: 1rem;
+  line-height: 1.55;
+  margin-bottom: 18px;
+  padding-left: 20px;
+}
+
+/* ---------------- BUTTON ---------------- */
+
+.lesson-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 12px 0;
+  background: #4BB5FF;
+  color: white;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  transition: 0.25s ease;
+}
+
+.lesson-btn:hover {
+  background: linear-gradient(
+  to bottom,
+  rgba(0, 152, 226, 0.5) 0%,
+  rgba(0, 163, 177, 0.5) 100%
+);
+  transform: translateY(-3px);
+}

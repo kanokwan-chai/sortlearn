@@ -1,0 +1,333 @@
+/* --- src/styles/insertion-master.css --- */
+
+.casino-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #FFECB3; 
+    background-size: cover;
+    background-position: top center;
+    background-repeat: no-repeat;
+    background-attachment: scroll; 
+    font-family: 'Comic Sans MS', 'Chewy', cursive, sans-serif;
+    color: #5D4037;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding-top: 120px; 
+    padding-bottom: 50px;
+    z-index: 10;
+}
+
+.casino-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255, 230, 150, 0.2);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.casino-header {
+    text-align: center;
+    margin-bottom: 20px;
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.4);
+    padding: 15px 30px;
+    border-radius: 20px;
+    border: 3px solid #FFB300;
+}
+.casino-title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #FF6F00;
+    text-shadow: 2px 2px 0px #FFF, 0 0 15px rgba(255, 160, 0, 0.8);
+    margin: 0;
+    text-transform: uppercase;
+}
+.casino-subtitle {
+    font-size: 1.3rem;
+    color: #795548;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.casino-panel {
+    background: rgba(255, 253, 231, 0.95);
+    border: 5px solid #FFC107;
+    box-shadow: 0 10px 30px rgba(255, 193, 7, 0.4);
+    border-radius: 30px;
+    padding: 40px;
+    text-align: center;
+    max-width: 900px;
+    width: 90%;
+    position: relative;
+    animation: fadeIn 0.5s ease-out;
+    color: #5D4037;
+    margin-bottom: 30px;
+}
+
+.casino-panel h2 {
+    color: #E65100;
+    text-shadow: 1px 1px 0px #FFF;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.dealer-grid {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+.dealer-card {
+    background: linear-gradient(180deg, #FFF8E1 0%, #FFECB3 100%);
+    border: 3px solid #FFB300;
+    border-radius: 20px;
+    padding: 20px;
+    width: 220px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.dealer-card:hover {
+    border-color: #FF6F00;
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 15px 40px rgba(255, 160, 0, 0.5);
+    background: #FFF;
+}
+.dealer-img {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    border: 4px solid #FFC107;
+    object-fit: cover;
+    margin-bottom: 15px;
+    background: #FFF;
+}
+.dealer-name { font-size: 1.3rem; font-weight: bold; margin-bottom: 5px; color: #E65100; }
+.dealer-skill { color: #795548; font-size: 0.95rem; font-weight: bold; }
+
+/* MAP STYLES (NEW) */
+.map-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 40px 0;
+}
+
+.map-node {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: #FFE082;
+    border: 5px solid #FFB300;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: #FFF;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 2;
+    transition: 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* ผ่านแล้ว */
+.map-node.completed {
+    background: #4CAF50;
+    border-color: #A5D6A7;
+    color: white;
+    cursor: default;
+    opacity: 0.8;
+}
+
+/* ด่านปัจจุบัน */
+.map-node.current {
+    background: linear-gradient(135deg, #FFD700, #FF8F00);
+    border-color: #FFF;
+    transform: scale(1.2);
+    box-shadow: 0 0 25px rgba(255, 193, 7, 0.9);
+    z-index: 10;
+    cursor: pointer;
+    animation: pulseNode 2s infinite;
+}
+
+@keyframes pulseNode {
+    0% { box-shadow: 0 0 15px rgba(255, 193, 7, 0.6); }
+    50% { box-shadow: 0 0 30px rgba(255, 193, 7, 1); }
+    100% { box-shadow: 0 0 15px rgba(255, 193, 7, 0.6); }
+}
+
+/* ล็อก */
+.map-node.locked {
+    background: #546E7A;
+    border-color: #78909C;
+    color: #B0BEC5;
+    cursor: not-allowed;
+}
+
+.map-line {
+    width: 80px; height: 12px;
+    background: #CFD8DC;
+    margin: 0 -10px;
+    border-radius: 10px;
+    border: 2px solid #FFF;
+}
+.map-line.active { background: #FFB300; box-shadow: 0 0 15px rgba(255, 193, 7, 0.5); }
+
+/* GAMEPLAY */
+.hud-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px 30px;
+    border-radius: 50px;
+    border: 3px solid #FFB300;
+    width: 100%;
+    margin-bottom: 20px;
+    color: #5D4037;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* ✅ NEW: Rule Display */
+.level-rule-display {
+    background: rgba(255, 255, 255, 0.95);
+    color: #E65100;
+    font-size: 1.6rem;
+    font-weight: 900;
+    padding: 15px 30px;
+    border-radius: 20px;
+    border: 4px solid #FFB300;
+    margin-bottom: 25px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    animation: popIn 0.5s ease-out;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.game-legend {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 10px 30px;
+    border-radius: 50px;
+    border: 3px solid #FFB300;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #5D4037;
+}
+.legend-box { width: 30px; height: 42px; border-radius: 5px; }
+.legend-box.key { background: #FFFDE7; border: 3px solid #FFD700; box-shadow: 0 0 5px gold; }
+.legend-box.compare { background: #FFEBEE; border: 3px dashed #EF5350; }
+
+.table-area {
+    background: rgba(0, 150, 0, 0.5);
+    border: 12px solid #8D6E63;
+    border-radius: 80px;
+    padding: 30px 40px;
+    width: 100%;
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 0 50px rgba(0,50,0,0.3);
+    position: relative;
+    margin-bottom: 20px;
+}
+
+/* ✅ NEW: Feedback Message Style (Fixed overlap) */
+.feedback-message {
+    color: #FFD700;
+    font-size: 1.8rem;
+    margin-bottom: 40px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+    font-weight: bold;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-row {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    height: 170px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.poker-card {
+    width: 95px; height: 140px;
+    background: white;
+    border-radius: 12px;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 2.8rem; font-weight: bold; color: #333;
+    box-shadow: 3px 5px 15px rgba(0,0,0,0.2);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid #E0E0E0;
+}
+.poker-card.sorted { border: 4px solid #66BB6A; background: #E8F5E9; color: #2E7D32; }
+.poker-card.key {
+    transform: translateY(-40px) scale(1.2);
+    border: 5px solid #FFD700;
+    background: #FFFDE7;
+    box-shadow: 0 25px 40px rgba(255, 215, 0, 0.6);
+    z-index: 10;
+    color: #FF6F00;
+}
+.poker-card.compare {
+    border: 4px dashed #EF5350;
+    background: #FFEBEE;
+    color: #C62828;
+    transform: scale(1.05);
+}
+
+.control-bar {
+    display: flex;
+    gap: 25px;
+    margin-top: 20px;
+    justify-content: center;
+}
+.casino-btn {
+    padding: 15px 45px;
+    font-size: 1.4rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    border: 3px solid #FFF;
+    border-radius: 60px;
+    cursor: pointer;
+    transition: 0.2s;
+    color: white;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    letter-spacing: 1px;
+}
+.casino-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 20px rgba(0,0,0,0.3); }
+.casino-btn:active { transform: translateY(2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+.btn-shift { background: linear-gradient(to bottom, #4FC3F7, #039BE5); }
+.btn-insert { background: linear-gradient(to bottom, #FFB74D, #F57C00); }
+.btn-back { background: #78909C; font-size: 1.1rem; padding: 12px 30px; }
+
+.casino-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}

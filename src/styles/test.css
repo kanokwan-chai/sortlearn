@@ -1,0 +1,378 @@
+body, html {
+  overflow-x: hidden;
+}
+
+/* HERO */
+.test-hero {
+  text-align: center;
+  
+  /* ดึงขึ้นไปทับ Navbar */
+  margin-top: -80px;      
+  
+  /* ✅ ปรับความสูงให้พอดีกับหน้าจอ */
+  height: 200px;          
+  padding-top: 100px;     /* ดันเนื้อหาลงมาไม่ให้โดน Navbar บัง */
+  
+  /* จัดกึ่งกลางแนวตั้งและแนวนอน */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  color: #ffffff;
+  background-size: cover;
+  background-position: center center; /* จัดรูปให้อยู่ตรงกลางเป๊ะ */
+}
+
+.test-title { 
+  /* ✅ ภาษาอังกฤษ: ใหญ่สะใจ แข็งแรง */
+  font-size: 4.5rem;        
+  font-weight: 900; 
+  margin: 0;              /* ลบระยะห่างส่วนเกิน */
+  line-height: 1.1;       /* บรรทัดชิดกันนิดนึงให้ดูแน่น */
+  text-transform: uppercase; /* บังคับตัวพิมพ์ใหญ่หมด */
+  letter-spacing: 2px;    /* ห่างนิดๆ ให้ดูแพง */
+  
+  /* เงาฟุ้งๆ ให้ลอยออกมา */
+  text-shadow: 0 4px 15px rgba(119, 119, 119, 0.6); 
+}
+
+.test-sub { 
+  /* ✅ ภาษาไทย: เล็กลงมาให้อ่านง่าย นุ่มนวล */
+  font-size: 2rem;      
+  color: #ffffff;         
+  font-weight: 500; 
+  margin-top: 15px;       /* เว้นห่างจากภาษาอังกฤษเล็กน้อย */
+  text-shadow: 0 4px 15px rgba(119, 119, 119, 0.6); 
+  opacity: 0.9;
+}
+.result-sub{
+font-size: 2.6rem;
+  font-weight: 900;
+  color: rgb(255, 255, 255);
+  text-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  margin: 0;
+}
+
+/* MAIN TEST BOX */
+.test-box {
+  width: 90%;
+  max-width: 1200px;
+
+  background: linear-gradient(180deg, #a0e4ff, #74d2f7);
+  padding: 60px 50px;
+
+  border-radius: 40px;
+  margin: 40px auto;
+
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 35px;
+}
+
+
+.test-number {
+  position: absolute;
+  top: -30px;
+  left: 50px;
+  background: #51b8ff;
+  color: white;
+  font-size: 1.6rem;
+  font-weight: 700;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* QUESTION */
+.test-question {
+  width: 100%;
+  max-width: 1000px;
+
+  background: white;
+  border-radius: 25px;
+
+  padding: 25px 40px;
+
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.6;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+
+
+/* CHOICES */
+.choice-grid {
+  width: 100%;
+  max-width: 1000px;
+
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px 35px;
+}
+.choice-btn {
+  width: 100%;
+
+  background: white;
+  border: none;
+  border-radius: 18px;
+
+  padding: 18px 24px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  text-align: left;
+  line-height: 1.4;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.choice-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+}
+
+
+
+/* RESULT PAGE */
+.result-container {
+  text-align: center;
+  padding-top: 40px;
+}
+
+.result-box {
+  width: 450px;
+  margin: 60px auto;
+  padding: 40px 20px;
+  background: white;
+
+  border-radius: 35px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+
+  text-align: center;
+}
+
+
+.result-box h1 {
+  font-size: 4rem;
+  font-weight: 900;
+  margin: 10px 0;
+}
+
+/* Background pattern ของหน้า Result */
+.result-hero {
+  width: 100%;
+  padding: 60px 0 40px;
+
+  background-image: url("../assets/bg-pattern.png");
+  background-size: cover;     /* ปรับให้เต็ม */
+  background-repeat: no-repeat;
+  background-position: center;
+
+  text-align: center;
+}
+
+.result-title {
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: rgb(255, 255, 255);
+  text-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  margin: 0;
+}
+.result-label {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 10px;
+}
+
+.result-score {
+  font-size: 4.5rem;
+  font-weight: 900;
+  color: #0084d6;
+  margin: 0;
+}
+.result-score span {
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: #666;
+}
+/* ให้ Layout ดัน footer ลงล่างเสมอ */
+body, html {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;     /* ดัน footer ลงล่าง */
+}
+footer {
+  margin-top: auto;   /* ดัน footer ลงล่าง */
+}
+
+.go-lesson-btn {
+  margin-top: 30px;
+  display: inline-block;
+  padding: 14px 32px;
+
+  background: linear-gradient(135deg, #3bb3ff, #009dff);
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 700;
+
+  border-radius: 50px;
+  text-decoration: none;
+
+  box-shadow: 0 6px 20px rgba(0, 150, 255, 0.35);
+  transition: 0.25s ease;
+  letter-spacing: 0.5px;
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* เอฟเฟกต์สวิงแสง */
+.go-lesson-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 80%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.0) 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0.0) 100%
+  );
+  transform: skewX(-20deg);
+  transition: 0.4s;
+}
+
+/* Hover effect */
+.go-lesson-btn:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 10px 25px rgba(0, 150, 255, 0.45);
+}
+
+/* แสงพุ่งตอน hover */
+.go-lesson-btn:hover::before {
+  left: 120%;
+}
+
+/* =======================================================
+   RE-DESIGN: RESULT CARD (ฉบับ Minimal & Clean)
+   ======================================================= */
+
+.result-card-fancy {
+  background: white;
+  width: 100%;
+  max-width: 400px;
+  padding: 50px 20px; /* เพิ่มพื้นที่ว่างด้านใน */
+  border-radius: 40px; /* มุมมนๆ */
+  text-align: center;
+  position: relative;
+  margin: 30px auto;
+  
+  /* ✨ เทคนิคขอบห่าง: ใช้ box-shadow สร้างขอบขาวคั่นก่อน แล้วค่อยขอบฟ้า */
+  /* ชั้นที่ 1: ขอบขาวหนา 10px (เป็นช่องว่าง) */
+  /* ชั้นที่ 2: ขอบสีฟ้าหนา 4px */
+  /* ชั้นที่ 3: เงาฟุ้งๆ */
+  box-shadow: 
+    0 0 0 10px #f0f9ff,  /* พื้นที่ว่างสีฟ้าจางๆ หรือขาว */
+    0 0 0 14px #ade5f7,  /* เส้นขอบสีฟ้า */
+    0 20px 60px rgba(0, 146, 204, 0.2); /* เงา */
+  
+  animation: popUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.result-icon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  display: inline-block;
+  filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
+  animation: floatIcon 3s ease-in-out infinite;
+}
+
+/* วงกลมคะแนน (ปรับเป็นแนวนอน) */
+.result-score-circle {
+  width: auto; /* ไม่ฟิกความกว้างแล้ว */
+  height: auto;
+  background: transparent; /* พื้นหลังใส */
+  border: none;
+  box-shadow: none;
+  margin: 0 0 40px 0;
+  
+  display: flex;
+  flex-direction: row; /* ✅ เรียงแนวนอน */
+  justify-content: center;
+  align-items: baseline; /* จัดให้ฐานตัวหนังสือเท่ากัน */
+  gap: 15px; /* ระยะห่างระหว่างตัวเลข */
+  
+  color: #0092cc; /* เปลี่ยนตัวเลขเป็นสีฟ้า */
+}
+
+.score-big {
+  font-size: 5rem;
+  font-weight: 900;
+  line-height: 1;
+  /* ✅ เติม !important เพื่อบังคับเปลี่ยนสี */
+  color: #676767 !important; 
+  text-shadow: none !important; /* ลบเงาที่อาจทำให้ดูมัวๆ ออก */
+}
+
+.score-divider {
+  font-size: 3rem;
+  font-weight: 300;
+  color: #4d8fd6 !important;
+}
+
+.score-total {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #718096 !important;
+}
+/* ปุ่ม */
+.result-btn-next {
+  background: linear-gradient(to right, #f6adad, #f687b3);
+  color: white;
+  border: none;
+  width: 80%;
+  padding: 15px 0;
+  border-radius: 50px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(246, 173, 173, 0.4);
+  transition: transform 0.2s;
+}
+
+.result-btn-next:hover { transform: translateY(-3px); }
+.result-btn-next:active { transform: scale(0.98); }
+
+@keyframes popUp {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}

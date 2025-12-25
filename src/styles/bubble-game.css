@@ -1,0 +1,43 @@
+.game-root {
+  width: 100%; height: 100vh; background-size: cover; background-position: center;
+  position: relative; display: flex; align-items: center; justify-content: center;
+  font-family: 'Kanit', sans-serif; color: white;
+}
+
+.glass-card {
+  background: rgba(0, 20, 40, 0.75); /* ปรับสีให้เข้มขึ้นเพื่อให้ตัวหนังสือสีขาวเด่น */
+  backdrop-filter: blur(15px); border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 40px; padding: 30px; text-align: center; width: 90%; max-width: 900px;
+}
+
+.char-grid { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+
+.char-item {
+  background: rgba(255, 255, 255, 0.1); border-radius: 25px; padding: 15px;
+  width: 200px; cursor: pointer; border: 3px solid transparent; transition: 0.3s;
+}
+
+.char-item:hover { transform: translateY(-10px); border-color: white; background: rgba(255, 255, 255, 0.2); }
+
+/* 🟢 จำกัดขนาดรูปตัวละคร */
+.char-img {
+  width: 130px; height: 130px; object-fit: contain;
+  margin-bottom: 15px; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+}
+
+.bubble-row { display: flex; flex-direction: row; gap: 15px; justify-content: center; margin: 40px 0; }
+
+.bubble-sphere {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffffff, rgba(255, 255, 255, 0.2));
+  border: 4px solid white; display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem; font-weight: bold; color: #003049; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.bubble-sphere.active { border-color: #ffeb3b; box-shadow: 0 0 30px #ffeb3b; transform: scale(1.15); }
+
+.bubble-sphere.sorted { background: #b9fbc0; border-color: #2d6a4f; }
+
+.btn-game { padding: 12px 40px; border-radius: 50px; border: none; font-size: 1.2rem; font-weight: bold; cursor: pointer; color: white; margin: 10px; }
+.btn-blue { background: #00b4d8; }
+.btn-pink { background: #ff4d6d; }
