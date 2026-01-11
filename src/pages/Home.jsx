@@ -84,8 +84,8 @@ export default function Home() {
         <div className="lesson-card">
           <img src={bubbleImg} className="lesson-img" alt="Bubble Sort" />
           <h3 className="lesson-title">BUBBLE SORT</h3>
-          <LessonProgress lessonKey="bubble" />
-          {!isLessonDone("bubble") && (
+          <LessonProgress lessonKey="bubble_sort" />
+          {!isLessonDone("bubble_sort") && (
             <Link to="/bubble-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
           )}
         </div>

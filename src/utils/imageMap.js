@@ -1,8 +1,8 @@
 // src/utils/imageMap.js
-// 1. Import รูปภาพจากโฟลเดอร์ assets (เปลี่ยนชื่อไฟล์ให้ตรงกับที่คุณมี)
-import step1 from "../assets/quiz/selection-step1.png";
+import selection_s1 from "../assets/quiz/selection-step1.png";
+import insertion_s1 from "../assets/quiz/insertion-step1.png"; // นำเข้ารูปของ insertion
 
-// 2. จับคู่ชื่อที่จะใส่ใน Google Sheets (ซ้าย) กับตัวแปรที่ Import มา (ขวา)
 export const quizImages = {
-  "select_s1": step1,      // ในชีตช่อง H ให้ใส่คำว่า select_s1
+  "select_s1": selection_s1,
+  "insert_s1": insertion_s1,  // ชื่อนี้ต้องตรงกับที่ใส่ใน Google Sheet ช่อง image
 };

@@ -32,6 +32,12 @@ import VideoInsertion from "../pages/videos/VideoInsertion";
 
 import SelectionGame from "../pages/games/SelectionGame";
 import InsertionGame from "../pages/games/InsertionGame";
+import BubbleSortGame from "../pages/games/BubbleSortGame";
+import HeapSortGame from "../pages/games/HeapSortGame";
+/*
+import QuickSortGame from "../pages/games/QuickSortGame";
+import MergeSortGame from "../pages/games/MergeSortGame";
+*/
 
 
 import SelectionPosttest from "../pages/posttest/SelectionPosttest"; 
@@ -71,6 +77,8 @@ export default function AppRoutes() {
       {/* โซนเกม */}
       <Route path="/games/selection-sort" element={<SelectionGame />} />
       <Route path="/games/insertion-sort" element={<InsertionGame />} /> 
+      <Route path="/games/bubble-sort" element={<BubbleSortGame />} /> 
+      <Route path="/games/heap-sort" element={<HeapSortGame />} />
 
       {/* แบบทดสอบหลังเรียน */}
       <Route path="/posttest/selection" element={<SelectionPosttest />} />
