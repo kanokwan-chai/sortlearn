@@ -1,0 +1,166 @@
+/* Navbar หลัก */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  
+  /* 1. ปรับความสูงของแถบเมนู (ถ้าอยากให้แถบมันหนาขึ้น/บางลง) */
+  height: 80px; 
+
+  padding: 0 40px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: "Kanit", sans-serif;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  white-space: nowrap;
+}
+
+/* LOGO */
+.nav-logo {
+  font-size: 1.5rem; /* ✅ ใหญ่ขึ้น (จาก 1.5 เป็น 2rem) */
+  font-weight: 800;
+  color: #0092cc;
+  cursor: pointer;
+  margin-right: 20px;
+}
+
+/* MENU LIST (ตรงกลาง) */
+.nav-menu {
+  list-style: none;
+  display: flex;
+  gap: 30px; /* ✅ ห่างกันมากขึ้น (จาก 15px เป็น 30px) ไม่กระจุก */
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  height: 100%;
+}
+
+.nav-menu li a, 
+.dropdown-trigger {
+  color: #4a5568;
+  font-weight: 600; /* ✅ ตัวหนาขึ้น */
+  text-decoration: none;
+  transition: 0.2s;
+  font-size: 1.05rem; /* ✅ ตัวหนังสือใหญ่ขึ้น (จาก 0.9 เป็น 1.05rem) */
+  cursor: pointer;
+}
+
+.nav-menu li a:hover,
+.nav-item-dropdown:hover .dropdown-trigger {
+  color: #0092cc;
+}
+
+/* =========================================
+   DROPDOWN STYLES
+   ========================================= */
+.nav-item-dropdown {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* ห่างจากลูกศรนิดนึง */
+}
+
+.dropdown-trigger small {
+  font-size: 0.7rem;
+  color: #aaa;
+  transition: transform 0.3s;
+  margin-top: 2px;
+}
+
+.nav-item-dropdown:hover .dropdown-trigger small {
+  transform: rotate(180deg);
+  color: #0092cc;
+}
+
+/* กล่องเมนูย่อย */
+.dropdown-list {
+  position: absolute;
+  top: 70px; /* ขยับลงมาตามความสูง Nav ใหม่ */
+  left: 50%;
+  transform: translateX(-50%) translateY(15px);
+  
+  background-color: white;
+  min-width: 300px; /* ✅ กล่องกว้างขึ้น */
+  padding: 12px 0;
+  border-radius: 15px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15); /* เงาฟุ้งสวย */
+  border: 1px solid #f0f0f0;
+  
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); /* Animation นุ่มๆ */
+}
+
+.nav-item-dropdown:hover .dropdown-list {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.dropdown-list li a {
+  display: block;
+  padding: 12px 25px; /* เพิ่มพื้นที่คลิก */
+  color: #4a5568;
+  font-size: 0.95rem; /* ตัวหนังสือใน Dropdown ใหญ่ขึ้น */
+  font-weight: 500;
+}
+
+.dropdown-list li a:hover {
+  background-color: #f0f9ff;
+  color: #0092cc;
+  padding-left: 30px; /* ขยับเยอะขึ้นตอน Hover */
+}
+
+/* =========================================
+   RIGHT SECTION (User & Logout)
+   ========================================= */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-user {
+  font-size: 1rem; /* ✅ ใหญ่ขึ้น */
+  font-weight: 500;
+  color: #333;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logout-btn {
+  background: #4bb3ff;
+  border: none;
+  padding: 8px 25px; /* ✅ ปุ่มใหญ่ขึ้น */
+  border-radius: 30px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 1rem;
+}
+
+.logout-btn:hover {
+  background: #0092cc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 146, 204, 0.3);
+}

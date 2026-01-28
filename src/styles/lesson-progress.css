@@ -1,0 +1,79 @@
+/* Container */
+.progress-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 15px 0;
+}
+
+/* --- การ์ดรายการ --- */
+.p-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border-radius: 12px; background: #f4f6f8; border: 2px solid transparent;
+  transition: 0.3s;
+}
+
+/* สถานะ: ยังไม่ทำ */
+.p-item.pending { opacity: 0.7; filter: grayscale(1); }
+
+/* สถานะ: ทำเสร็จ (ปกติ - แยกสี) */
+.p-item.done { background: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+/* แยกสีปกติ (ถ้ายังไม่เสร็จทั้งหมด) */
+.p-item.done.test { border-color: #b3e5fc; }
+.p-item.done.video { border-color: #f8bbd0; }
+.p-item.done.game { border-color: #ffe0b2; }
+
+/* ✅✅✅ ไฮไลท์: สีเขียวเมื่อผ่านหมด (All Green) ✅✅✅ */
+.p-item.done.all-green {
+  border-color: #a5d6a7; /* ขอบเขียว */
+  background: #f1f8e9;   /* พื้นเขียวอ่อน */
+}
+.p-item.done.all-green .p-icon-box {
+  background: #4caf50; color: white; /* ไอคอนเขียว */
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+.p-item.done.all-green .p-val-badge {
+  background: #c8e6c9; color: #1b5e20;
+}
+.p-item.done.all-green .p-status-text {
+  color: #2e7d32; font-weight: bold;
+}
+
+/* ส่วนประกอบย่อย */
+.p-icon-box {
+  width: 32px; height: 32px; display: flex; justify-content: center; align-items: center;
+  border-radius: 50%; background: #eee; font-size: 1.1rem;
+}
+.p-info { flex: 1; display: flex; flex-direction: column; line-height: 1.2; }
+.p-label { font-size: 0.8rem; font-weight: 700; color: #444; }
+.p-status-text { font-size: 0.65rem; color: #888; }
+.p-val-badge { font-size: 0.75rem; font-weight: 800; padding: 4px 8px; border-radius: 20px; background: #eee; }
+
+
+/* ✅✅✅ ปุ่ม "เรียนเสร็จแล้ว" (ทำให้เท่ากับปุ่มเข้าเรียนเป๊ะๆ) ✅✅✅ */
+.lesson-btn-finished {
+  display: block;
+  width: 100%; /* กว้างเท่าปุ่มเดิม */
+  padding: 12px 0; /* สูงเท่าปุ่มเดิม */
+  margin-top: 15px;
+  text-align: center;
+  border-radius: 12px; /* ความมนเท่าเดิม */
+  
+  font-size: 1.05rem;
+  font-weight: 700;
+  
+  /* สีเขียวมินท์ สวยๆ */
+  background: linear-gradient(135deg, #00b09b, #96c93d);
+  color: white;
+  
+  /* เงาเขียว */
+  box-shadow: 0 5px 15px rgba(0, 176, 155, 0.3);
+  cursor: default; /* เม้าส์ไม่เป็นรูปมือ (กดไม่ได้) */
+  animation: popUp 0.5s ease;
+}
+
+@keyframes popUp {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}

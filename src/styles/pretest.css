@@ -1,0 +1,125 @@
+/* ป้องกันไม่ให้มีสกรอลล์ขวา */
+body, html {
+  overflow-x: hidden;
+}
+
+/* ---------------- HERO ---------------- */
+
+.pretest-hero {
+  width: 100%;
+  height: 150px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  padding: 60px 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.pretest-subtitle {
+  font-size: 3rem;
+  font-weight: 800;
+  color: white;
+  margin: 0 0 4px 0; 
+  text-shadow: 0 3px 4px rgba(0,0,0,0.3);
+}
+
+.pretest-title {
+  font-size: 7.5rem;
+  font-weight: 900;
+  color: white;
+  margin: 0;
+  text-shadow: 
+      0 6px 25px rgba(0,0,0,0.35),
+      0 0 30px rgba(255,255,255,0.5);
+}
+
+/* ---------------- GRID SECTION ---------------- */
+
+.pretest-grid {
+  max-width: 1150px;
+  margin: 60px auto 80px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 35px;
+  padding: 0 20px;
+}
+
+/* การ์ด */
+.pretest-card {
+  background: linear-gradient(135deg, #dff4ff, #c3e9ff);
+  border-radius: 22px;
+  padding: 40px 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  transition: 0.25s ease;
+
+  text-decoration: none;   /* ❌ ไม่มีขีดใต้ */
+  cursor: pointer;
+}
+
+/* Hover: เบา หรู ไม่เว่อร์ */
+.pretest-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 32px rgba(0, 150, 255, 0.28);
+}
+
+/* ---------------- NUMBER CIRCLE ---------------- */
+
+.pretest-circle {
+  width: 70px;
+  height: 70px;
+
+  background: linear-gradient(135deg, #0097e6, #00a8ff);
+  border-radius: 50%;
+
+  color: white;
+  font-size: 1.9rem;
+  font-weight: 800;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  box-shadow: 0 6px 15px rgba(0,0,0,0.22);
+  transition: 0.25s ease;
+}
+
+.pretest-card:hover .pretest-circle {
+  transform: scale(1.08);
+}
+
+/* ---------------- TEXT + ICON ---------------- */
+
+.pretest-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.pretest-icon {
+  font-size: 2rem;
+  margin-bottom: -4px;
+}
+
+.pretest-text {
+  font-size: 1.28rem;
+  font-weight: 700;
+  color: #0077b6;     /* 💙 สีน้ำเงินพรีเมียมแบบเว็บเรียนรู้ */
+  letter-spacing: 0.3px;
+
+  text-decoration: none !important; /* ❌ ลบ underline เด็ดขาด */
+}
+
+/* Hover สีเข้มขึ้นเล็กน้อย */
+.pretest-card:hover .pretest-text {
+  color: #005f87;
+}
