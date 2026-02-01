@@ -4,6 +4,7 @@ import "../../styles/test.css";
 import { useNavigate } from "react-router-dom";
 import { quizImages } from "../../utils/imageMap"; // 🟢 1. เพิ่มการ Import Mapping รูปภาพ
 
+
 const FALLBACK_USER = { firstname: "Kanokwan", lastname: "TestSystem" };
 
 export default function SelectionPosttest() {
@@ -20,9 +21,17 @@ export default function SelectionPosttest() {
   const SCORE_API    = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
 
   useEffect(() => {
-    let user = {}; try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch(e){}
-    const firstname = user.firstname || FALLBACK_USER.firstname;
-    const progressKey = `progress_${firstname}_selection`;
+    let user = {};
+try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch {}
+
+const userKey =
+  user.email ||
+  user.id ||
+  user.username ||
+  user.firstname ||
+  FALLBACK_USER.firstname;
+
+const progressKey = `progress_${userKey}_selection`;
     const history = JSON.parse(localStorage.getItem(progressKey)) || {};
 
     if (history.posttest !== undefined && history.posttest !== null) {
@@ -51,11 +60,18 @@ export default function SelectionPosttest() {
   }, [current, loading, questions, isAlreadyDone]);
 
   const submitScore = async () => {
-    let user = {}; try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch(e){}
-    const firstname = user.firstname || user.firstName || FALLBACK_USER.firstname;
-    const payload = { activity: "POSTTEST", firstname: firstname, lastname: user.lastname, testName: "Selection Sort Posttest", score: score };
+    let user = {};
+try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch {}
+
+const userKey =
+  user.email ||
+  user.id ||
+  user.username ||
+  user.firstname ||
+  FALLBACK_USER.firstname;
+    const payload = { activity: "POSTTEST", firstname: user.firstname || userKey, lastname: user.lastname, testName: "Selection Sort Posttest", score: score };
     try { fetch(SCORE_API, { method: "POST", redirect: "follow", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) }); } catch (error) {}
-    const progressKey = `progress_${firstname}_selection`;
+    const progressKey = `progress_${userKey}_selection`;
     const currentData = JSON.parse(localStorage.getItem(progressKey)) || {};
     localStorage.setItem(progressKey, JSON.stringify({ ...currentData, posttest: score }));
   };

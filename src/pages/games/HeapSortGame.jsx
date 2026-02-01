@@ -3,6 +3,7 @@ import MainLayout from "../../layouts/MainLayout";
 import "../../styles/heap-game.css"; 
 import { useNavigate } from "react-router-dom";
 
+
 // ✅ 1. Assets Mapping (ห้ามลบ) [cite: 75, 76]
 import bgForest from "../../assets/bg-forest.png";
 import h1 from "../../assets/h1.png"; import h2 from "../../assets/h2.png"; import h3 from "../../assets/h3.png"; 
@@ -55,9 +56,6 @@ export default function HeapSortGame() {
     const [isAnimating, setIsAnimating] = useState(false);
     const [isVerified, setIsVerified] = useState(false);
     const [isScoreSent, setIsScoreSent] = useState(false);
-    const [pool, setPool] = useState([]);
-    const [isPreview, setIsPreview] = useState(false);
-    const [draggedValue, setDraggedValue] = useState(null);
     const [savedMaxHeap, setSavedMaxHeap] = useState(null);
     const [savedMinHeap, setSavedMinHeap] = useState(null);
     const [swappingPair, setSwappingPair] = useState([]);
@@ -76,9 +74,16 @@ const saveScoreToSheet = async (finalScore) => {
 
     try {
         const user = JSON.parse(localStorage.getItem("user")) || {};
+const userKey =
+  user.email ||
+  user.id ||
+  user.username ||
+  user.firstname ||
+  "guest";
+
         const payload = {
             activity: "GAMES",
-            firstname: user.firstname || "Guest",
+            firstname: user.firstname || userKey,
             lastname: user.lastname || "-",
             gameName: "Heap Sort Game",
             score: finalScore,
@@ -99,8 +104,15 @@ useEffect(() => {
     const resumeJourney = () => {
         try {
             const user = JSON.parse(localStorage.getItem("user")) || {};
-            const username = user.firstname || "guest";
-            const storageKey = `progress_${username}_${LESSON_KEY}`;
+            const userKey =
+                user.email ||
+                user.id ||
+                user.username ||
+                user.firstname ||
+                "guest";
+
+            const storageKey = `progress_${userKey}_${LESSON_KEY}`;
+
             const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
 
             // 🚫 ถ้าเล่นจบแล้ว (game: true) ให้โชว์หน้า ALREADY_WIN พร้อมคะแนนที่บันทึกไว้
@@ -144,8 +156,15 @@ useEffect(() => {
 const saveProgressToStorage = (newData) => {
     try {
         const user = JSON.parse(localStorage.getItem("user")) || {};
-        const username = user.firstname || "guest";
-        const storageKey = `progress_${username}_${LESSON_KEY}`;
+        const userKey =
+  user.email ||
+  user.id ||
+  user.username ||
+  user.firstname ||
+  "guest";
+
+        const storageKey = `progress_${userKey}_${LESSON_KEY}`;
+
         const currentData = JSON.parse(localStorage.getItem(storageKey)) || {};
         
         const mergedData = { ...currentData, ...newData };
@@ -406,54 +425,6 @@ const handleSelectGuardian = (guardian) => {
     setGameState("MAP"); // พาส่งไปยังหน้าแผนที่
 };
 
-// เมื่อชนะแต่ละด่าน (ตัวอย่างในปุ่ม Next)
-const nextLevel = currentLvlIdx + 2; // ด่านถัดไป
-// ใส่ในปุ่ม "ต่อไป ⮕" ของด่าน 1 และ 2
-saveProgressToStorage({ 
-    score: score, 
-    level: currentLvlIdx + 2 // ปลดล็อกด่านถัดไป
-});
-
-useEffect(() => {
-    const checkProgress = () => {
-        try {
-            const user = JSON.parse(localStorage.getItem("user")) || {};
-            const username = user.firstname || "guest";
-            const storageKey = `progress_${username}_${LESSON_KEY}`;
-            const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
-
-            // 🚫 1. ถ้าเล่นจบครบ 3 ด่านแล้ว (game: true)
-            if (savedData.game === true) {
-                setGameState("ALREADY_WIN");
-                return;
-            }
-
-            // 🛡️ 2. ถ้าเคยเลือกตัวละครไว้แล้ว (charId)
-            if (savedData.charId) {
-                const char = GUARDIANS.find(g => g.id === savedData.charId);
-                if (char) {
-                    setSelectedChar(char);
-                    // ✅ กู้คืน HP, คะแนน และด่านล่าสุดที่เล่นค้างไว้
-                    setHp(savedData.hp !== undefined ? savedData.hp : char.hp);
-                    setScore(savedData.score || 0);
-                    setCurrentLvlIdx(savedData.level ? savedData.level - 1 : 0);
-                    
-                    // 🚀 พุ่งตรงไปหน้าแผนที่ (MAP) ทันที ห้ามแวะหน้า HOME
-                    setGameState("MAP"); 
-                } else {
-                    setGameState("HOME");
-                }
-            } else {
-                // ถ้ายังไม่เคยเล่นเลย ให้เริ่มที่หน้าเลือกตัวละคร
-                setGameState("HOME");
-            }
-        } catch (e) {
-            console.error("Resume Error:", e);
-            setGameState("HOME");
-        }
-    };
-    checkProgress();
-}, []);
 
     useEffect(() => {
         let timer = null;
@@ -467,33 +438,6 @@ useEffect(() => {
         setGameState("RESULT"); // 💀 เลือดหมด = จบเกมทันที
     }
 }, [hp, gameState]);
-useEffect(() => {
-    const checkUserProgress = () => {
-        const user = JSON.parse(localStorage.getItem("user")) || {};
-        const username = user.firstname || "guest";
-        const storageKey = `progress_${username}_${LESSON_KEY}`;
-        const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
-
-        // 🚫 ถ้าในชีตบอกว่าผ่านแล้ว (game: true) ไม่ให้เล่นซ้ำ
-        if (savedData.game === true) {
-            setGameState("ALREADY_WIN");
-            return;
-        }
-
-        // 🔄 ถ้าเคยเล่นค้างไว้: ดึงตัวละครเดิม + คะแนนเดิม + ด่านเดิมกลับมา
-        if (savedData.charId) {
-            const char = GUARDIANS.find(g => g.id === savedData.charId);
-            if (char) {
-                setSelectedChar(char);
-                if (savedData.score) setScore(savedData.score);
-                if (savedData.level) setCurrentLvlIdx(savedData.level - 1);
-                setGameState("MAP"); // ข้ามหน้าเลือกตัวละครไปหน้าแผนที่เลย
-            }
-        }
-    };
-    checkUserProgress();
-}, []);
-
 
 
     // ================= 5. Rendering (รวมครบทุกสถานะหน้าจอ) =================

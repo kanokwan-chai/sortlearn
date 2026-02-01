@@ -5,6 +5,8 @@ import "../../styles/video-quiz.css";
 import bg2 from "../../assets/bg-pattern.png";
 import { useNavigate } from "react-router-dom";
 
+
+
 const FALLBACK_USER = {
   firstname: "Kanokwan",
   lastname: "TestSystem",

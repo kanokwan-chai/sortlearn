@@ -4,6 +4,7 @@ import "../../styles/test.css";
 import { useNavigate } from "react-router-dom";
 import { quizImages } from "../../utils/imageMap"; // 🟢 1. เพิ่มการ Import Mapping รูปภาพ
 
+
 const FALLBACK_USER = { firstname: "Kanokwan", lastname: "TestSystem" };
 
 export default function BubblePosttest() {
@@ -21,8 +22,15 @@ export default function BubblePosttest() {
 
   useEffect(() => {
     let user = {}; try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch(e){}
-    const firstname = user.firstname || FALLBACK_USER.firstname;
-    const progressKey = `progress_${firstname}_bubble`;
+    const userKey =
+  user.email ||
+  user.id ||
+  user.username ||
+  user.firstname ||
+  FALLBACK_USER.firstname;
+
+const progressKey = `progress_${userKey}_bubble`;
+
     const history = JSON.parse(localStorage.getItem(progressKey)) || {};
 
     if (history.posttest !== undefined && history.posttest !== null) {
@@ -52,10 +60,23 @@ export default function BubblePosttest() {
 
   const submitScore = async () => {
     let user = {}; try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch(e){}
-    const firstname = user.firstname || user.firstName || FALLBACK_USER.firstname;
-    const payload = { activity: "POSTTEST", firstname: firstname, lastname: user.lastname, testName: "Bubble Sort Posttest", score: score };
+    const userKey =
+  user.email ||
+  user.id ||
+  user.username ||
+  user.firstname ||
+  FALLBACK_USER.firstname;
+
+const payload = {
+  activity: "POSTTEST",
+  firstname: userKey,
+  lastname: user.lastname,
+  testName: "Bubble Sort Posttest",
+  score: score
+};
     try { fetch(SCORE_API, { method: "POST", redirect: "follow", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) }); } catch (error) {}
-    const progressKey = `progress_${firstname}_bubble`;
+    const progressKey = `progress_${userKey}_bubble`;
+
     const currentData = JSON.parse(localStorage.getItem(progressKey)) || {};
     localStorage.setItem(progressKey, JSON.stringify({ ...currentData, posttest: score }));
   };

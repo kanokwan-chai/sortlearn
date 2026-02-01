@@ -4,6 +4,8 @@ import "../../styles/test.css";
 import { useNavigate } from "react-router-dom";
 import { quizImages } from "../../utils/imageMap"; // 🟢 เพิ่มบรรทัดนี้
 
+
+
 const FALLBACK_USER = { firstname: "Kanokwan", lastname: "TestSystem" };
 
 export default function BubbleTest() {
@@ -25,8 +27,8 @@ export default function BubbleTest() {
       const data = localStorage.getItem(key);
       if (data) { try { user = JSON.parse(data); break; } catch(e){} }
     }
-    const firstname = user.firstname || FALLBACK_USER.firstname;
-    const progressKey = `progress_${firstname}_bubble`;
+    const userKey = user.email || user.id || user.username || FALLBACK_USER.firstname;
+    const progressKey = `progress_${userKey}_bubble`;
     const history = JSON.parse(localStorage.getItem(progressKey)) || {};
 
     if (history.pretest !== undefined && history.pretest !== null) {
@@ -55,10 +57,10 @@ export default function BubbleTest() {
 
   const submitScore = async () => {
     let user = {}; try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch(e){}
-    const firstname = user.firstname || FALLBACK_USER.firstname;
-    const payload = { activity: "PRETEST", firstname: firstname, lastname: user.lastname, testName: "Bubble Sort", score: score };
+    const userKey = user.email || user.id || user.username || FALLBACK_USER.firstname;
+    const payload = { activity: "PRETEST", firstname: user.firstname || userKey, lastname: user.lastname, testName: "Bubble Sort", score: score };
     try { fetch(SCORE_API, { method: "POST", redirect: "follow", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) }); } catch (error) {}
-    const progressKey = `progress_${firstname}_bubble`;
+    const progressKey = `progress_${userKey}_bubble`;
     const currentData = JSON.parse(localStorage.getItem(progressKey)) || {};
     localStorage.setItem(progressKey, JSON.stringify({ ...currentData, pretest: score }));
   };

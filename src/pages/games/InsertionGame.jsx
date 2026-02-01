@@ -108,8 +108,14 @@ export default function InsertionGame() {
   const saveProgressToStorage = (newData) => {
     try {
         const user = JSON.parse(localStorage.getItem("user")) || {};
-        const username = user.firstname || "guest";
-        const storageKey = `progress_${username}_${LESSON_KEY}`;
+        const userKey =
+  user.email ||
+  user.id ||
+  user.username ||
+  user.firstname ||
+  "guest";
+
+        const storageKey = `progress_${userKey}_${LESSON_KEY}`;
         const currentData = JSON.parse(localStorage.getItem(storageKey)) || {};
         
         const mergedData = { ...currentData, ...newData };
@@ -124,8 +130,14 @@ export default function InsertionGame() {
     const checkGameStatus = () => {
       try {
         const user = JSON.parse(localStorage.getItem("user")) || {};
-        const username = user.firstname || "guest";
-        const storageKey = `progress_${username}_${LESSON_KEY}`;
+        const userKey =
+  user.email ||
+  user.id ||
+  user.username ||
+  user.firstname ||
+  "guest";
+
+        const storageKey = `progress_${userKey}_${LESSON_KEY}`;
         const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
 
         if (savedData.game === true) {

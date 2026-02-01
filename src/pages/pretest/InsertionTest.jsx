@@ -3,7 +3,9 @@ import MainLayout from "../../layouts/MainLayout";
 import "../../styles/test.css"; 
 import { useNavigate } from "react-router-dom";
 // 🟢 1. เพิ่มการ Import Mapping รูปภาพ
-import { quizImages } from "../../utils/imageMap"; 
+import { quizImages } from "../../utils/imageMap";
+
+
 
 const FALLBACK_USER = { firstname: "Kanokwan", lastname: "TestSystem" };
 
@@ -27,9 +29,10 @@ export default function InsertionTest() {
       const data = localStorage.getItem(key);
       if (data) { try { user = JSON.parse(data); break; } catch(e){} }
     }
-    const firstname = user.firstname || FALLBACK_USER.firstname;
+    const userKey = user.email || user.id || user.username || FALLBACK_USER.firstname;
 
-    const progressKey = `progress_${firstname}_insertion`; 
+
+    const progressKey = `progress_${userKey}_insertion`;
     const history = JSON.parse(localStorage.getItem(progressKey)) || {};
 
     if (history.pretest !== undefined && history.pretest !== null) {
@@ -58,11 +61,12 @@ export default function InsertionTest() {
 
   const submitScore = async () => {
     let user = {}; try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch(e){}
-    const firstname = user.firstname || user.firstName || FALLBACK_USER.firstname;
+    const userKey = user.email || user.id || user.username || FALLBACK_USER.firstname;
+
     
     const payload = {
       activity: "PRETEST",
-      firstname: firstname,
+      firstname: user.firstname || userKey,
       lastname: user.lastname || user.lastName || FALLBACK_USER.lastname,
       testName: "Insertion Sort",
       score: score,
@@ -75,7 +79,7 @@ export default function InsertionTest() {
       });
     } catch (error) { console.error("บันทึกพลาด", error); }
 
-    const progressKey = `progress_${firstname}_insertion`;
+    const progressKey = `progress_${userKey}_insertion`;
     const currentData = JSON.parse(localStorage.getItem(progressKey)) || {};
     localStorage.setItem(progressKey, JSON.stringify({ ...currentData, pretest: score }));
   };

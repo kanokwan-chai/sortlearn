@@ -4,6 +4,8 @@ import MainLayout from "../../layouts/MainLayout";
 import "../../styles/selection-game.css"; 
 import { useNavigate } from "react-router-dom";
 
+
+
 // Image Imports
 import bgMain from "../../assets/bg-selection.png"; 
 import charS1 from "../../assets/s1.png"; 
@@ -77,8 +79,15 @@ export default function SelectionGame() {
   const saveProgressToStorage = (newData) => {
     try {
         const user = JSON.parse(localStorage.getItem("user")) || {};
-        const username = user.firstname || "guest";
-        const storageKey = `progress_${username}_${LESSON_KEY}`;
+        const userKey =
+  user.email ||
+  user.id ||
+  user.username ||
+  user.firstname ||
+  "guest";
+
+        const storageKey = `progress_${userKey}_${LESSON_KEY}`;
+
         const currentData = JSON.parse(localStorage.getItem(storageKey)) || {};
         
         const mergedData = { ...currentData, ...newData };
@@ -93,8 +102,15 @@ export default function SelectionGame() {
     const checkGameStatus = () => {
       try {
         const user = JSON.parse(localStorage.getItem("user")) || {};
-        const username = user.firstname || "guest";
-        const storageKey = `progress_${username}_${LESSON_KEY}`;
+        const userKey =
+  user.email ||
+  user.id ||
+  user.username ||
+  user.firstname ||
+  "guest";
+
+        const storageKey = `progress_${userKey}_${LESSON_KEY}`;
+
         
         const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
 

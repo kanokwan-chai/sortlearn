@@ -3,6 +3,7 @@ import MainLayout from "../../layouts/MainLayout";
 import { useNavigate } from "react-router-dom";
 import "../../styles/bubble-game.css";
 
+
 // Assets Mapping
 import bgUnderwater from "../../assets/bg-underwater.png";
 import charJellyfish from "../../assets/b1.png"; 
@@ -54,8 +55,9 @@ export default function BubbleSortGame() {
   const saveProgress = useCallback((newData) => {
     try {
         const user = JSON.parse(localStorage.getItem("user")) || {};
-        const username = user.firstname || "guest";
-        const storageKey = `progress_${username}_${LESSON_KEY}`;
+        const userKey = user.email || user.id || user.username || user.firstname || "guest";
+
+        const storageKey = `progress_${userKey}_${LESSON_KEY}`;
         const currentData = JSON.parse(localStorage.getItem(storageKey)) || {};
         const mergedData = { ...currentData, ...newData };
         localStorage.setItem(storageKey, JSON.stringify(mergedData));
@@ -73,8 +75,9 @@ export default function BubbleSortGame() {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user")) || {};
-    const username = user.firstname || "guest";
-    const storageKey = `progress_${username}_${LESSON_KEY}`;
+    const userKey = user.email || user.id || user.username || user.firstname || "guest";
+    const storageKey = `progress_${userKey}_${LESSON_KEY}`;
+
     const saved = JSON.parse(localStorage.getItem(storageKey));
 
     if (saved) {
