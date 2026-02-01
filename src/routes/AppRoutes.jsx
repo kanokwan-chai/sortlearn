@@ -18,6 +18,7 @@ import QuickSort from "../pages/QuickSort";
 import MergeSort from "../pages/MergeSort";
 */
 
+
 import SelectionTest from "../pages/pretest/SelectionTest";
 import InsertionTest from "../pages/pretest/InsertionTest";
 import BubbleTest from "../pages/pretest/BubbleTest";
@@ -27,13 +28,17 @@ import QuickTest from "../pages/pretest/QuickTest";
 import MergeTest from "../pages/pretest/MergeTest";
 */
 
+
 import VideoSelection from "../pages/videos/VideoSelection";
 import VideoInsertion from "../pages/videos/VideoInsertion";
+
+
 
 import SelectionGame from "../pages/games/SelectionGame";
 import InsertionGame from "../pages/games/InsertionGame";
 import BubbleSortGame from "../pages/games/BubbleSortGame";
 import HeapSortGame from "../pages/games/HeapSortGame";
+
 /*
 import QuickSortGame from "../pages/games/QuickSortGame";
 import MergeSortGame from "../pages/games/MergeSortGame";

@@ -19,20 +19,35 @@ import mergeImg from "../assets/lessons/merge.png";
 export default function Home() {
   
   // ฟังก์ชันเช็คว่าผ่านครบหรือยัง (เอาไว้ซ่อนปุ่ม)
-  const isLessonDone = (lessonKey) => {
-    const user = JSON.parse(localStorage.getItem("user")) || {};
-    const username = user.firstname || "guest";
-    const key = `progress_${username}_${lessonKey}`;
-    const data = JSON.parse(localStorage.getItem(key)) || {};
-    
-    // เงื่อนไข: คะแนนสอบต้องมีค่า และ เกม/วิดีโอต้องเป็น true
-    return (
-      data.pretest !== null && 
-      data.posttest !== null && 
-      data.game === true && 
-      data.video === true
-    );
-  };
+  const getUserKey = () => {
+  let user = {};
+  try {
+    user = JSON.parse(localStorage.getItem("user")) || {};
+  } catch {}
+
+  if (user.email) return user.email;
+
+  let guestId = localStorage.getItem("guest_id");
+  if (!guestId) {
+    guestId = crypto.randomUUID();
+    localStorage.setItem("guest_id", guestId);
+  }
+  return `guest_${guestId}`;
+};
+
+const isLessonDone = (lessonKey) => {
+  const userKey = getUserKey();
+  const key = `progress_${userKey}_${lessonKey}`;
+  const data = JSON.parse(localStorage.getItem(key)) || {};
+
+  return (
+    data.pretest !== null &&
+    data.posttest !== null &&
+    data.video === true &&
+    data.game === true
+  );
+};
+
 
   return (
     <MainLayout>
@@ -60,11 +75,7 @@ export default function Home() {
         <div className="lesson-card">
           <img src={selectionImg} className="lesson-img" alt="Selection Sort" />
           <h3 className="lesson-title">SELECTION SORT</h3>
-          
-          {/* แสดงสถานะความคืบหน้า */}
           <LessonProgress lessonKey="selection" />
-
-          {/* ซ่อนปุ่มถ้าผ่านแล้ว */}
           {!isLessonDone("selection") && (
             <Link to="/selection-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
           )}
@@ -84,8 +95,9 @@ export default function Home() {
         <div className="lesson-card">
           <img src={bubbleImg} className="lesson-img" alt="Bubble Sort" />
           <h3 className="lesson-title">BUBBLE SORT</h3>
-          <LessonProgress lessonKey="bubble" />
-          {!isLessonDone("bubble") && (
+          <LessonProgress lessonKey="bubble_sort" />
+
+          {!isLessonDone("bubble_sort") && (
             <Link to="/bubble-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
           )}
         </div>

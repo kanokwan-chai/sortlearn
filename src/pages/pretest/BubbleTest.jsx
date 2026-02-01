@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 import MainLayout from "../../layouts/MainLayout";
-import "../../styles/test.css"; 
+import "../../styles/test.css";
 import { useNavigate } from "react-router-dom";
-import { quizImages } from "../../utils/imageMap"; // 🟢 เพิ่มบรรทัดนี้
-
-
+import { quizImages } from "../../utils/imageMap";
 
 const FALLBACK_USER = { firstname: "Kanokwan", lastname: "TestSystem" };
 
 export default function BubbleTest() {
   const navigate = useNavigate();
+
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);
@@ -17,17 +16,31 @@ export default function BubbleTest() {
   const [showResult, setShowResult] = useState(false);
   const [isAlreadyDone, setIsAlreadyDone] = useState(false);
 
-  const QUESTION_API = "https://script.google.com/macros/s/AKfycbwyxhS44YfJ743L1MIb57lN0CSpq5EUOZWMuUKSw7npDemfARhfeseneXrrVVxpLifC2w/exec";
-  const SCORE_API    = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
+  const QUESTION_API =
+    "https://script.google.com/macros/s/AKfycbwyxhS44YfJ743L1MIb57lN0CSpq5EUOZWMuUKSw7npDemfARhfeseneXrrVVxpLifC2w/exec";
+  const SCORE_API =
+    "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
 
-  useEffect(() => {
+  // ✅ ฟังก์ชันเดียว ใช้ทั้งไฟล์
+  const getUserKey = () => {
     let user = {};
-    const keys = ["user", "currentUser"];
-    for (const key of keys) {
-      const data = localStorage.getItem(key);
-      if (data) { try { user = JSON.parse(data); break; } catch(e){} }
+    try {
+      user = JSON.parse(localStorage.getItem("user")) || {};
+    } catch {}
+
+    if (user.email) return user.email;
+
+    let guestId = localStorage.getItem("guest_id");
+    if (!guestId) {
+      guestId = crypto.randomUUID();
+      localStorage.setItem("guest_id", guestId);
     }
-    const userKey = user.email || user.id || user.username || FALLBACK_USER.firstname;
+    return `guest_${guestId}`;
+  };
+
+  // ---------------- LOAD + CHECK ----------------
+  useEffect(() => {
+    const userKey = getUserKey();
     const progressKey = `progress_${userKey}_bubble`;
     const history = JSON.parse(localStorage.getItem(progressKey)) || {};
 
@@ -39,30 +52,60 @@ export default function BubbleTest() {
       return;
     }
 
-    fetch(`${QUESTION_API}?type=pretest_bubble`) 
+    fetch(`${QUESTION_API}?type=pretest_bubble`)
       .then((res) => res.json())
       .then((data) => {
-        setQuestions(data);
+        setQuestions(data || []);
         setLoading(false);
       })
-      .catch((err) => { setLoading(false); });
+      .catch(() => setLoading(false));
   }, []);
 
+  // ---------------- FINISH ----------------
   useEffect(() => {
-    if (!isAlreadyDone && !loading && questions.length > 0 && current >= questions.length) {
+    if (
+      !isAlreadyDone &&
+      !loading &&
+      questions.length > 0 &&
+      current >= questions.length
+    ) {
       submitScore();
       setShowResult(true);
     }
   }, [current, loading, questions, isAlreadyDone]);
 
+  // ---------------- SAVE SCORE ----------------
   const submitScore = async () => {
-    let user = {}; try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch(e){}
-    const userKey = user.email || user.id || user.username || FALLBACK_USER.firstname;
-    const payload = { activity: "PRETEST", firstname: user.firstname || userKey, lastname: user.lastname, testName: "Bubble Sort", score: score };
-    try { fetch(SCORE_API, { method: "POST", redirect: "follow", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) }); } catch (error) {}
+    const userKey = getUserKey();
+
+    let user = {};
+    try {
+      user = JSON.parse(localStorage.getItem("user")) || {};
+    } catch {}
+
+    const payload = {
+      activity: "PRETEST",
+      firstname: user.firstname || userKey,
+      lastname: user.lastname || FALLBACK_USER.lastname,
+      testName: "Bubble Sort",
+      score: score,
+    };
+
+    try {
+      await fetch(SCORE_API, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload),
+      });
+    } catch {}
+
     const progressKey = `progress_${userKey}_bubble`;
     const currentData = JSON.parse(localStorage.getItem(progressKey)) || {};
-    localStorage.setItem(progressKey, JSON.stringify({ ...currentData, pretest: score }));
+
+    localStorage.setItem(
+      progressKey,
+      JSON.stringify({ ...currentData, pretest: score })
+    );
   };
 
   const handleAnswer = (choiceIndex) => {

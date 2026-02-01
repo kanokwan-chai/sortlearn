@@ -34,6 +34,20 @@ const CHARACTERS = [
 export default function BubbleSortGame() {
   const navigate = useNavigate();
 
+  const getUserKey = () => {
+  let user = {};
+  try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch {}
+
+  if (user.email) return user.email;
+
+  let guestId = localStorage.getItem("guest_id");
+  if (!guestId) {
+    guestId = crypto.randomUUID();
+    localStorage.setItem("guest_id", guestId);
+  }
+  return `guest_${guestId}`;
+};
+
   // --- STATE ---
   const [gameState, setGameState] = useState("LOADING");
   const [selectedChar, setSelectedChar] = useState(null);
@@ -52,16 +66,12 @@ export default function BubbleSortGame() {
   const timerRef = useRef(null);
   const scoreRef = useRef(0);
 
-  const saveProgress = useCallback((newData) => {
-    try {
-        const user = JSON.parse(localStorage.getItem("user")) || {};
-        const userKey = user.email || user.id || user.username || user.firstname || "guest";
-
-        const storageKey = `progress_${userKey}_${LESSON_KEY}`;
-        const currentData = JSON.parse(localStorage.getItem(storageKey)) || {};
-        const mergedData = { ...currentData, ...newData };
-        localStorage.setItem(storageKey, JSON.stringify(mergedData));
-    } catch (e) { console.error("Save Error", e); }
+  /* ================= SAVE PROGRESS ================= */
+  const saveProgress = useCallback((data) => {
+    const userKey = getUserKey();
+    const key = `progress_${userKey}_${LESSON_KEY}`;
+    const old = JSON.parse(localStorage.getItem(key)) || {};
+    localStorage.setItem(key, JSON.stringify({ ...old, ...data }));
   }, []);
 
   const playSound = (type) => {
@@ -74,19 +84,21 @@ export default function BubbleSortGame() {
   };
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user")) || {};
-    const userKey = user.email || user.id || user.username || user.firstname || "guest";
-    const storageKey = `progress_${userKey}_${LESSON_KEY}`;
-
-    const saved = JSON.parse(localStorage.getItem(storageKey));
+    const userKey = getUserKey();
+    const key = `progress_${userKey}_${LESSON_KEY}`;
+    const saved = JSON.parse(localStorage.getItem(key));
 
     if (saved) {
-      if (saved.charId) setSelectedChar(CHARACTERS.find(c => c.id === saved.charId));
+      if (saved.charId)
+        setSelectedChar(CHARACTERS.find(c => c.id === saved.charId));
+      if (saved.score) {
+        setScore(saved.score);
+        scoreRef.current = saved.score;
+      }
+      if (saved.level) setUnlockedLevel(saved.level);
       if (saved.game === true) setGameState("ALREADY_DONE");
       else if (saved.charId) setGameState("MAP");
       else setGameState("SELECT_CHAR");
-      if (saved.level) setUnlockedLevel(saved.level);
-      if (saved.score) { setScore(saved.score); scoreRef.current = saved.score; }
     } else {
       setGameState("SELECT_CHAR");
     }
@@ -168,6 +180,7 @@ export default function BubbleSortGame() {
     if (isLastLevel) {
       updateData.game = true;
       updateData.level = LEVELS.length + 1;
+       updateData.bubble = true;
       setGameState("WIN");
       submitScoreToSheet(finalScore);
     } else {

@@ -4,8 +4,6 @@ import MainLayout from "../../layouts/MainLayout";
 import "../../styles/selection-game.css"; 
 import { useNavigate } from "react-router-dom";
 
-
-
 // Image Imports
 import bgMain from "../../assets/bg-selection.png"; 
 import charS1 from "../../assets/s1.png"; 

@@ -14,6 +14,7 @@ const FALLBACK_USER = {
 };
 
 export default function SelectionSortVideo() {
+
   const navigate = useNavigate();
   const playerRef = useRef(null);
   const maxWatchedRef = useRef(0);
@@ -36,6 +37,23 @@ export default function SelectionSortVideo() {
   const SAVE_SCORE_URL =
     "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
 
+    const getUserKey = () => {
+  let user = {};
+  try {
+    user = JSON.parse(localStorage.getItem("user")) || {};
+  } catch {}
+
+  if (user.email) return user.email;
+
+  let guestId = localStorage.getItem("guest_id");
+  if (!guestId) {
+    guestId = crypto.randomUUID();
+    localStorage.setItem("guest_id", guestId);
+  }
+
+  return `guest_${guestId}`;
+};
+
   // -------- LOAD QUESTIONS ----------
   useEffect(() => {
     let user = {};
@@ -43,9 +61,9 @@ export default function SelectionSortVideo() {
       user = JSON.parse(localStorage.getItem("user")) || {};
     } catch {}
 
-    const firstname = user.firstname || FALLBACK_USER.firstname;
+    const userKey = getUserKey();
+const progressKey = `progress_${userKey}_selection`;
 
-    const progressKey = `progress_${firstname}_selection`;
     const history = JSON.parse(localStorage.getItem(progressKey)) || {};
 
     if (history.video === true) {
@@ -140,8 +158,10 @@ export default function SelectionSortVideo() {
       }),
     });
 
-    const key = `progress_${(user.firstname || FALLBACK_USER.firstname)}_selection`;
-    localStorage.setItem(key, JSON.stringify({ video: true }));
+        const userKey = getUserKey();
+const key = `progress_${userKey}_selection`;
+localStorage.setItem(key, JSON.stringify({ video: true }));
+
   };
 
   // ================================================

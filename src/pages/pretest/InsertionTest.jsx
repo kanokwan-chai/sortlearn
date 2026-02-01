@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
 import MainLayout from "../../layouts/MainLayout";
-import "../../styles/test.css"; 
+import "../../styles/test.css";
 import { useNavigate } from "react-router-dom";
-// 🟢 1. เพิ่มการ Import Mapping รูปภาพ
 import { quizImages } from "../../utils/imageMap";
-
-
 
 const FALLBACK_USER = { firstname: "Kanokwan", lastname: "TestSystem" };
 
@@ -19,19 +16,31 @@ export default function InsertionTest() {
   const [showResult, setShowResult] = useState(false);
   const [isAlreadyDone, setIsAlreadyDone] = useState(false);
 
-  const QUESTION_API = "https://script.google.com/macros/s/AKfycbwyxhS44YfJ743L1MIb57lN0CSpq5EUOZWMuUKSw7npDemfARhfeseneXrrVVxpLifC2w/exec";
-  const SCORE_API    = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
+  const QUESTION_API =
+    "https://script.google.com/macros/s/AKfycbwyxhS44YfJ743L1MIb57lN0CSpq5EUOZWMuUKSw7npDemfARhfeseneXrrVVxpLifC2w/exec";
+  const SCORE_API =
+    "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
 
-  useEffect(() => {
+  // ✅ ใช้ userKey แบบเดียวกับ posttest / video
+  const getUserKey = () => {
     let user = {};
-    const keys = ["currentUser", "user", "userData", "auth", "login"];
-    for (const key of keys) {
-      const data = localStorage.getItem(key);
-      if (data) { try { user = JSON.parse(data); break; } catch(e){} }
+    try {
+      user = JSON.parse(localStorage.getItem("user")) || {};
+    } catch {}
+
+    if (user.email) return user.email;
+
+    let guestId = localStorage.getItem("guest_id");
+    if (!guestId) {
+      guestId = crypto.randomUUID();
+      localStorage.setItem("guest_id", guestId);
     }
-    const userKey = user.email || user.id || user.username || FALLBACK_USER.firstname;
+    return `guest_${guestId}`;
+  };
 
-
+  // ---------- LOAD + CHECK ----------
+  useEffect(() => {
+    const userKey = getUserKey();
     const progressKey = `progress_${userKey}_insertion`;
     const history = JSON.parse(localStorage.getItem(progressKey)) || {};
 
@@ -43,15 +52,16 @@ export default function InsertionTest() {
       return;
     }
 
-    fetch(`${QUESTION_API}?type=pretest_insertion`) 
+    fetch(`${QUESTION_API}?type=pretest_insertion`)
       .then((res) => res.json())
       .then((data) => {
-        setQuestions(data);
+        setQuestions(data || []);
         setLoading(false);
       })
-      .catch((err) => { setLoading(false); });
+      .catch(() => setLoading(false));
   }, []);
 
+  // ---------- FINISH ----------
   useEffect(() => {
     if (!isAlreadyDone && !loading && questions.length > 0 && current >= questions.length) {
       submitScore();
@@ -59,29 +69,38 @@ export default function InsertionTest() {
     }
   }, [current, loading, questions, isAlreadyDone]);
 
+  // ---------- SAVE ----------
   const submitScore = async () => {
-    let user = {}; try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch(e){}
-    const userKey = user.email || user.id || user.username || FALLBACK_USER.firstname;
+    const userKey = getUserKey();
 
-    
+    let user = {};
+    try {
+      user = JSON.parse(localStorage.getItem("user")) || {};
+    } catch {}
+
     const payload = {
       activity: "PRETEST",
-      firstname: user.firstname || userKey,
-      lastname: user.lastname || user.lastName || FALLBACK_USER.lastname,
+      firstname: user.firstname || userKey, // 👈 ไม่ดึงชื่อแอคอื่น
+      lastname: user.lastname || FALLBACK_USER.lastname,
       testName: "Insertion Sort",
       score: score,
     };
+
     try {
-      fetch(SCORE_API, {
-        method: "POST", redirect: "follow",
+      await fetch(SCORE_API, {
+        method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload),
       });
-    } catch (error) { console.error("บันทึกพลาด", error); }
+    } catch {}
 
     const progressKey = `progress_${userKey}_insertion`;
     const currentData = JSON.parse(localStorage.getItem(progressKey)) || {};
-    localStorage.setItem(progressKey, JSON.stringify({ ...currentData, pretest: score }));
+
+    localStorage.setItem(
+      progressKey,
+      JSON.stringify({ ...currentData, pretest: score })
+    );
   };
 
   const handleAnswer = (choiceIndex) => {

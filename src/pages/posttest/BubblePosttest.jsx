@@ -2,10 +2,7 @@ import React, { useEffect, useState } from "react";
 import MainLayout from "../../layouts/MainLayout";
 import "../../styles/test.css"; 
 import { useNavigate } from "react-router-dom";
-import { quizImages } from "../../utils/imageMap"; // 🟢 1. เพิ่มการ Import Mapping รูปภาพ
-
-
-const FALLBACK_USER = { firstname: "Kanokwan", lastname: "TestSystem" };
+import { quizImages } from "../../utils/imageMap";
 
 export default function BubblePosttest() {
   const navigate = useNavigate();
@@ -17,19 +14,32 @@ export default function BubblePosttest() {
   const [showResult, setShowResult] = useState(false);
   const [isAlreadyDone, setIsAlreadyDone] = useState(false);
 
-  const QUESTION_API = "https://script.google.com/macros/s/AKfycbwyxhS44YfJ743L1MIb57lN0CSpq5EUOZWMuUKSw7npDemfARhfeseneXrrVVxpLifC2w/exec"; 
-  const SCORE_API    = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
+  const QUESTION_API =
+    "https://script.google.com/macros/s/AKfycbwyxhS44YfJ743L1MIb57lN0CSpq5EUOZWMuUKSw7npDemfARhfeseneXrrVVxpLifC2w/exec";
+  const SCORE_API =
+    "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
 
+  // ✅ ฟังก์ชันนี้คือหัวใจ (ห้ามใช้ Date.now)
+  const getUserKey = () => {
+    let user = {};
+    try {
+      user = JSON.parse(localStorage.getItem("user")) || {};
+    } catch {}
+
+    if (user.email) return user.email;
+
+    let guestId = localStorage.getItem("guest_id");
+    if (!guestId) {
+      guestId = crypto.randomUUID();
+      localStorage.setItem("guest_id", guestId);
+    }
+    return `guest_${guestId}`;
+  };
+
+  // ---------------- LOAD + CHECK HISTORY ----------------
   useEffect(() => {
-    let user = {}; try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch(e){}
-    const userKey =
-  user.email ||
-  user.id ||
-  user.username ||
-  user.firstname ||
-  FALLBACK_USER.firstname;
-
-const progressKey = `progress_${userKey}_bubble`;
+    const userKey = getUserKey();
+    const progressKey = `progress_${userKey}_bubble`;
 
     const history = JSON.parse(localStorage.getItem(progressKey)) || {};
 
@@ -41,16 +51,16 @@ const progressKey = `progress_${userKey}_bubble`;
       return;
     }
 
-    // 🟢 2. แก้ไข URL ให้ดึงข้อมูล Posttest ให้ถูกต้อง
-    fetch(`${QUESTION_API}?type=pretest_bubble`) 
+    fetch(`${QUESTION_API}?type=pretest_bubble`)
       .then((res) => res.json())
       .then((data) => {
-        setQuestions(data);
+        setQuestions(data || []);
         setLoading(false);
       })
-      .catch((err) => { setLoading(false); });
+      .catch(() => setLoading(false));
   }, []);
 
+  // ---------------- FINISH QUIZ ----------------
   useEffect(() => {
     if (!isAlreadyDone && !loading && questions.length > 0 && current >= questions.length) {
       submitScore();
@@ -58,32 +68,43 @@ const progressKey = `progress_${userKey}_bubble`;
     }
   }, [current, loading, questions, isAlreadyDone]);
 
+  // ---------------- SAVE SCORE ----------------
   const submitScore = async () => {
-    let user = {}; try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch(e){}
-    const userKey =
-  user.email ||
-  user.id ||
-  user.username ||
-  user.firstname ||
-  FALLBACK_USER.firstname;
+    const userKey = getUserKey();
 
-const payload = {
-  activity: "POSTTEST",
-  firstname: userKey,
-  lastname: user.lastname,
-  testName: "Bubble Sort Posttest",
-  score: score
-};
-    try { fetch(SCORE_API, { method: "POST", redirect: "follow", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) }); } catch (error) {}
+    let user = {};
+    try {
+      user = JSON.parse(localStorage.getItem("user")) || {};
+    } catch {}
+
+    const payload = {
+      activity: "POSTTEST",
+      firstname: user.firstname || userKey,
+      lastname: user.lastname,
+      testName: "Bubble Sort Posttest",
+      score: score,
+    };
+
+    try {
+      await fetch(SCORE_API, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload),
+      });
+    } catch {}
+
     const progressKey = `progress_${userKey}_bubble`;
-
     const currentData = JSON.parse(localStorage.getItem(progressKey)) || {};
-    localStorage.setItem(progressKey, JSON.stringify({ ...currentData, posttest: score }));
+
+    localStorage.setItem(
+      progressKey,
+      JSON.stringify({ ...currentData, posttest: score })
+    );
   };
 
   const handleAnswer = (choiceIndex) => {
     const currentQ = questions[current];
-    if (!currentQ) return; 
+    if (!currentQ) return;
     const correct = parseInt(currentQ.answer);
     if (choiceIndex === correct) setScore((prev) => prev + 1);
     setCurrent((prev) => prev + 1);
