@@ -363,24 +363,30 @@ export default function SelectionGame() {
               <h1 className="game-title main">Selection Sort</h1>
               <h2 className="game-title sub">The Magic Library</h2>
             </div>
+            <div className="char-grid-horizontal">
+      {CHARACTERS.map(char => (
+        <div key={char.id} className="magic-book-card-v4" onClick={() => handleSelectChar(char)}>
+           {/* ✅ ลบพื้นหลังสีดำออกเพื่อให้ตัวละครลอยเด่น */}
+           <div className="char-img-box-transparent">
+             <img src={char.img} alt={char.name} className="char-portrait-floating" />
+             <div className="moonlight-glow"></div>
+           </div>
+           
+           <div className="char-info-v4">
+             <h3 className="char-name-bright">{char.name}</h3>
+             <div className="char-skill-v4" style={{borderColor: char.color}}>
+               <span style={{color: char.color}}>{char.iconSkill} {char.skillName}</span>
+             </div>
+             <p className="char-desc-cream">{char.desc}</p>
+             <button className="mahogany-select-btn">เลือก</button>
+           </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
             
-            <div className="char-grid">
-              {CHARACTERS.map(char => (
-                <div key={char.id} className="char-card" onClick={() => handleSelectChar(char)}>
-                   <div className="char-img-box"><img src={char.img} alt={char.name} className="char-portrait" /></div>
-                   <div className="char-info">
-                      <h3>{char.name}</h3>
-                      <div className="char-skill" style={{color: char.color}}>
-                        {char.iconSkill} {char.skillName}
-                      </div>
-                      <p>{char.desc}</p>
-                      <button className="btn-select">เลือก</button>
-                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+            
 
         {/* RULES */}
         {gameState === "RULES" && (

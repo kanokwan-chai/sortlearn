@@ -1,698 +1,846 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import MainLayout from "../../layouts/MainLayout";
 import "../../styles/heap-game.css"; 
+import { useNavigate } from "react-router-dom";
 
-// ✅ Assets Mapping
+// ✅ 1. Assets Mapping (ห้ามลบ) [cite: 75, 76]
 import bgForest from "../../assets/bg-forest.png";
-import h1 from "../../assets/h1.png"; 
-import h2 from "../../assets/h2.png"; 
-import h3 from "../../assets/h3.png"; 
+import h1 from "../../assets/h1.png"; import h2 from "../../assets/h2.png"; import h3 from "../../assets/h3.png"; 
+import sfxClick from "../../assets/sounds/click.mp3"; import sfxCorrect from "../../assets/sounds/correct.mp3";
+import sfxWrong from "../../assets/sounds/wrong.mp3"; import sfxWin from "../../assets/sounds/win.mp3";
 
+// ✅ 2. Constants (ชุดข้อมูลที่ผ่านการตรวจสอบแล้ว) [cite: 4, 5, 77, 78]
 const STAGES = [
-  { id: 1, title: "ปลุกพลังรากไม้", sub: "(Build Max Heap)", icon: "🌱", type: "MAX", 
-    goal: "กรอกมวลสาร 7 ชนิด แล้วจัดโครงสร้างให้ค่ามากที่สุดอยู่บนยอดไม้ (Root)", 
-    rules: "กฎ Max-Heap: ตัวแม่ต้องมีค่ามากกว่าหรือเท่ากับตัวลูกเสมอ" },
-  { id: 2, title: "เก็บเกี่ยวแห่งลำดับ", sub: "(Ascending Sort)", icon: "🌾", type: "MAX", 
-    goal: "เรียงลำดับจากน้อย ⮕ มาก โดยการสกัดค่ามากที่สุดไปไว้ท้ายอาร์เรย์", 
-    rules: "สลับ Root (ค่ามากสุด) ลงไปล็อคไว้ที่ตำแหน่งท้ายแถว แล้วซ่อมฮีพใหม่" },
-  { id: 3, title: "มนตราสะท้อน", sub: "(Descending Sort)", icon: "🔮", type: "MIN", 
-    goal: "เรียงลำดับจากมาก ⮕ น้อย โดยใช้กฎ Min-Heap", 
-    rules: "กฎ Min-Heap: แม่ต้องน้อยกว่าหรือเท่ากับลูก\nสลับ Root (ค่าน้อยสุด) ไปเก็บไว้ท้ายแถว" }
+    { id: 1, title: "ปลุกพลังรากไม้", icon: "🌱", type: "MAX", goal: "สร้าง Max & Min Heap" },
+    { id: 2, title: "เก็บเกี่ยวแห่งลำดับ", icon: "🌾", type: "SORT_ASC", goal: "เรียงลำดับ น้อย -> มาก" },
+    { id: 3, title: "มนตราสะท้อน", icon: "🔮", type: "SORT_DESC", goal: "เรียงลำดับ มาก -> น้อย" }
+];
+
+const STAGE_DETAILS = {
+    0: { goal: "สร้าง Max-Heap และ Min-Heap", hint: "พ่อต้องมากกว่าลูก (Max) หรือน้อยกว่าลูก (Min)", note: "คลิกเลือกโหนด 2 อันเพื่อสลับตำแหน่งกัน" },
+    1: { goal: "เรียงลำดับมวลสารจาก น้อยไปมาก", hint: "สกัดค่าที่มากที่สุดจากยอดต้นไม้", note: "สลับ Root กับตำแหน่งสุดท้ายเพื่อสกัด" },
+    2: { goal: "เรียงลำดับมวลสารจาก มากไปน้อย", hint: "สกัดค่าที่น้อยที่สุดจากยอดต้นไม้", note: "สลับ Root กับตำแหน่งสุดท้ายเพื่อสกัด" }
+};
+
+const STAGES_DATA = [
+    { nodes: 7, type: "BUILD_MAX", title: "ด่านที่ 1: การหลอมรวม (Max-Heap)", goal: "สร้าง Max-Heap (พ่อ ≥ ลูก)", level: 1 },
+    { nodes: 7, type: "BUILD_MIN", title: "ด่านที่ 1: มนตราสะท้อน (Min-Heap)", goal: "สร้าง Min-Heap (พ่อ ≤ ลูก)", level: 1 },
+    { nodes: 7, type: "SORT_ASC", title: "ด่านที่ 2: ระเบียบพฤกษา (น้อย → มาก)", goal: "เรียงลำดับมวลสารจาก น้อยไปหามาก", level: 2 },
+    { nodes: 7, type: "SORT_DESC", title: "ด่านที่ 3: มหากาพย์รากไม้ (มาก → น้อย)", goal: "เรียงลำดับมวลสารจาก มากไปหาน้อย", level: 3 }
 ];
 
 const GUARDIANS = [
-  { id: "h1", name: "Elder Oakheart", ability: "เกราะพฤกษา", desc: "ป้องกันความผิดพลาดได้ 2 ครั้ง", img: h1, hp: 4, time: 90 },
-  { id: "h2", name: "Pixie Lumina", ability: "พรแห่งกาลเวลา", desc: "เพิ่มเวลาจัดเรียงให้อีก 45 วินาที", img: h2, hp: 4, time: 135 },
-  { id: "h3", name: "King Sage", ability: "เนตรนักปราชญ์", desc: "เริ่มภารกิจด้วย HP สูงสุด 5 หน่วย", img: h3, hp: 5, time: 80 }
+    { id: "h1", name: "Elder Oakheart", ability: "เกราะพฤกษา", icon: "🛡️", desc: "ป้องกันความผิดพลาดได้ 2 ครั้ง", img: h1, hp: 4, time: 90 },
+    { id: "h2", name: "Pixie Lumina", ability: "พรแห่งกาลเวลา", icon: "⏳", desc: "เพิ่มเวลาจัดเรียงให้อีก 45 วินาที", img: h2, hp: 4, time: 135 },
+    { id: "h3", name: "King Sage", ability: "เนตรนักปราชญ์", icon: "❤️", desc: "เริ่มภารกิจด้วย HP สูงสุด 5 หน่วย", img: h3, hp: 5, time: 80 }
 ];
-// --- SCORE CONFIG ---
-const LESSON_KEY = "heap";
-const SCORE_API = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
 
 
 export default function HeapSortGame() {
-// =========================================================
-// 🧩 ส่วนที่ 1: State Management (การจัดการสถานะ)
-// =========================================================
-const [gameState, setGameState] = useState("HOME"); 
-const [selectedChar, setSelectedChar] = useState(null);
-const [currentLvlIdx, setCurrentLvlIdx] = useState(0); // 0: สร้าง Heap, 1: สกัดค่า
-const [heap, setHeap] = useState([]); // ข้อมูลต้นไม้
-const [inputArray, setInputArray] = useState(new Array(7).fill("")); 
-const [isInputDone, setIsInputDone] = useState(false);
-const [sortedArray, setSortedArray] = useState(new Array(7).fill(null)); // รางเก็บมวลสาร
-const [selectedIdx, setSelectedIdx] = useState(null); // สำหรับการคลิกสลับโหนด
-const [score, setScore] = useState(0);
-const [hp, setHp] = useState(3);
-const [timeLeft, setTimeLeft] = useState(0);
-const [violationIdx, setViolationIdx] = useState(null); // จุดที่ผิดกฎ Heap
-const [isAnimating, setIsAnimating] = useState(false);
-const [isVerified, setIsVerified] = useState(false);
-const [isScoreSent, setIsScoreSent] = useState(false);
-const [hasCompletedGame, setHasCompletedGame] = useState(false);
-const [hasInitTime, setHasInitTime] = useState(false);
+    const navigate = useNavigate();
+    // ================= 3. State Management (ครบถ้วนห้ามลบ) [cite: 7-10, 80-84] =================
+    const [gameState, setGameState] = useState("LOADING");
+    const [selectedChar, setSelectedChar] = useState(null);
+    const [currentTaskIdx, setCurrentTaskIdx] = useState(0); 
+    const [currentLvlIdx, setCurrentLvlIdx] = useState(0);
+    const [heap, setHeap] = useState(new Array(7).fill(null)); 
+    const [inputArray, setInputArray] = useState(new Array(7).fill("")); 
+    const [isInputDone, setIsInputDone] = useState(false);
+    const [sortedArray, setSortedArray] = useState(new Array(7).fill(null));
+    const [selectedIdx, setSelectedIdx] = useState(null); 
+    const [score, setScore] = useState(0);
+    const [hp, setHp] = useState(3);
+    const [timeLeft, setTimeLeft] = useState(0);
+    const [violationIdx, setViolationIdx] = useState(null); 
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [isVerified, setIsVerified] = useState(false);
+    const [isScoreSent, setIsScoreSent] = useState(false);
+    const [pool, setPool] = useState([]);
+    const [isPreview, setIsPreview] = useState(false);
+    const [draggedValue, setDraggedValue] = useState(null);
+    const [savedMaxHeap, setSavedMaxHeap] = useState(null);
+    const [savedMinHeap, setSavedMinHeap] = useState(null);
+    const [swappingPair, setSwappingPair] = useState([]);
 
 
 
-const stage = STAGES[currentLvlIdx];
+    
+// ✅ 1. ตั้งค่า Config (ห้ามลบ)
+const LESSON_KEY = "heap"; 
+const SCORE_API = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
 
-// --- Refs สำหรับ Timer และ Input ---
-const timerRef = useRef(null);
-const inputRefs = useRef([]);
+// ✅ 2. ฟังก์ชันส่งคะแนนที่ฉลาดขึ้น (ส่งที่หน้า RESULT เท่านั้น)
+// ✅ 1. ฟังก์ชันส่งคะแนน: จะทำงานเมื่อบันทึกว่า "ผ่าน" เท่านั้น
+const saveScoreToSheet = async (finalScore) => {
+    if (isScoreSent) return; 
 
-// --- ตำแหน่งพิกัดต้นไม้ (ล็อกกึ่งกลางเลข) ---
-// ✅ ปรับพิกัด Y ให้กระชับขึ้น (เดิม 40, 120, 210)
-const treePos = useMemo(() => [
-  { x: "50%", y: "25px" },   // Root (Level 0)
-  { x: "32%", y: "90px" },   // Level 1
-  { x: "68%", y: "90px" },   // Level 1
-  { x: "23%", y: "160px" },  // Level 2
-  { x: "41%", y: "160px" },  // Level 2
-  { x: "59%", y: "160px" },  // Level 2
-  { x: "77%", y: "160px" }   // Level 2
-], []);
+    try {
+        const user = JSON.parse(localStorage.getItem("user")) || {};
+        const payload = {
+            activity: "GAMES",
+            firstname: user.firstname || "Guest",
+            lastname: user.lastname || "-",
+            gameName: "Heap Sort Game",
+            score: finalScore,
+            status: "COMPLETED" // ส่งเฉพาะคนที่จบด่าน 3 จริงๆ
+        };
 
-// =========================================================
-// 🛠️ ส่วนที่ 2: Helper Functions (ฟังก์ชันช่วยเหลือ)
-// =========================================================
-
-const initGameData = (char) => {
-  setIsScoreSent(false);
-  setSelectedChar(char);
-  setInputArray(new Array(7).fill(""));
-  setIsInputDone(false);
-  setSortedArray(new Array(7).fill(null));
-  setHp(char.hp);
-  setTimeLeft(char.time);
-  setScore(0);
-  setGameState("MAP");
+        await fetch(SCORE_API, {
+            method: "POST",
+            body: JSON.stringify(payload),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+        setIsScoreSent(true);
+    } catch (e) { console.error("Score sending failed", e); }
 };
 
-const handleInputChange = (idx, val) => {
-  const nextInput = [...inputArray];
-  nextInput[idx] = val.replace(/\D/g, '').slice(0, 2); 
-  setInputArray(nextInput);
-};
-
-// =========================================================
-// 🌿 ส่วนที่ 3: ลอจิกด่านที่ 1 (Build Max-Heap) - ห้ามยุ่ง
-// =========================================================
-
-const manifestOrbs = () => {
-  if (inputArray.some(v => v === "")) return alert("กรุณากรอกมวลสารให้ครบ!");
-  let data = inputArray.map(Number);
-
-  // ตรวจสอบกฎ Max-Heap (แม่ >= ลูก)
-  const checkHeap = (arr) => {
-    for (let i = 0; i <= Math.floor(arr.length / 2) - 1; i++) {
-      const L = 2 * i + 1, R = 2 * i + 2;
-      if ((L < arr.length && arr[i] < arr[L]) || (R < arr.length && arr[i] < arr[R])) return false;
-    }
-    return true;
-  };
-
-  // ถ้าถูกอยู่แล้วให้สลับเพื่อความท้าทาย
-  if (checkHeap(data)) data = [...data].sort(() => Math.random() - 0.5);
-
-  setHeap(data);
-  setIsInputDone(true);
-};
-// ✅ เพิ่มฟังก์ชันนี้กลับเข้าไป เพื่อให้กด Enter แล้วเลื่อนช่องกรอกได้
-  const handleKeyDown = (e, idx) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (idx < 6) {
-        // เลื่อนโฟกัสไปช่องถัดไป
-        inputRefs.current[idx + 1]?.focus();
-      } else {
-        // ถ้าช่องสุดท้ายแล้ว ให้เริ่มสร้างมวลสาร
-        manifestOrbs();
-      }
-    }
-  };
-
-// ✅ แทรกก่อน handleManualCheck
-const checkHeapProperty = (arr, type) => {
-  for (let i = 0; i <= Math.floor(arr.length / 2) - 1; i++) {
-    const L = 2 * i + 1, R = 2 * i + 2;
-    if (type === "MAX") {
-      // กฎ Max-Heap: แม่ต้อง >= ลูก
-      if ((L < arr.length && arr[i] < arr[L]) || (R < arr.length && arr[i] < arr[R])) return i;
-    } else {
-      // กฎ Min-Heap: แม่ต้อง <= ลูก
-      if ((L < arr.length && arr[i] > arr[L]) || (R < arr.length && arr[i] > arr[R])) return i;
-    }
-  }
-  return null;
-};
-
-const handleManualCheck = () => {
-  if (isAnimating || heap.length === 0) return;
-  let firstErrorIdx = null;
-  for (let i = 0; i <= Math.floor(heap.length / 2) - 1; i++) {
-    const L = 2 * i + 1, R = 2 * i + 2;
-    if ((L < heap.length && heap[i] < heap[L]) || (R < heap.length && heap[i] < heap[R])) {
-      firstErrorIdx = i; break;
-    }
-  }
-
-  if (firstErrorIdx !== null) {
-    // 💔 กรณีจัดผิด: หัก HP และคะแนน
-    setHp(prev => Math.max(0, prev - 1)); 
-    setScore(prev => Math.max(0, prev - 50));
-    setViolationIdx(firstErrorIdx);
-    setIsVerified(false);
-    if (hp <= 1) setGameState("RESULT");
-  } else {
-    // 🏆 กรณีถูกต้อง: แสดงข้อความและย้ายด่าน
-    if (!isVerified) {
-      setScore(prev => prev + 100);
-      setViolationIdx(null);
-      setIsVerified(true); // จะทำให้คำอธิบายขึ้นข้อความสำเร็จ
-    }
-  }
-};
-
-// =========================================================
-// 🏆 ส่วนที่ 4: ลอจิกด่านที่ 2 (Extraction & Sort) - เพิ่มใหม่
-// =========================================================
-
-const performExtraction = (currentHeap) => {
-  setIsAnimating(true);
-  const nextHeap = [...currentHeap];
-  const harvestedVal = nextHeap.pop(); // ดึงตัวที่สลับมาไว้ท้ายสุดออก
-  setHeap(nextHeap);
-  
-  const newSorted = [...sortedArray];
-  // 🛠️ แก้ปัญหาช่องว่าง: ค้นหาช่องว่าง (null) ตัวสุดท้ายจากขวาไปซ้ายเพื่อเรียงให้ชิดกัน
-  const emptyIdx = newSorted.lastIndexOf(null);
-  if (emptyIdx !== -1) {
-    newSorted[emptyIdx] = harvestedVal;
-  }
-  
-  setSortedArray(newSorted);
-  setScore(s => s + 200);
-  setIsAnimating(false);
-  setIsVerified(false);
-};
-
-const handleExtractionCheck = () => {
-  if (isAnimating || heap.length === 0) return;
-  const errorIdx = checkHeapProperty(heap, stage.type);
-  
-if (errorIdx !== null) {
-  setViolationIdx(errorIdx);
-  setHp(prev => Math.max(0, prev - 1));
-  setScore(prev => Math.max(0, prev - 50));
-
-  if (hp <= 1)
-    setGameState("RESULT");
-  return;
-}
-
-
-  setIsAnimating(true); setViolationIdx(null);
-  const nextHeap = [...heap];
-  const lastIdx = nextHeap.length - 1;
-  [nextHeap[0], nextHeap[lastIdx]] = [nextHeap[lastIdx], nextHeap[0]]; // สลับ Root กับตัวท้าย
-  setHeap(nextHeap);
-
-  setTimeout(() => {
-    const harvestedVal = nextHeap.pop(); setHeap([...nextHeap]);
-    const newSorted = [...sortedArray];
-    const emptyIdx = newSorted.lastIndexOf(null);
-    if (emptyIdx !== -1) newSorted[emptyIdx] = harvestedVal; // เก็บลงคลัง
-    setSortedArray(newSorted); setScore(s => s + 150);
-    setIsAnimating(false); setIsVerified(false);
-
-if (nextHeap.length === 0) {
-  if (currentLvlIdx === 1) {
-    setCurrentLvlIdx(2);
-    setIsInputDone(false); 
-    setHeap([]);
-    setSortedArray(new Array(7).fill(null));
-    if (selectedChar) setTimeLeft(selectedChar.time); // 👈 เพิ่ม: รีเซ็ตเวลาสำหรับด่าน 3
-    setGameState("MAP");
-  } else if (currentLvlIdx === 2) {
-    setGameState("RESULT");
-  }
-}
-
-  }, 800);
-};
-
-
+// ✅ แก้ไข useEffect ตัวแรก (บรรทัดที่ 138-169)
 useEffect(() => {
-    let interval = null;
-    // เงื่อนไข: เริ่มเดินเมื่อกำลังเล่น และกรอกข้อมูลเสร็จแล้ว เท่านั้น
-    if (gameState === "PLAYING" && isInputDone && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft(prev => prev - 1); // ลดเวลาลงทีละ 1 วินาที
-      }, 1000);
-    } else if (timeLeft === 0 && gameState === "PLAYING") {
-      setGameState("RESULT"); // เวลาหมดส่งไปหน้าสรุปผล
+    const resumeJourney = () => {
+        try {
+            const user = JSON.parse(localStorage.getItem("user")) || {};
+            const username = user.firstname || "guest";
+            const storageKey = `progress_${username}_${LESSON_KEY}`;
+            const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
+
+            // 🚫 ถ้าเล่นจบแล้ว (game: true) ให้โชว์หน้า ALREADY_WIN พร้อมคะแนนที่บันทึกไว้
+            if (savedData.game === true) {
+                setGameState("ALREADY_WIN");
+                setScore(savedData.score || 0); // โชว์คะแนนที่จบไปแล้ว
+                return;
+            }
+
+            // 🛡️ ถ้าเคยเลือกตัวละครไว้แล้ว (กำลังเล่นค้างอยู่)
+            if (savedData.charId) {
+                const char = GUARDIANS.find(g => g.id === savedData.charId);
+                if (char) {
+                    setSelectedChar(char);
+                    // ✅ ดึงคะแนนล่าสุดที่ "กำลังเล่นค้างอยู่" มาใช้
+                    if (savedData.currentScore !== undefined) setScore(savedData.currentScore);
+                    setHp(savedData.hp !== undefined ? savedData.hp : char.hp);
+                    setCurrentLvlIdx(savedData.level ? savedData.level - 1 : 0);
+                    setGameState("MAP"); 
+                }
+            } else {
+                setGameState("HOME");
+            }
+        } catch (e) { setGameState("HOME"); }
+    };
+
+    if (gameState === "LOADING") resumeJourney();
+}, [gameState]);
+
+// ✅ 2. ตัวควบคุมการส่ง: ห้ามส่งถ้าไม่ใช่ "ชัยชนะในด่านสุดท้าย"
+useEffect(() => {
+    // เงื่อนไข: ต้องอยู่หน้า RESULT + ต้องเป็นด่านที่ 3 + ต้องยังมี HP (ชนะ)
+    const isStage3Win = currentTaskIdx === 3 && hp > 0;
+
+    if (gameState === "RESULT" && isStage3Win && !isScoreSent) {
+        saveScoreToSheet(score);
     }
-    // คืนค่าเพื่อล้าง Timer เมื่อ Component ปิดลง หรือสถานะเปลี่ยน
-    return () => clearInterval(interval);
-  }, [gameState, isInputDone, timeLeft === 0]);
+}, [gameState, score, isScoreSent, currentTaskIdx, hp]);
 
-  useEffect(() => {
-  try {
-    const user = JSON.parse(localStorage.getItem("user")) || {};
-    const username = user.firstname || "guest";
-    const storageKey = `progress_${username}_${LESSON_KEY}`;
-    const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
-
-    if (savedData.game === true) {
-      setHasCompletedGame(true);
-      setGameState("ALREADY_WIN");
+// ✅ ฟังก์ชันบันทึกความก้าวหน้า (วางไว้ก่อน useEffect)
+const saveProgressToStorage = (newData) => {
+    try {
+        const user = JSON.parse(localStorage.getItem("user")) || {};
+        const username = user.firstname || "guest";
+        const storageKey = `progress_${username}_${LESSON_KEY}`;
+        const currentData = JSON.parse(localStorage.getItem(storageKey)) || {};
+        
+        const mergedData = { ...currentData, ...newData };
+        localStorage.setItem(storageKey, JSON.stringify(mergedData));
+    } catch (e) {
+        console.error("Save Error", e);
     }
-  } catch (e) {
-    console.error("Check heap progress error", e);
-  }
-}, []);
+};
 
-// =========================================================
-// 🕹️ ส่วนที่ 5: Interaction & Navigation (การโต้ตอบ)
-// =========================================================
+    const inputRefs = useRef([]);
+const treePos = useMemo(() => {
+    // ✅ ยกขึ้นให้สูงสุด: ด่าน 1 เริ่มที่ 30px | ด่าน 2-3 เริ่มที่ 50px
+    const startY = currentTaskIdx < 2 ? 30 : 50; 
+    const stepY = 75; // ✅ บีบระยะห่างระหว่างชั้นให้แคบลง (เดิม 85)
+
+    return [
+        { x: "50%", y: startY }, // Root
+        { x: "20%", y: startY + stepY }, { x: "80%", y: startY + stepY }, // ชั้น 1
+        
+        /* ✅ ชั้นล่างสุดจะอยู่ที่พิกัด 200px (จากเดิม 300px+) ลอยพ้นปุ่มสกัดแน่นอนครับ */
+        { x: "10%", y: startY + stepY * 2 }, { x: "35%", y: startY + stepY * 2 },  
+        { x: "65%", y: startY + stepY * 2 }, { x: "90%", y: startY + stepY * 2 }  
+    ];
+}, [currentTaskIdx]);
+
+    // ================= 4. Logic Functions (ลอจิกจากไฟล์ที่ใช้งานได้จริง) [cite: 16-42, 87-121] =================
+    const playSound = (sfx) => { new Audio(sfx).play().catch(() => {}); };
+
+    const initGameData = (guardian) => {
+        playSound(sfxClick); setSelectedChar(guardian); setHp(guardian.hp); setTimeLeft(guardian.time);
+        setScore(0); setCurrentTaskIdx(0); setCurrentLvlIdx(0);
+        setHeap(new Array(7).fill(null)); setInputArray(new Array(7).fill("")); setSortedArray(new Array(7).fill(null));
+        setIsInputDone(false); setIsVerified(false); setViolationIdx(null); setSelectedIdx(null); setGameState("MAP");
+    };
+
+    const handleArrayInputChange = (idx, val) => {
+        const next = [...inputArray];
+        next[idx] = val.replace(/\D/g, '').slice(0, 2); 
+        setInputArray(next);
+    };
+
+    const handleKeyDown = (e, idx) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            if (idx < 6) inputRefs.current[idx + 1]?.focus();
+            else manifestOrbs();
+        }
+    };
+
+    const manifestOrbs = () => {
+    const validInputs = inputArray.filter(v => v.trim() !== "");
+    if (validInputs.length < 7) return triggerToast("กรุณากรอกมวลสารให้ครบ 7 ชนิด! 🏺"); // ✅
+    const nums = validInputs.map(Number);
+    if (new Set(nums).size !== 7) return triggerToast("ห้ามใส่เลขซ้ำกันนะ! ⚠️"); // ✅
+    
+    playSound(sfxClick);
+    const shuffled = [...nums].sort(() => Math.random() - 0.5);
+    setHeap(shuffled);
+    setIsInputDone(true);
+    
+    // เช็คตั้งแต่เริ่มเลยว่าสุ่มออกมาแล้วพังไหม
+    const initialError = checkHeapProperty(shuffled, STAGES_DATA[currentTaskIdx].type);
+    setViolationIdx(initialError);
+};
 
 const handleNodeClick = (idx) => {
-  if (gameState !== "PLAYING" || !isInputDone || isAnimating) return;
-  if (selectedIdx === null) setSelectedIdx(idx);
-  else {
-    if (selectedIdx === idx) { setSelectedIdx(null); return; }
+    if (gameState !== "PLAYING" || !isInputDone || isAnimating) return;
     
-    // 🚀 ตรวจสอบเงื่อนไขการสกัด: สลับ Root (0) กับตัวสุดท้ายของ Heap ปัจจุบัน
-    const isRootLastSwap = (selectedIdx === 0 && idx === heap.length - 1) || (idx === 0 && selectedIdx === heap.length - 1);
-    const wasValidHeap = checkHeapProperty(heap, stage.type) === null;
+    if (selectedIdx === null) {
+        setSelectedIdx(idx); 
+        setSwappingPair([]); 
+        playSound(sfxClick);
+    } else {
+        if (selectedIdx === idx) { setSelectedIdx(null); return; }
+        
+        setIsAnimating(true);
+        setSwappingPair([selectedIdx, idx]);
+        
+        const nextHeap = [...heap];
+        [nextHeap[selectedIdx], nextHeap[idx]] = [nextHeap[idx], nextHeap[selectedIdx]];
+        
+        // ✨ จุดสำคัญ: คำนวณความผิดพลาดล่วงหน้าจากข้อมูลใหม่
+        const errorIdx = checkHeapProperty(nextHeap, STAGES_DATA[currentTaskIdx].type);
+        
+        // 🚀 อัปเดตทุกอย่างพร้อมกัน (React จะ Batch ให้เอง)
+        setHeap(nextHeap); 
+        setViolationIdx(errorIdx); // อัปเดตสถานะทันที ไม่ต้องรอ setTimeout
+        setSelectedIdx(null);
+        playSound(sfxClick);
+        
+        setTimeout(() => { 
+            setIsAnimating(false); 
+            setSwappingPair([]); 
+        }, 500);
+    }
+};
+
+const checkHeapProperty = (arr, type) => {
+    // ✅ ด่าน 2 (SORT_ASC) ใช้ MAX | ด่าน 3 (SORT_DESC) ใช้ MIN
+    const isMaxMode = type.includes("MAX") || type === "SORT_ASC"; 
+    
+    for (let i = 0; i <= 2; i++) {
+        const L = 2 * i + 1, R = 2 * i + 2;
+        const parentVal = arr[i];
+        if (parentVal === null) continue;
+
+        if (isMaxMode) {
+            // Logic: พ่อต้องไม่น้อยกว่าลูก
+            if ((L < 7 && arr[L] !== null && parentVal < arr[L]) || 
+                (R < 7 && arr[R] !== null && parentVal < arr[R])) return i;
+        } else {
+            // ✅ สำหรับ BUILD_MIN และ SORT_DESC: พ่อต้องไม่มากกว่าลูก
+            if ((L < 7 && arr[L] !== null && parentVal > arr[L]) || 
+                (R < 7 && arr[R] !== null && parentVal > arr[R])) return i;
+        }
+    }
+    return null;
+};
+
+    // ✅ ปรับปรุง handleManualCheck ให้เช็ค HP แม่นยำขึ้น
+const handleManualCheck = () => {
+    if (heap.includes(null)) {
+        return triggerToast("อัญเชิญมวลสารให้ครบก่อน!"); // เปลี่ยนจาก alert
+    }
+    const currentTask = STAGES_DATA[currentTaskIdx];
+    const errorIdx = checkHeapProperty(heap, currentTask.type);
+
+    if (errorIdx !== null) {
+        playSound(sfxWrong);
+        setViolationIdx(errorIdx);
+        setHp(prevHp => {
+            const newHp = Math.max(0, prevHp - 1);
+            if (newHp === 0) setGameState("RESULT"); 
+            return newHp;
+        });
+        setIsVerified(false);
+    } else {
+        playSound(sfxCorrect);
+        setScore(s => s + 100);
+        setViolationIdx(null);
+        setIsVerified(true);
+    }
+};
+
+// ✅ ตรรกะสกัดสารด่าน 2: เรียงน้อยไปมาก สกัดค่ามากสุดไปท้ายแถว
+const handleExtraction = () => {
+    if (isAnimating || heap.every(v => v === null)) return;
+
+    const currentTask = STAGES_DATA[currentTaskIdx];
+    const lastIdx = heap.map(v => v !== null).lastIndexOf(true);
+    const harvested = heap[lastIdx]; 
+    
+    // ✅ หาค่าเป้าหมายตามประเภทด่าน
+    const currentTarget = currentTask.type === "SORT_ASC" 
+        ? Math.max(...heap.filter(v => v !== null)) // ด่าน 2: หาค่ามากสุด
+        : Math.min(...heap.filter(v => v !== null)); // ด่าน 3: หาค่าน้อยสุด
+    
+    if (harvested !== currentTarget) {
+        playSound(sfxWrong);
+        setViolationIdx(lastIdx);
+        setHp(prev => Math.max(0, prev - 1));
+        triggerToast(currentTask.type === "SORT_ASC" ? "ต้องเป็นมวลสารที่มากที่สุด!" : "ต้องเป็นมวลสารที่น้อยที่สุด! ⚠️");
+        return;
+    }
 
     setIsAnimating(true);
     const nextHeap = [...heap];
-    [nextHeap[selectedIdx], nextHeap[idx]] = [nextHeap[idx], nextHeap[selectedIdx]];
+    nextHeap[lastIdx] = null; 
     setHeap(nextHeap);
-    setSelectedIdx(null);
 
-    // ✅ ถ้าอยู่ด่านสกัด (2 หรือ 3) และสลับ Root-Last โดยที่ Heap ถูกต้องก่อนสลับ
-    if (currentLvlIdx > 0 && isRootLastSwap && wasValidHeap) {
-      // เลขจะวิ่งไปที่อาเรย์ทันทีโดยไม่ต้องกดปุ่มสกัด
-      setTimeout(() => performExtraction(nextHeap), 600);
-    } else {
-      setTimeout(() => setIsAnimating(false), 500);
+    const newSorted = [...sortedArray];
+    const targetSlot = newSorted.lastIndexOf(null);
+    if (targetSlot !== -1) newSorted[targetSlot] = harvested;
+    setSortedArray(newSorted);
+    setScore(s => s + 150);
+    playSound(sfxCorrect);
+
+    // ✨ เช็คสมดุลใหม่ (ด่าน 3 ใช้ลอจิก MIN)
+    const errorType = currentTask.type === "SORT_ASC" ? "MAX" : "MIN";
+    const errorAfterExtract = checkHeapProperty(nextHeap, errorType);
+    setViolationIdx(errorAfterExtract);
+
+setTimeout(() => {
+        setIsAnimating(false);
+        // ✨ เมื่อต้นไม้ว่างเปล่า (สกัดครบ 7 ตัว)
+        if (nextHeap.every(v => v === null)) {
+            playSound(sfxWin);
+            setIsVerified(true); // ✅ สั่งให้ปุ่ม Next ปรากฏขึ้นแทนปุ่มสกัดสาร
+        }
+    }, 600);
+};
+
+// 1. สร้าง State สำหรับเก็บข้อความแจ้งเตือน
+const [toast, setToast] = useState({ show: false, msg: "" });
+
+// 2. ฟังก์ชันสำหรับเรียกใช้งาน (แทนที่ alert)
+const triggerToast = (message) => {
+    setToast({ show: true, msg: message });
+    
+    // ให้หายไปเองหลังจาก 3 วินาที
+    setTimeout(() => {
+        setToast({ show: false, msg: "" });
+    }, 3000);
+};
+// ตัวอย่างการใช้งานในฟังก์ชันเช็คเลขซ้ำ
+const checkDuplicate = (newVal) => {
+    if (heap.includes(newVal)) {
+        triggerToast("ห้ามใส่เลขซ้ำกันนะ! ✨"); // ✅ เรียกใช้แทน alert()
+        return false;
     }
-  }
+    return true;
 };
 
-const processHeapAction = () => {
-  if (currentLvlIdx === 0 && isVerified) {
-    setCurrentLvlIdx(1); 
-    setGameState("MAP");
-    setIsVerified(false);
-    setIsInputDone(false); // 👈 เพิ่ม: เพื่อหยุดตัวนับเวลาของด่านเก่า
-    if (selectedChar) setTimeLeft(selectedChar.time); // 👈 เพิ่ม: รีเซ็ตเวลาทันที
-  }
-};
-// ✅ เพิ่มฟังก์ชันช่วยสร้างคำอธิบาย (วางไว้ก่อน return)
-const getInstructionText = () => {
-  if (violationIdx !== null) {
-    const rule = stage.type === "MAX" ? "แม่ต้องมากกว่าหรือเท่ากับลูก" : "แม่ต้องน้อยกว่าหรือเท่ากับลูก";
-    return `⚠️ ตรวจพบพลังแปรปรวน! ตามกฎ ${rule} (ตรวจสอบที่โหนดค่า ${heap[violationIdx]})`;
-  }
-  
-  if (currentLvlIdx > 0 && isInputDone) {
-    const errorIdx = checkHeapProperty(heap, stage.type);
-    return errorIdx === null 
-      ? "💎 ฮีพสมบูรณ์แล้ว! ลองสลับ 'โหนดราก' กับ 'โหนดสุดท้าย' เพื่อสกัดมวลสาร" 
-      : "🛠️ ฮีพพังอยู่! โปรดสลับตำแหน่ง (Re-heapify) ให้ถูกต้องตามกฎก่อนสกัดค่าถัดไป";
-  }
+// ✨ คำแนะนำภารกิจแบบ Real-time (ช่วยให้ Sidebar ไม่ดีเลย์และรองรับด่าน 3)
+// ✨ คำแนะนำภารกิจ (ต้องมีตัวแปรนี้เพื่อให้ Sidebar ทำงานได้ครับ)
+const missionStatus = useMemo(() => {
+    const activeElements = heap.filter(v => v !== null);
+    if (activeElements.length === 0 && isInputDone) return "🧪 สกัดสารสำเร็จแล้ว! กดปุ่มต่อไปเพื่อเดินทางต่อ";
 
-  return currentLvlIdx === 0 
-    ? "🌿 ภารกิจ: สลับตำแหน่งมวลสารเพื่อให้โหนดแม่มีค่ามากกว่าลูกทุกกิ่งก้าน" 
-    : "🔮 ภารกิจ: จัด Min-Heap (แม่น้อยกว่าลูก) เพื่อสกัดค่าไปเรียงลำดับ มาก ⮕ น้อย";
-};
-const saveProgressToStorage = (newData) => {
-  try {
-    const user = JSON.parse(localStorage.getItem("user")) || {};
-    const username = user.firstname || "guest";
-    const storageKey = `progress_${username}_${LESSON_KEY}`;
-    const currentData = JSON.parse(localStorage.getItem(storageKey)) || {};
-    const mergedData = { ...currentData, ...newData };
-    localStorage.setItem(storageKey, JSON.stringify(mergedData));
-  } catch (e) {
-    console.error("Save progress error", e);
-  }
+    if (currentTaskIdx < 2) {
+        if (violationIdx !== null) return `⚠️ โหนด ${violationIdx + 1} ผิดกฎ! จัดเรียงให้ถูกต้อง`;
+        return STAGES_DATA[currentTaskIdx].goal;
+    }
+
+    const lastIdx = heap.map(v => v !== null).lastIndexOf(true);
+    const currentTarget = currentTaskIdx === 2 ? Math.max(...activeElements) : Math.min(...activeElements);
+
+    if (violationIdx !== null) {
+        return `⚠️ สมดุลพังทลาย! สร้าง ${currentTaskIdx === 2 ? 'Max' : 'Min'}-Heap ใหม่ก่อนสกัดสาร`;
+    }
+
+    if (heap[lastIdx] === currentTarget && lastIdx !== 0) {
+        return "✨ มวลสารเป้าหมายอยู่จุดสกัดแล้ว! กด 'สกัดสาร' ได้เลย";
+    }
+
+    if (heap[0] === currentTarget && lastIdx !== 0) {
+        return "💎 สมดุลแล้ว! สลับ Root กับโหนดสุดท้ายเพื่อเตรียมสกัด";
+    }
+
+    return "🔄 จัดเรียงมวลสารให้สมดุลตามกฎ Heap";
+}, [heap, violationIdx, currentTaskIdx, isInputDone]);
+
+const handleSelectGuardian = (guardian) => {
+    playSound(sfxClick); //
+    setSelectedChar(guardian); //
+    setHp(guardian.hp); //
+    setTimeLeft(guardian.time); //
+    
+    // ✅ บันทึกพันธสัญญาลง LocalStorage ทันที
+    saveProgressToStorage({ 
+        charId: guardian.id,
+        hp: guardian.hp,
+        timeLeft: guardian.time,
+        level: 1,
+        score: 0
+    }); 
+    
+    setGameState("MAP"); // พาส่งไปยังหน้าแผนที่
 };
 
-const saveScoreToSheet = async (finalScore) => {
-  try {
-      const user = JSON.parse(localStorage.getItem("user")) || {};
-      const payload = {
-          activity: "GAMES",
-          firstname: user.firstname || "Guest",
-          lastname: user.lastname || "-",
-          gameName: "Heap Sort Game",
-          score: finalScore
-      };
-      await fetch(SCORE_API, {
-          method: "POST",
-          body: JSON.stringify(payload),
-          headers: { "Content-Type": "text/plain;charset=utf-8" }
-      });
-  } catch (e) { 
-      console.error("Save failed", e); 
-  }
-};
+// เมื่อชนะแต่ละด่าน (ตัวอย่างในปุ่ม Next)
+const nextLevel = currentLvlIdx + 2; // ด่านถัดไป
+// ใส่ในปุ่ม "ต่อไป ⮕" ของด่าน 1 และ 2
+saveProgressToStorage({ 
+    score: score, 
+    level: currentLvlIdx + 2 // ปลดล็อกด่านถัดไป
+});
 
 useEffect(() => {
-  if (gameState === "RESULT" && !isScoreSent) {
-    setIsScoreSent(true);
-    saveScoreToSheet(score);
-  }
-}, [gameState, isScoreSent]);
+    const checkProgress = () => {
+        try {
+            const user = JSON.parse(localStorage.getItem("user")) || {};
+            const username = user.firstname || "guest";
+            const storageKey = `progress_${username}_${LESSON_KEY}`;
+            const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
+
+            // 🚫 1. ถ้าเล่นจบครบ 3 ด่านแล้ว (game: true)
+            if (savedData.game === true) {
+                setGameState("ALREADY_WIN");
+                return;
+            }
+
+            // 🛡️ 2. ถ้าเคยเลือกตัวละครไว้แล้ว (charId)
+            if (savedData.charId) {
+                const char = GUARDIANS.find(g => g.id === savedData.charId);
+                if (char) {
+                    setSelectedChar(char);
+                    // ✅ กู้คืน HP, คะแนน และด่านล่าสุดที่เล่นค้างไว้
+                    setHp(savedData.hp !== undefined ? savedData.hp : char.hp);
+                    setScore(savedData.score || 0);
+                    setCurrentLvlIdx(savedData.level ? savedData.level - 1 : 0);
+                    
+                    // 🚀 พุ่งตรงไปหน้าแผนที่ (MAP) ทันที ห้ามแวะหน้า HOME
+                    setGameState("MAP"); 
+                } else {
+                    setGameState("HOME");
+                }
+            } else {
+                // ถ้ายังไม่เคยเล่นเลย ให้เริ่มที่หน้าเลือกตัวละคร
+                setGameState("HOME");
+            }
+        } catch (e) {
+            console.error("Resume Error:", e);
+            setGameState("HOME");
+        }
+    };
+    checkProgress();
+}, []);
+
+    useEffect(() => {
+        let timer = null;
+        if (gameState === "PLAYING" && isInputDone && timeLeft > 0) {
+            timer = setInterval(() => setTimeLeft(p => p - 1), 1000);
+        } else if (timeLeft === 0 && gameState === "PLAYING") setGameState("RESULT");
+        return () => clearInterval(timer);
+    }, [gameState, isInputDone, timeLeft]);
+    useEffect(() => {
+    if (hp <= 0 && gameState === "PLAYING") {
+        setGameState("RESULT"); // 💀 เลือดหมด = จบเกมทันที
+    }
+}, [hp, gameState]);
+useEffect(() => {
+    const checkUserProgress = () => {
+        const user = JSON.parse(localStorage.getItem("user")) || {};
+        const username = user.firstname || "guest";
+        const storageKey = `progress_${username}_${LESSON_KEY}`;
+        const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
+
+        // 🚫 ถ้าในชีตบอกว่าผ่านแล้ว (game: true) ไม่ให้เล่นซ้ำ
+        if (savedData.game === true) {
+            setGameState("ALREADY_WIN");
+            return;
+        }
+
+        // 🔄 ถ้าเคยเล่นค้างไว้: ดึงตัวละครเดิม + คะแนนเดิม + ด่านเดิมกลับมา
+        if (savedData.charId) {
+            const char = GUARDIANS.find(g => g.id === savedData.charId);
+            if (char) {
+                setSelectedChar(char);
+                if (savedData.score) setScore(savedData.score);
+                if (savedData.level) setCurrentLvlIdx(savedData.level - 1);
+                setGameState("MAP"); // ข้ามหน้าเลือกตัวละครไปหน้าแผนที่เลย
+            }
+        }
+    };
+    checkUserProgress();
+}, []);
 
 
 
-return (
-    <MainLayout>
-      <div className="alchemist-main-viewport" style={{ backgroundImage: `url(${bgForest})` }}>
-                {gameState === "ALREADY_WIN" && (
-          <div className="magical-overlay-v8">
-            <div className="result-card-v8 success-theme">
-              <h2 className="title-heading-v8">🏆 ภารกิจ Heap Sort สำเร็จแล้ว</h2>
-              <p className="result-subtitle">
-                คุณได้ผ่านเกม Heap Sort ครบทุกด่านแล้ว
-              </p>
-              <button
-                className="gold-action-btn-v8"
-                onClick={() => window.location.href = "/home"}
-              >
-                กลับหน้าหลัก
-              </button>
+    // ================= 5. Rendering (รวมครบทุกสถานะหน้าจอ) =================
+    return (
+        <MainLayout>
+            <div className="alchemist-viewport" style={{ backgroundImage: `url(${bgForest})` }}>
+                <div className="game-screen-center">
+
+                    {/* 🔮 หน้า HOME [cite: 124-131] */}
+                    {gameState === "HOME" && (
+                        <div className="magical-home-container-wood fade-in">
+                            <header className="home-header-capsule-wood">
+                                <div className="header-shine"></div>
+                                <h1 className="main-title-wood">✦ MAGICAL ALCHEMIST ✦</h1>
+                                <p className="sub-title-wood">เลือกผู้พิทักษ์เพื่อเริ่มภารกิจแปรธาตุ</p>
+                            </header>
+                            <div className="guardian-grid-row-wood">
+                                {GUARDIANS.map(g => (
+                                    <div key={g.id} className="guardian-card-wood" onClick={() => initGameData(g)}>
+                                        <div className="portrait-wrap-wood"><img src={g.img} alt={g.name} className="portrait-img-wood" /></div>
+                                        <div className="guardian-info-wood">
+                                            <div className="guardian-name-frame-wood"><h3 className="name-text-wood">{g.name}</h3></div>
+                                            <div className="ability-badge-wood"><span className="badge-icon">{g.icon}</span> {g.ability}</div>
+                                            <p className="description-text-wood">{g.desc}</p>
+                                            <div className="button-container-wood"><button className="start-mission-btn-wood">เริ่มภารกิจ 🪄</button></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 🗺️ หน้า MAP: แผนที่แนวราบ [cite: 132-137] */}
+                    {gameState === "MAP" && (
+                        <div className="magical-home-container-wood map-horizontal-view fade-in">
+                            <header className="home-header-capsule-wood map-header-adjust">
+                                <h1 className="main-title-wood">ALCHEMY WORLD</h1>
+                                <p className="sub-title-wood">เส้นทางแห่งผลึกมรกตศักดิ์สิทธิ์</p>
+                            </header>
+                            <div className="linear-map-container">
+                                <div className="magic-trail-line"></div>
+                                <div className="nodes-linear-row">
+                                    {STAGES.map((s, i) => {
+                                        const isLocked = i > currentLvlIdx; const isCurrent = i === currentLvlIdx;
+                                        return (
+                                            <div key={s.id} className="node-linear-item">
+                                                {i < STAGES.length - 1 && <div className={`linear-connector ${i < currentLvlIdx ? 'connector-active' : ''}`}></div>}
+                                                <div className={`node-orb ${isLocked ? 'orb-locked' : 'orb-unlocked'} ${isCurrent ? 'orb-active' : ''}`}
+                                                    onClick={() => !isLocked && (playSound(sfxClick), setGameState("RULES"))}>
+                                                    <div className="orb-inner"><span className="orb-icon">{isLocked ? "🔒" : s.icon}</span></div>
+                                                    <div className="orb-label-frame"><span className="orb-label-text">ด่าน {s.id}</span></div>
+                                                    <div className="orb-hover-info"><h5>{s.title}</h5><p>{isLocked ? "มนตรายังไม่คลาย..." : s.goal}</p></div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 📜 หน้า RULES: คัมภีร์กติกา [cite: 64-73] */}
+                    {gameState === "RULES" && (
+                        <div className="magical-home-container-wood fade-in">
+                            <header className="home-header-capsule-wood map-header-adjust"><h1 className="main-title-wood">ALCHEMY RULES</h1>
+                            <p className="sub-title-wood">กฎแห่งการเล่นแร่แปรธาตุ</p>
+                            </header>
+                            <div className="rules-scroll-wrapper">
+                                <div className="alchemy-rules-board-compact">
+                                    <div className="rules-title-frame"><h2 className="rules-stage-name">{STAGES[currentLvlIdx].title}</h2></div>
+                                    <div className="rules-content-area">
+                                        <h3 className="stage-goal-text">{STAGE_DETAILS[currentLvlIdx].goal}</h3>
+                                        <div className="rules-detail-box-v3">
+                                            <ul className="rules-checklist-v3">
+                                                <li><span className="star-bullet">✦</span><p>จัดเรียงตามหลัก <b>Heap Sort</b></p></li>
+                                                <li><span className="star-bullet">✦</span><p><b>คำแนะนำ:</b> {STAGE_DETAILS[currentLvlIdx].hint}</p></li>
+                                                <li><span className="star-bullet">✦</span><p><span className="highlight-label">วิธีจัด:</span> {STAGE_DETAILS[currentLvlIdx].note}</p></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <button className="start-mission-btn-wood1" onClick={() => setGameState("PLAYING")}>เริ่มการแปรธาตุ 🪄</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+{/* 🎮 หน้า PLAYING: Arena v15 */}
+{gameState === "PLAYING" && selectedChar && (
+    <div className="arena-container-v15 fade-in">
+        <div className="top-hud-capsule-v15">
+            <div className="hud-left-hero">
+                <div className="avatar-mini-v15"><img src={selectedChar.img} alt="hero" /></div>
+                <span className="hero-name-v15">{selectedChar.name}</span>
             </div>
-          </div>
-        )}
+            <div className="hud-right-stats"><span>⏳ {timeLeft}s | ✨ {score} | ❤️ {hp}</span></div>
+        </div>
 
-        {gameState === "HOME" && (
-          <div className="selection-overlay">
-            {/* Header Capsule - ปรับขนาดเล็กลงเพื่อให้พอดีจอ */}
-            <div className="capsule-header-v2">Magical Alchemist</div>
+        {/* ✅ โซนการเล่นหลัก: แบ่งซ้าย (กรอบแปรธาตุ) ขวา (แผ่นภารกิจ) */}
+        <div className="arena-play-zone" style={{ display: 'flex', gap: '25px', alignItems: 'flex-start', justifyContent: 'center', width: '100%' }}>
             
-            <div className="compact-char-grid">
-              {GUARDIANS.map(g => (
-                <div key={g.id} className="compact-card">
-                  <div className="card-inner-border">
-                    <div className="card-img-container">
-                      <img src={g.img} alt={g.name} className="char-img-small" />
-                    </div>
-                    
-                    <div className="card-content-v2">
-                       <h4 className="char-name-v2">{g.name}</h4>
-                       <p className="power-tag"><strong>{g.ability}</strong></p>
-                       <p className="power-desc">{g.desc}</p>
-                    </div>
+            {/* 🏺 ฝั่งซ้าย: กรอบแปรธาตุสีขาวหลัก */}
+            <div className={`alchemy-main-card-v15 ${!isInputDone ? 'array-input-phase' : ''}`} style={{ margin: '0' }}>
+                <h2 className="phase-title">🏺 {STAGES_DATA[currentTaskIdx].title}</h2>
 
-                    <button 
-                      className="btn-select-v2" 
-                      onClick={() => { 
-                        setSelectedChar(g);   // ✅ บันทึกตัวละครลง State
-                        initGameData(g);      // ✅ เรียกใช้ชื่อฟังก์ชันให้ตรงกัน
-                        setGameState("MAP");  // ✅ เปลี่ยนหน้าไปแผนที่
-                      }}
-                    >
-                      เลือกตัวละคร
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-
-          {/* --- หน้าแผนที่ด่าน (Stage Nodes) ตามภาพ 02.26.54.png --- */}
-          {gameState === "MAP" && (
-            <div className="magical-overlay-v8">
-              <div className="map-panel-v9">
-                <h2 className="map-title-v9">Stage Nodes</h2>
-                
-                <div className="map-grid-v9">
-                  {STAGES.map((s, i) => {
-                    const isUnlocked = i <= currentLvlIdx;
-                    const isCurrent = i === currentLvlIdx;
-                    
-                    return (
-                      <div 
-                        key={s.id} 
-                        className={`map-card-v9 ${isUnlocked ? 'unlocked' : 'locked'} ${isCurrent ? 'active' : ''}`}
-                        onClick={() => isUnlocked && setGameState("RULES")}
-                      >
-                        <div className="node-circle-v9">
-                          {/* แสดงไอคอนตามสถานะ: ถ้าล็อคโชว์กุญแจ ถ้าปลดแล้วโชว์ไอคอนด่าน */}
-                          {!isUnlocked ? (
-                            <span className="lock-icon-v9">🔒</span>
-                          ) : (
-                            <span className="stage-icon-v9">{s.icon}</span>
-                          )}
+                {!isInputDone ? (
+                    /* --- ช่วงกรอกข้อมูล --- */
+                    <div className="array-input-zone-v1 fade-in">
+                        <p className="sub-title-wood" style={{ color: '#2e7d32', marginBottom: '15px' }}>
+                            กรอกมวลสาร 7 ชนิดลงในแถวอาร์เรย์เพื่อเตรียมสร้าง Heap
+                        </p>
+                        <div className="array-shelf">
+                            {inputArray.map((v, i) => (
+                                <input key={`arr-${i}`} ref={el => inputRefs.current[i] = el}
+                                    className="array-slot-input" value={v}
+                                    onChange={(e) => handleArrayInputChange(i, e.target.value)}
+                                    onKeyDown={(e) => handleKeyDown(e, i)}
+                                    placeholder="?"
+                                />
+                            ))}
                         </div>
-                        <div className="node-info-v9">
-                          <p className="node-label-v9">ด่าน {s.id}</p>
-                          <p className="node-name-v9">{s.title}</p>
-                          <p className="node-sub-v9">{s.sub}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-            {/* --- หน้ากติกา (Rules Screen) --- */}
-            {gameState === "RULES" && (
-              <div className="magical-overlay-v8">
-                <div className="rules-panel-v9">
-                  {/* แถบหัวขวบนขนาดเล็ก */}
-                  <div className="rules-tag-v9">ภารกิจนักแปรธาตุ</div>
-                  
-                  <div className="rules-content-v9">
-                    <div className="rules-header-v9">
-                      <span className="rules-icon-v9">{stage.icon}</span>
-                      <div className="rules-title-group-v9">
-                        <h3>ด่านที่ {stage.id} : {stage.title}</h3>
-                        <small>{stage.sub}</small>
-                      </div>
+                        <button className="action-btn-v15" onClick={manifestOrbs} style={{ marginTop: '25px' }}>
+                            อัญเชิญมวลสารลงต้นไม้ ✨
+                        </button>
                     </div>
-
-                    <div className="rules-body-v9">
-                      <div className="rules-section-v9">
-                        <h4>🎯 เป้าหมาย</h4>
-                        <p>{stage.goal}</p>
-                      </div>
-                      
-                      <div className="rules-divider-v9"></div>
-                      
-                      <div className="rules-section-v9">
-                        <h4>📜 วิธีการเล่น</h4>
-                        {/* แยกบรรทัดกติกาด้วยการใช้ newline (\n) */}
-                        {stage.rules.split('\n').map((line, index) => (
-                          <p key={index}>✨ {line}</p>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* ปุ่มเริ่มเล่น */}
-                    <button 
-                      className="gold-action-btn-v8 rules-start-btn-v9" 
-                      onClick={() => setGameState("PLAYING")}
-                    >
-                      เริ่มร่ายเวท! 🪄
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
- 
-            <div className="alchemist-main-viewport">
-  {gameState === "PLAYING" && selectedChar && (
-    <div className="arena-layout-v11">
-      
-      {/* 🟢 1. HUD: แสดงข้อมูลตัวละคร, เวลา, คะแนน และหัวใจ (คงเดิม) */}
-      <div className="hud-top-capsule-v12">
-        <div className="hud-portrait-v11">
-          <img src={selectedChar.img} alt="Guardian" />
-        </div>
-        <div className="hud-content-v12">
-          <span className="char-name-badge">{selectedChar.name}</span>
-          <div className="stat-group">
-            <span className="timer-text">⏰ {timeLeft}s</span>
-            <span className="score-text">✨ {score}</span>
-            <span className="hp-hearts">HP: {'❤️'.repeat(hp)}</span>
-          </div>
-        </div>
-      </div>
-
-      {!isInputDone && (currentLvlIdx === 0 || currentLvlIdx === 2) ? (
-        
-        /* 📜 หน้ากรอกมวลสาร (Alchemy Input Zone) */
-        <div className="alchemy-input-zone fade-in">
-          <div className="alchemy-board-v13">
-            <h2 className="alchemy-title-v13">🏺 {currentLvlIdx === 0 ? "ผสมมวลสารต้นกำเนิด" : "อัญเชิญมวลสารสะท้อน (Min-Heap)"}</h2>
-            <div className="orb-input-group">
-              {inputArray.map((v, i) => (
-                <input 
-                  key={i} type="text" className="magic-orb-input" 
-                  ref={el => inputRefs.current[i] = el}
-                  value={v} onChange={e => handleInputChange(i, e.target.value)}
-                  onKeyDown={e => handleKeyDown(e, i)} placeholder="?" 
-                />
-              ))}
-            </div>
-            <div className="input-instruction-v13">กรอกมวลสาร 7 ชนิด เพื่อเตรียมเข้าสู่ภารกิจด่านที่ {currentLvlIdx + 1}</div>
-            <button className="alchemy-summon-btn-v14" onClick={manifestOrbs}>
-              ร่ายเวทอัญเชิญมวลสาร ✨
-            </button>
-          </div>
-        </div>
-      ) : (
-        /* 🌳 3. ส่วนการเล่นเกม: ปรับ Layout ให้เป๊ะตามภาพที่ 2 */
-        <div className="magic-board-card fade-in">
-          
-          {/* ✅ ชื่อด่านด้านบนกระดาน */}
-          <h3 className="lvl-label">
-            🌱 ด่านที่ {currentLvlIdx + 1} : {currentLvlIdx === 0 ? "Build Max Heap (ปลุกพลังรากไม้)" : "Heap Sort Extraction (เก็บเกี่ยวผลผลิต)"}
-          </h3>
-
-          {/* 🌾 รางเก็บมวลสารที่จัดเรียงแล้ว (Sorted Array)] */}
-            {currentLvlIdx >  0 && (
-            <div className="array-shelf-top fade-in">
-              <div className="shelf-label-v2">🌾 คลังมวลสารที่จัดเรียงแล้ว </div>
-              <div className="shelf-row-horizontal">
-                {sortedArray.map((v, i) => (
-                  <div key={i} className={`shelf-slot-v2 ${v !== null ? 'harvested' : ''}`}>
-                    {v}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 🌳 5. พื้นที่ต้นไม้ (กลางกระดาน) - ล็อกพิกัดให้เส้นตรงเลขเป๊ะ */}
-          <div className="tree-rendering-v11" style={{ height: '280px', position: 'relative' }}>
-            <svg className="connector-v11" style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0, pointerEvents: 'none' }}>
-              {/* พิกัดใหม่: y=25 (Root), y=90 (L1), y=160 (L2) */}
-              {heap.length > 1 && <line x1="50%" y1="25" x2="32%" y2="90" stroke="white" strokeWidth="2.5" opacity="0.6" />}
-              {heap.length > 2 && <line x1="50%" y1="25" x2="68%" y2="90" stroke="white" strokeWidth="2.5" opacity="0.6" />}
-              {heap.length > 3 && <line x1="32%" y1="90" x2="23%" y2="160" stroke="white" strokeWidth="2.5" opacity="0.6" />}
-              {heap.length > 4 && <line x1="32%" y1="90" x2="41%" y2="160" stroke="white" strokeWidth="2.5" opacity="0.6" />}
-              {heap.length > 5 && <line x1="68%" y1="90" x2="59%" y2="160" stroke="white" strokeWidth="2.5" opacity="0.6" />}
-              {heap.length > 6 && <line x1="68%" y1="90" x2="77%" y2="160" stroke="white" strokeWidth="2.5" opacity="0.6" />}
-            </svg>
-
-            {heap.map((val, idx) => (
-              <div 
-                key={`${idx}-${val}`} 
-                className={`orb-v11-v2 ${violationIdx === idx ? 'violated-v2' : ''} ${selectedIdx === idx ? 'picked-v2' : ''}`}
-                style={{ 
-                    left: treePos[idx].x, 
-                    top: treePos[idx].y, 
-                    position: 'absolute' // 👈 ล็อกไว้เพื่อไม่ให้เลขเรียงแนวดิ่ง
-                }}
-                onClick={() => handleNodeClick(idx)}
-              >
-                {val}
-              </div>
-            ))}
-          </div>
-
-          {/* ✍️ 6. ช่องคำอธิบาย (Description Box): ตามภาพที่ 2 */}
-          <div className="description-box-v12">
-            <span className="desc-label">คำอธิบาย : </span>
-            <div className="desc-text-display">
-              {getInstructionText()}
-            </div>
-          </div>
-
-          {/* 🕹️ 7. ปุ่มดำเนินการขนาดใหญ่ (Action Footer) */}
-          <div className="action-footer-v12">
-            {currentLvlIdx === 0 ? (
-              /* --- ด่าน 1: ตรวจสอบ Max-Heap --- */
-              <>
-                {!isVerified ? (
-                  <button className="gold-action-btn-huge" onClick={handleManualCheck}>
-                    ตรวจสอบ Max-Heap 🌳
-                  </button>
                 ) : (
-                  <button className="gold-action-btn-huge success" onClick={processHeapAction}>
-                    สร้างฮีพสำเร็จ! ไปต่อ ⮕
-                  </button>
+                    /* --- ช่วงต้นไม้แปรธาตุ --- */
+                    <div className="tree-phase-v1 fade-in">
+                        {/* 🏺 แท่นวางมวลสาร (ด่าน 2 และ 3) */}
+                        {currentTaskIdx >= 2 && (
+                            <div className="sorting-shelf-v15 fade-in" style={{ marginTop: '20px', marginBottom: '20px' }}>
+                                <p style={{ fontSize: '0.9rem', color: '#2e7d32', fontWeight: 'bold' }}>
+                                    {currentTaskIdx === 2 
+                                        ? "✨ มวลสารที่เรียงลำดับแล้ว (น้อย → มาก):" 
+                                        : "✨ มวลสารที่เรียงลำดับแล้ว (มาก → น้อย):"}
+                                </p>
+                                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
+                                    {sortedArray.map((num, i) => (
+                                        <div key={i} className={`magic-slot ${num ? 'filled' : ''}`} style={{
+                                            width: '50px', height: '50px', border: '3px solid #8d6e63',
+                                            borderRadius: '12px', display: 'flex', alignItems: 'center',
+                                            justifyContent: 'center',
+                                            background: num ? '#2e7d32' : '#f5f5f5',
+                                            color: num ? '#fff' : '#ccc', fontWeight: 'bold'
+                                        }}>
+                                            {num || "?"}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 🌳 พื้นที่ต้นไม้และเส้นเชื่อม */}
+                        <div className="tree-area-v15" style={{ height: '380px', position: 'relative' }}>
+                            <svg style={{ position: 'absolute', width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}>
+    {/* ✅ ใช้พิกัด x, y จาก treePos ตรงๆ (ลบหน่วย px ออกจาก attribute) */}
+    {heap[1] !== null && <line x1={treePos[0].x} y1={treePos[0].y} x2={treePos[1].x} y2={treePos[1].y} stroke="#8d6e63" strokeWidth="4" />}
+    {heap[2] !== null && <line x1={treePos[0].x} y1={treePos[0].y} x2={treePos[2].x} y2={treePos[2].y} stroke="#8d6e63" strokeWidth="4" />}
+
+    {heap[3] !== null && <line x1={treePos[1].x} y1={treePos[1].y} x2={treePos[3].x} y2={treePos[3].y} stroke="#8d6e63" strokeWidth="4" />}
+    {heap[4] !== null && <line x1={treePos[1].x} y1={treePos[1].y} x2={treePos[4].x} y2={treePos[4].y} stroke="#8d6e63" strokeWidth="4" />}
+    
+    {heap[5] !== null && <line x1={treePos[2].x} y1={treePos[2].y} x2={treePos[5].x} y2={treePos[5].y} stroke="#8d6e63" strokeWidth="4" />}
+    {heap[6] !== null && <line x1={treePos[2].x} y1={treePos[2].y} x2={treePos[6].x} y2={treePos[6].y} stroke="#8d6e63" strokeWidth="4" />}
+</svg>
+
+                            {heap.map((val, idx) => (
+                                val !== null && (
+                                    <div key={idx} 
+                                        className={`node-pos-static ${violationIdx === idx ? 'error' : ''} ${(selectedIdx === idx || swappingPair.includes(idx)) ? 'selected' : ''}`}
+                                        style={{ left: treePos[idx].x, top: treePos[idx].y, position: 'absolute', cursor: 'pointer' }}
+                                        onClick={() => !isVerified && handleNodeClick(idx)} 
+                                    >
+                                        <span className="orb-val-static">{val}</span>
+                                    </div>
+                                )
+                            ))}
+                        </div>
+
+                        {/* 🕹️ ปุ่มควบคุมการเล่น */}
+                        <div className="footer-area-v15" style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                            {(currentTaskIdx <= 1 || isVerified) ? (
+                                !isVerified ? (
+                                    <button className="action-btn-v15" onClick={handleManualCheck}>ตรวจสอบความสมดุล 🌳</button>
+                                ) : (
+                                    <button className="action-btn-v15 next" onClick={() => {
+    playSound(sfxClick); 
+    setIsVerified(false);
+    setViolationIdx(null);
+    
+    const resetForSort = () => {
+        setHp(selectedChar.hp); 
+        setTimeLeft(selectedChar.time); 
+        setSortedArray(new Array(7).fill(null)); 
+        setIsInputDone(true);
+    };
+
+    if (currentTaskIdx === 0) { 
+        // ✅ 1. จบด่าน 1.1 (Max) -> ไป 1.2 (Min) 
+        // เปิดรางให้กรอกใหม่ตามคำสั่งครับ
+        setSavedMaxHeap([...heap]); 
+        setCurrentTaskIdx(1); 
+        
+        setHeap(new Array(7).fill(null));     // ล้างต้นไม้เก่า
+        setInputArray(new Array(7).fill("")); // ✅ เปิดรางให้กรอกมวลสารใหม่
+        setIsInputDone(false);                // ✅ ย้อนกลับไปหน้ากรอกเลข
+        setHp(selectedChar.hp);               // คืนเลือดเต็ม
+        // ไม่ต้องเด้ง RULES คั่น ตามที่เคยตกลงกันไว้ครับ
+    } 
+    else if (currentTaskIdx === 1) {
+        // ✅ 2. จบด่าน 1.2 (Min) -> ไปหน้ากติกา ด่าน 2
+        // ใช้ currentScore เพื่อไม่ให้คะแนนเก่า 2300 มาปนกับรอบนี้
+        saveProgressToStorage({ currentScore: score, level: 2 }); 
+
+        setSavedMinHeap([...heap]);
+        setCurrentTaskIdx(2); 
+        setCurrentLvlIdx(1); 
+        resetForSort();
+        setHeap([...savedMaxHeap]);
+        setViolationIdx(checkHeapProperty(savedMaxHeap, "SORT_ASC"));
+        setGameState("RULES"); 
+    } 
+    else if (currentTaskIdx === 2) {
+        // ✅ 3. จบด่าน 2 -> ไปหน้ากติกา ด่าน 3
+        saveProgressToStorage({ currentScore: score, level: 3 });
+
+        setCurrentTaskIdx(3); 
+        setCurrentLvlIdx(2); 
+        resetForSort();
+        setHeap([...savedMinHeap]);
+        setViolationIdx(checkHeapProperty(savedMinHeap, "SORT_DESC"));
+        setGameState("RULES");
+    }
+    else if (currentTaskIdx === 3) {
+        // ✅ 4. จบด่าน 3 -> บันทึกคะแนนจริงที่เล่นได้รอบนี้ (เช่น 2150)
+        saveProgressToStorage({ game: true, score: score }); 
+        setGameState("RESULT"); 
+        playSound(sfxWin);
+    }
+}}>
+    {currentTaskIdx === 3 ? "ดูผลลัพธ์ 🏆" : "ต่อไป ⮕"}
+</button>
+                                )
+                            ) : (
+                                <button className="action-btn-v15" onClick={handleExtraction}>สกัดสาร ✨</button>
+                            )}
+                        </div>
+                    </div>
                 )}
-              </>
-            ) : (
-              /* --- ด่าน 2: สกัดมวลสาร (Heap Sort) --- */
-              <button className="gold-action-btn-huge extract" onClick={handleExtractionCheck}>
-                สกัดมวลสาร (Heap Sort)
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+            </div>
+
+            {/* 📜 ฝั่งขวา: แผ่นศิลาภารกิจ */}
+            <div className="mission-sidebar-v15">
+                <div className={`tablet-refined ${violationIdx !== null ? 'warning-active' : ''}`}>
+                    <div className="tablet-inner-border">
+                        <header className="tablet-header">ภารกิจ</header>
+                        <div className="tablet-divider"></div>
+                        <div className="tablet-body">
+                            <p className="goal-text">{missionStatus}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> {/* สิ้นสุด arena-play-zone */}
     </div>
-  )}
-</div>
+)}
 
-        {/* --- 🏆 RESULT --- */}
-        {/* --- 🏆 RESULT: แยก Success และ Failure --- */}
-{gameState === "RESULT" && selectedChar && (
-  <div className="magical-overlay-v8">
-    {/* ตรวจสอบว่าชนะหรือแพ้ */}
-    {hp > 0 && timeLeft > 0 ? (
-      /* 🎊 กรณีสำเร็จ (Success) */
-      <div className="result-card-v8 success-theme">
-        <h2 className="title-heading-v8" style={{ color: '#d4af37' }}>✨ ภารกิจสำเร็จ ✨</h2>
-        <p className="result-subtitle">ท่านได้ก้าวเข้าสู่ตำแหน่ง "มหาปราชญ์แห่งฮีพ"</p>
+{gameState === "RESULT" && (
+  <div className="magical-home-container-wood result-view-clean fade-in">
+    
+    {/* ✨ เอฟเฟกต์ละอองเวทมนตร์ลอยรอบๆ */}
+    <div className="magic-particles"></div>
+
+    <div className="victory-medal-crest">
+      {/* 🏆 ส่วนยอดดวงตรา */}
+      <div className="medal-crown">
+        <span className="crown-icon">👑</span>
+      </div>
+
+      <div className="medal-body">
+        <h2 className="victory-text-glow">{currentTaskIdx === 3 && hp > 0 ? "MISSION CLEAR" : "MISSION FAILED"}</h2>
         
-        <div className="result-img-circle-v8 gold-glow">
-          <img src={selectedChar.img} alt="Guardian" />
-        </div>
-        
-        <div className="score-container-v8">
-          <p>คะแนนรวมมวลสาร</p>
-          <p className="final-score-v8">{score}</p>
+        {/* 💎 วงล้อคะแนนแบบกระจกเวทมนตร์ */}
+        <div className="score-glass-circle">
+          <div className="score-inner-glow"></div>
+          <span className="score-label-mini">TOTAL SCORE</span>
+          <h1 className="score-number-big">{score.toLocaleString()}</h1>
         </div>
 
-        <div className="star-rating">⭐⭐⭐⭐⭐</div>
-        
-        <button className="gold-action-btn-v8" onClick={() => window.location.reload()}>
-          🔄 กลับหน้าหลัก
+        <div className="victory-rank-text">
+                    {currentTaskIdx === 3 && hp > 0 
+                        ? (score >= 2000 ? "💎 จอมเวทย์ระดับตำนาน" : "🌟 นักแปรธาตุขั้นสูง")
+                        : `สิ้นฤทธิ์ที่ด่าน: ${STAGES_DATA[currentTaskIdx].title}`}
+                </div>
+      </div>
+
+      {/* 🔄 ปุ่มกดสไตล์มินิมอลแต่หรู */}
+      <div className="button-container-wood result-btn-box">
+        <button className="start-mission-btn-wood restart-btn-gold" onClick={() => window.location.reload()}>
+          🔄 กลับสู่หน้าหลัก
         </button>
       </div>
-    ) : (
-      /* 💀 กรณีล้มเหลว (Failure) */
-      <div className="result-card-v8 failure-theme">
-        <h2 className="title-heading-v8" style={{ color: '#c62828' }}>💀 ภารกิจล้มเหลว</h2>
-        <p className="result-subtitle">
-          {timeLeft === 0 ? "เวลาแห่งมนตราสิ้นสุดลง..." : "พลังชีวิตของท่านสูญสิ้น..."}
-        </p>
-        
-        <div className="result-img-circle-v8 shadow-glow" style={{ filter: 'grayscale(1)' }}>
-          <img src={selectedChar.img} alt="Guardian" />
-        </div>
-        
-        <div className="score-container-v8">
-          <p>คะแนนที่เก็บรวบรวมได้</p>
-          <p className="final-score-v8" style={{ color: '#555' }}>{score}</p>
-        </div>
-
-        <div className="star-rating" style={{ opacity: 0.3 }}>⭐⭐⭐</div>
-        
-        <button className="gold-action-btn-v8" style={{ background: '#555' }} onClick={() => window.location.reload()}>
-          🔄 ลองใหม่อีกครั้ง
-        </button>
-      </div>
-    )}
+    </div>
   </div>
 )}
 
-      </div>
-    </MainLayout>
-  );
+{/* 🏆 หน้า ALREADY_WIN: โชว์เมื่อจอมเวทย์เคยพิชิตภารกิจไปแล้ว */}
+{gameState === "ALREADY_WIN" && (
+    <div className="magical-home-container-wood result-view-clean fade-in">
+        
+        {/* ✨ เอฟเฟกต์ละอองเวทมนตร์ลอยรอบๆ */}
+        <div className="magic-particles"></div>
+
+        <div className="victory-medal-crest">
+            {/* 🏆 ส่วนยอดดวงตรา */}
+            <div className="medal-crown">
+                <span className="crown-icon">👑</span>
+            </div>
+
+            <div className="medal-body">
+                <h2 className="victory-text-glow1">ท่านได้ศึกษาศาสตร์การแปรธาตุครบถ้วนแล้ว</h2>
+
+                <div className="victory-rank-text">
+                    {/* แสดงระดับความสำเร็จสูงสุดที่เคยทำไว้ */}
+                    ระดับ: {score >= 2000 ? "💎 จอมเวทย์ระดับตำนาน" : "🌟 นักแปรธาตุขั้นสูง"}
+                </div>
+            </div>
+
+            {/* 🔄 ปุ่มกดสไตล์มินิมอลแต่หรู */}
+            <div className="button-container-wood result-btn-box">
+                <button className="start-mission-btn-wood restart-btn-gold" onClick={() => navigate("/home")}>
+                    🔄 กลับสู่หน้าหลัก
+                </button>
+            </div>
+        </div>
+    </div>
+)}
+                </div>
+                {/* 🧧 กล่องแจ้งเตือนภายในเกม */}
+{toast.show && (
+    <div className="game-toast-v15">
+        <div className="toast-content">
+            <span className="toast-icon">⚠️</span>
+            <p>{toast.msg}</p>
+        </div>
+    </div>
+)}
+            </div>
+        </MainLayout>
+    );
 }

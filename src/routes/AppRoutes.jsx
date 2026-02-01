@@ -11,8 +11,8 @@ import NotFound from "../pages/NotFound"; // ✅ ตรวจสอบไฟล�
 
 import SelectionSort from "../pages/SelectionSort";
 import InsertionSort from "../pages/InsertionSort";
-/*
 import BubbleSort from "../pages/BubbleSort";
+/*
 import HeapSort from "../pages/HeapSort";
 import QuickSort from "../pages/QuickSort";
 import MergeSort from "../pages/MergeSort";
@@ -63,6 +63,7 @@ export default function AppRoutes() {
       {/* บทเรียน */}
       <Route path="/selection-sort" element={<SelectionSort />} />
       <Route path="/insertion-sort" element={<InsertionSort />} />
+      <Route path="/bubble-sort" element={<BubbleSort />} />
 
 
       {/* แบบทดสอบก่อนเรียน */}
