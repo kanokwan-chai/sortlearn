@@ -1,0 +1,565 @@
+/* =========================================
+   QUICK SORT: THE MINING SAGA (ULTIMATE UI)
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700;900&display=swap');
+
+:root {
+    --gem-blue: #00e5ff;
+    --gem-pink: #ff4081;
+    --gold: #ffd700;
+}
+
+/* 🏔️ ปรับแก้พื้นหลังไม่ให้ใหญ่เกินไป */
+.mining-app-container {
+    height: 100vh; /* ล็อกความสูงเท่าหน้าจอพอดี */
+    width: 100vw;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #fff;
+    font-family: 'Kanit', sans-serif;
+    overflow: hidden; /* ป้องกันการเลื่อนหน้าจอหลัก */
+    position: relative;
+}
+
+/* 🌑 Overlay ปรับพื้นหลังให้อ่อนลงและนิ่งขึ้น */
+.mining-app-container::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8));
+    z-index: 1;
+}
+
+.content-layer {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 💊 HUD Capsule */
+.hud-capsule {
+    margin-top: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--gem-blue);
+    border-radius: 50px;
+    padding: 10px 30px;
+    display: flex;
+    gap: 30px;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+}
+
+/* 👤 หน้าเลือกตัวละคร (จัดกึ่งกลางค่อนล่าง) */
+/* --- ปรับหน้าเลือกตัวละครให้สมดุล (Middle-Bottom) --- */
+
+.centered-selection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;   /* กึ่งกลางแนวนอน */
+    justify-content: center; /* กึ่งกลางแนวตั้ง */
+    width: 100%;
+    max-width: 100vw;
+    margin: 0 auto;        /* บังคับให้อยู่กลาง */
+    padding: 40px 20px;
+    margin-top: -50px;
+}
+
+.neon-title {
+    /* 1. ขนาดที่พอดี ไม่ใหญ่จนคับจอ */
+    font-size: 3rem;
+    font-weight: 900;
+    margin-bottom: 40px;
+    letter-spacing: 2px; /* ลดช่องว่างให้อ่านง่ายขึ้น */
+    text-transform: uppercase;
+    text-align: center;
+    
+    /* 2. ใช้สีขาวนวลตัดกับเทาเข้มเพื่อให้ดูมีมิติแบบแผ่นเหล็ก/หิน */
+    background: linear-gradient(to bottom, #ffffff 0%, #e0e0e0 50%, #bdbdbd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    /* 3. เลิกใช้นีออน เปลี่ยนเป็นเงาคมๆ (Hard Shadow) ให้ดูจึ้งแบบมีน้ำหนัก */
+    /* ชั้นที่ 1: ขอบตัวอักษร | ชั้นที่ 2-3: มิติความหนา | ชั้นที่ 4: เงาตกกระทบพื้น */
+    filter: drop-shadow(0 1px 0 #999) 
+            drop-shadow(0 2px 0 #888) 
+            drop-shadow(0 3px 0 #777) 
+            drop-shadow(0 10px 15px rgba(0, 0, 0, 0.8));
+
+    /* 4. ใส่กรอบจางๆ ล้อมรอบเพื่อให้แยกจากพื้นหลังได้ขาด */
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 10px 40px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.neon-title1 {
+    /* 1. ขนาดเล็กลงเพื่อเป็นหัวข้อรอง (Sub-title) */
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-top: -10px; /* เขยิบขึ้นไปหาหัวข้อหลักเล็กน้อย */
+    margin-bottom: 30px;
+    letter-spacing: 1px;
+    text-align: center;
+    
+    /* 2. สีเทาเงิน Metallic อ่านง่ายชัดเจน */
+    background: linear-gradient(to bottom, #ffffff 0%, #e0e0e0 50%, #bdbdbd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    /* 3. เงาคมชัดแบบ 3D (Hard Shadow) ไม่ฟุ้งกระจาย */
+    /* เน้นให้ตัวหนังสือดูหนาและลอยออกมาจากพื้นหลัง */
+    filter: drop-shadow(0 1px 0 #78909c) 
+            drop-shadow(0 2px 0 #546e7a) 
+            drop-shadow(0 8px 10px rgba(0, 0, 0, 0.7));
+
+    /* 4. เพิ่มขอบจางๆ ให้ดูคมกริบ */
+    -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.2);
+    
+    /* 5. กรอบพื้นหลังแบบ Glassmorphism จางๆ เพื่อความอ่านง่าย */
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 5px 30px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: inline-block; /* ให้กรอบกว้างเท่าตัวหนังสือ */
+}
+
+.char-grid-balanced {
+    display: flex;
+    gap: 50px;
+    justify-content: center;
+    align-items: flex-end; /* ให้ตัวละครยืนบนฐานเดียวกัน */
+    max-width: 1500px;
+}
+
+.mining-char-card {
+    background: rgba(0, 0, 0, 0.5); /* พื้นหลังเข้มขึ้นเพื่อความจึ้ง */
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    padding: 25px;
+    width: 240px; /* ขนาดการ์ดกำลังดี ไม่ใหญ่ล้น */
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.mining-char-card:hover {
+    transform: translateY(-20px) scale(1.05);
+    border-color: var(--gem-blue);
+    box-shadow: 0 15px 40px rgba(0, 229, 255, 0.3);
+    background: rgba(0, 229, 255, 0.05);
+}
+
+.mining-char-card img {
+    height: 200px; /* คุมความสูงรูป */
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.7));
+}
+
+.name-tag {
+    margin-top: 15px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 10px;
+}
+
+.name-tag .en {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #fff;
+    margin: 0;
+}
+
+.name-tag .th {
+    font-size: 0.95rem;
+    color: var(--gem-blue);
+    font-weight: bold;
+    margin-top: 2px;
+}
+
+/* 📜 Modal กติกาแบบ Scrollable (ปุ่มไม่หาย) */
+.rules-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 2000;
+}
+
+.rules-card-fixed {
+    background: #111;
+    border: 2px solid var(--gem-blue);
+    border-radius: 30px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh; /* ล็อกความสูงกติกา */
+    display: flex;
+    flex-direction: column;
+}
+
+.rules-body {
+    padding: 30px;
+    overflow-y: auto; /* เลื่อนข้างในได้ */
+    flex: 1;
+}
+
+.rules-footer {
+    padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    text-align: center;
+}
+
+/* 🎮 Diagram Style */
+.stone {
+    width: 60px; height: 75px;
+    background: #2c3e50;
+    border: 2px solid #546e7a;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; font-weight: bold;
+    transition: 0.3s;
+}
+
+.stone.pivot { background: var(--gold); color: #000; box-shadow: 0 0 20px var(--gold); }
+.stone.sorted { background: #00c853; border-color: #b9f6ca; }
+
+/* 🚚 Map Track */
+.horizontal-track {
+    position: relative;
+    width: 80%;
+    height: 10px;
+    background: rgba(255,255,255,0.1);
+    margin-top: 100px;
+    border-radius: 10px;
+}
+
+.truck-icon {
+    position: absolute;
+    top: -50px;
+    font-size: 3rem;
+    transition: 1.5s ease-in-out;
+}
+/* --- ปรับขนาดการ์ดให้ใหญ่ขึ้นเพื่อความชัดเจน (Balanced Selection) --- */
+
+.mining-char-card.premium-card {
+    /* ปรับความกว้างให้พอดีกับการอ่าน (ประมาณ 250px-260px) */
+    width: 250px; 
+    background: rgba(15, 15, 25, 0.95); /* เพิ่มความเข้มให้อ่านตัวอักษรง่ายขึ้น */
+    border-radius: 25px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 10px;
+    margin-top: 15px;
+}
+
+/* --- ปรับรูปตัวละครให้เด่นชัด --- */
+.card-image-wrapper {
+    height: 120px; /* เพิ่มความสูงรูปภาพให้เห็นรายละเอียดตัวละคร */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 20px;
+}
+
+.card-image-wrapper img {
+    height: 180px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.8));
+}
+
+/* --- ขยายขนาดตัวอักษรให้อ่านง่าย --- */
+.card-content {
+    padding: 5px 10px;
+    text-align: center;
+}
+
+.name-tag .en {
+    font-size: 1.4rem; /* ขนาดใหญ่ชัดเจน */
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 2px;
+}
+
+.name-tag .th {
+    font-size: 0.95rem;
+    color: var(--char-color);
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.char-desc {
+    font-size: 0.85rem; /* ขนาดมาตรฐานที่อ่านง่ายบนทุกหน้าจอ */
+    color: #e0e0e0;
+    line-height: 1.5;
+    min-height: 45px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    padding-top: 12px;
+    margin-bottom: 15px;
+}
+
+/* --- ปรับขนาด Badge และหัวใจ --- */
+.skill-badge {
+    padding: 5px 15px !important;
+    font-size: 0.85rem !important;
+    font-weight: 800 !important;
+}
+
+.hp-indicator {
+    margin-top: 10px !important;
+    font-size: 1.1rem; /* หัวใจใหญ่ขึ้น */
+}
+
+/* =========================================
+   MINING PATH (MAP) - ปรับปรุงใหม่
+   ========================================= */
+
+/* 🛤️ รางรถไฟแนวนอน */
+.horizontal-track {
+    position: relative;
+    width: 80%;
+    max-width: 800px;
+    height: 14px; /* เพิ่มความหนาของรางเล็กน้อย */
+    background: linear-gradient(to bottom, #555, #333); /* สีรางเหล็กเข้มๆ */
+    border-radius: 10px;
+    border: 2px solid #666;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    /* ลด margin-top เพื่อดันเส้นขึ้นบน */
+    margin-top: 60px; 
+    display: flex;
+    align-items: center;
+}
+
+/* 🛒 รถขนแร่ (Mine Cart) - แบบสมจริง */
+.mine-cart-real {
+    position: absolute;
+    width: 100px;  /* กำหนดขนาดรถให้เหมาะสม */
+    height: auto;
+    
+    top: 50%; /* จัดให้อยู่กึ่งกลางตามแนวตั้งของราง */
+    /* หัวใจสำคัญ: ดึงขึ้นไปด้านบนเพื่อให้ล้อรถวางทับบนรางพอดี 
+       คุณอาจต้องปรับค่า Y (-65%) ให้เข้ากับรูปรถของคุณ
+    */
+    transform: translate(-50%, -65%); 
+    
+    transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); /* เอฟเฟกต์การเคลื่อนที่สมูทๆ */
+    z-index: 10; /* ให้รถอยู่บนสุด ทับรางและปุ่ม */
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.7)); /* เงารถให้ดูมีมิติ */
+}
+
+/* 📍 คอนเทนเนอร์ของจุดเช็คพอยท์ */
+.track-node-container {
+    position: absolute;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* จัดให้ปุ่มอยู่กึ่งกลางราง */
+    top: 50%; 
+    transform: translate(-50%, -50%); 
+    z-index: 5;
+}
+
+/* 🔘 ปุ่มจุดเช็คพอยท์ (Node) */
+.stone.track-node {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    border: 3px solid #777;
+    background: #444;
+    color: #aaa;
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: not-allowed;
+    transition: all 0.3s;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* สถานะด่านที่ผ่านแล้ว */
+.stone.track-node.sorted {
+    background: #00e676; /* สีเขียวสดใส */
+    border-color: #b9f6ca;
+    color: #000;
+    box-shadow: 0 0 20px #00e676;
+}
+
+/* สถานะด่านปัจจุบัน (Active) */
+.stone.track-node.pivot {
+    background: var(--gem-blue); /* สีฟ้าตามธีม */
+    border-color: #fff;
+    color: #000;
+    cursor: pointer;
+    transform: scale(1.2); /* ขยายใหญ่ขึ้น */
+    box-shadow: 0 0 30px var(--gem-blue);
+    z-index: 6;
+    animation: pulseNode 1.5s infinite alternate;
+}
+
+@keyframes pulseNode {
+    from { box-shadow: 0 0 20px var(--gem-blue); }
+    to { box-shadow: 0 0 40px var(--gem-blue), 0 0 10px #fff; }
+}
+
+/* 🏷️ ชื่อด่านด้านล่าง */
+.node-label {
+    margin-top: 45px; /* ระยะห่างจากปุ่ม */
+    font-size: 1rem;
+    color: #ccc;
+    text-align: center;
+    white-space: nowrap;
+    font-weight: bold;
+    text-shadow: 0 2px 5px rgba(0,0,0,1);
+}
+/* --- ⛰️ MINING MAP V4: ANTI-CRAMPED DESIGN --- */
+
+.mining-map-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between; /* กระจายหัวข้อ ราง และท้ายหน้า */
+    padding: 60px 20px;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.map-header-group {
+    text-align: center;
+}
+
+/* ปรับแคปซูลคะแนนให้ดูมีมิติเหมือน image_790e36.jpg */
+.score-capsule-v4 {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 30px;
+    border-radius: 50px;
+    border: 2px solid #00e5ff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px auto 0;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+}
+
+.score-text { color: #ffd700; font-weight: 900; font-size: 1.1rem; }
+
+/* 🛤️ ส่วนของราง: ขยายให้กว้างขึ้นมาก */
+.railway-system-v4 {
+    position: relative;
+    width: 90%; /* ขยายความกว้าง */
+    max-width: 1100px;
+    height: 12px;
+    margin-bottom: 50px; /* เว้นที่ให้ชื่อด่านด้านล่าง */
+}
+
+.master-rail-v4 {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #333;
+    border-radius: 20px;
+    box-shadow: inset 0 2px 10px #000;
+}
+
+.rail-progress-v4 {
+    height: 100%;
+    background: linear-gradient(90deg, #00e5ff, #00e676);
+    box-shadow: 0 0 25px rgba(0, 229, 255, 0.8);
+    border-radius: 20px;
+    transition: width 1.2s ease-in-out;
+}
+
+/* 🛒 รถขนแร่: ปรับขนาดให้สมดุล */
+.mine-cart-v4 {
+    position: absolute;
+    top: -50px; /* ล้อวางทับรางพอดี */
+    transform: translateX(-50%);
+    transition: left 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 30;
+}
+
+.cart-visual {
+    font-size: 4.5rem;
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+    animation: gentleShake 0.4s infinite alternate;
+}
+
+@keyframes gentleShake {
+    from { transform: rotate(-1deg); }
+    to { transform: rotate(1deg); }
+}
+
+/* 🔘 จุดด่าน: เพิ่มระยะห่างแนวดิ่ง */
+.node-container-v4 {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.node-button-v4 {
+    width: 75px; /* ใหญ่ขึ้นเพื่อความชัดเจน */
+    height: 75px;
+    border-radius: 50%;
+    border: 5px solid #444;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 1.8rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: 0.3s;
+    z-index: 20;
+    position: relative;
+}
+
+.node-container-v4.active .node-button-v4 {
+    transform: scale(1.2);
+    border-color: #fff;
+    background: #00e5ff;
+    box-shadow: 0 0 40px #00e5ff;
+}
+
+/* ชื่อด่านด้านล่าง: เว้นระยะห่างให้มากขึ้น */
+.node-label-v4 {
+    margin-top: 60px; /* ห่างจากปุ่ม */
+    text-align: center;
+    width: 200px; /* คุมความกว้างไม่ให้ชื่อยาวทับกัน */
+}
+
+.node-title-text {
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin: 0;
+    text-shadow: 0 2px 5px #000;
+}
+
+.status-tag {
+    font-size: 0.8rem;
+    color: #00e5ff;
+    font-weight: bold;
+    margin-top: 5px;
+    text-transform: uppercase;
+}
+
+.map-footer-v4 {
+    color: #bdc3c7;
+    font-weight: bold;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}

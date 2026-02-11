@@ -26,7 +26,7 @@ export default function InsertionSortVideo() {
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [answeredIds, setAnsweredIds] = useState([]);
-  const [showWarning, setShowWarning] = useState(false);
+
   const [isAlreadyDone, setIsAlreadyDone] = useState(false);
 
   const GET_QUIZ_URL =
@@ -89,13 +89,7 @@ export default function InsertionSortVideo() {
 
       const t = playerRef.current.getCurrentTime();
 
-      // ❌ กันข้าม
-      if (t > maxWatchedRef.current + 1) {
-        playerRef.current.seekTo(maxWatchedRef.current, true);
-        playerRef.current.pauseVideo();
-        setShowWarning(true);
-        return;
-      }
+
 
       if (t > maxWatchedRef.current)
         maxWatchedRef.current = t;
@@ -111,10 +105,7 @@ export default function InsertionSortVideo() {
     return () => clearInterval(check);
   });
 
-  const closeWarning = () => {
-    setShowWarning(false);
-    if (!showQuiz) playerRef.current.playVideo();
-  };
+
 
   const onReady = (e) => {
     playerRef.current = e.target;
@@ -214,7 +205,7 @@ localStorage.setItem(key, JSON.stringify({ video: true }));
 
           <div className="video-wrapper">
             <YouTube
-              videoId="DRVNXO7_DKY"
+              videoId="6Zc4ck3aruE"
               onReady={onReady}
               opts={{
                 playerVars: {
@@ -226,21 +217,7 @@ localStorage.setItem(key, JSON.stringify({ video: true }));
             />
           </div>
 
-          {showWarning && (
-            <div className="custom-modal-overlay">
-              <div className="custom-modal-box">
-                <span className="custom-modal-icon">🚫</span>
-                <h3 className="custom-modal-title">ห้ามข้ามวิดีโอ!</h3>
-                <p className="custom-modal-text">
-                  กรุณาดูเนื้อหาตามลำดับ
-                  <br/>และตอบคำถามให้ครบถ้วน
-                </p>
-                <button className="custom-modal-btn" onClick={closeWarning}>
-                  ตกลง
-                </button>
-              </div>
-            </div>
-          )}
+
 
           {(!loading && showQuiz) && (
             <div className="quiz-card-blue fade-in">

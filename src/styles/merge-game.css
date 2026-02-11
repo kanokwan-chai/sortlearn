@@ -1,0 +1,244 @@
+/* src/styles/merge-game.css */
+
+/* ใช้ Class นี้คลุมเพื่อจำกัดขอบเขต */
+.merge-game-theme {
+  font-family: 'Kanit', sans-serif;
+  color: #444;
+  padding: 40px 20px;
+  /* ใช้สีพื้นหลังฟ้าอ่อนๆ แบบหน้าเว็บคุณ */
+  background-color: #f0f8ff; 
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.game-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  border-radius: 25px;
+  /* เงาฟุ้งๆ นุ่มๆ สไตล์โมเดิร์น */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05); 
+  text-align: center;
+}
+
+/* หัวข้อ */
+h1 {
+  color: #00a8ff; /* สีฟ้าสดใส */
+  font-size: 2.2rem;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+h2 {
+  color: #7f8fa6;
+  font-weight: 400;
+  font-size: 1.1rem;
+  margin-bottom: 40px;
+}
+
+/* --- การ์ดเลือกตัวละคร (Card) --- */
+.char-select {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  flex-wrap: wrap;
+}
+
+.char-card {
+  background: #fff;
+  border: 2px solid #f1f2f6;
+  border-radius: 20px;
+  padding: 30px 20px;
+  width: 220px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.char-card:hover {
+  transform: translateY(-10px);
+  border-color: #00a8ff;
+  box-shadow: 0 15px 35px rgba(0, 168, 255, 0.15);
+}
+
+.char-card .icon {
+  font-size: 3.5rem;
+  margin-bottom: 15px;
+  background: #f0f8ff;
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 15px;
+}
+
+.char-card h3 { color: #2f3640; margin: 15px 0 5px; }
+.char-card p { color: #0097e6; font-weight: bold; font-size: 0.9rem; }
+.char-card small { display: block; margin-top: 10px; color: #7f8fa6; font-size: 0.85rem; }
+
+/* --- HUD (แถบเลือด/สถานะ) --- */
+.hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #eaaa0015; /* พื้นหลังสีส้มจางๆ */
+  padding: 15px 30px;
+  border-radius: 50px;
+  margin-bottom: 30px;
+  border: 2px solid #fff;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+}
+
+.char-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #e1b12c;
+}
+
+.skill-btn {
+  background: linear-gradient(135deg, #a55eea 0%, #8854d0 100%);
+  border: none;
+  color: white;
+  padding: 10px 25px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 5px 15px rgba(165, 94, 234, 0.3);
+  transition: transform 0.2s;
+}
+.skill-btn:active { transform: scale(0.95); }
+
+/* Message Box */
+.message-box {
+  background: #f5f6fa;
+  color: #718093;
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 40px;
+  font-size: 1.1rem;
+  border-left: 6px solid #dcdde1;
+  text-align: left;
+}
+.message-box.success { background: #e6ffea; color: #2ecc71; border-color: #2ecc71; }
+.message-box.error { background: #ffe6e6; color: #e84118; border-color: #e84118; }
+
+/* --- Arena (สนาม) --- */
+.arena {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 50px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.group-container {
+  background: #f7f9fc;
+  padding: 25px;
+  border-radius: 20px;
+  min-width: 160px;
+  border: 2px dashed #dcdde1;
+}
+
+.group-container h3 { color: #a4b0be; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 15px;}
+
+.vs-badge {
+  align-self: center;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #fbc531;
+  text-shadow: 3px 3px 0px rgba(0,0,0,0.05);
+  font-style: italic;
+}
+
+/* --- Blocks (ตัวเลข) --- */
+.array-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.sorted-visual {
+  flex-direction: row;
+  justify-content: center;
+  gap: 15px;
+  min-height: 100px;
+  background: #f1f2f6;
+  padding: 30px;
+  border-radius: 20px;
+  border: 1px solid #dfe4ea;
+  flex-wrap: wrap;
+}
+
+.number-block {
+  width: 65px;
+  height: 65px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.1); /* เงาปุ่ม 3D */
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.number-block:active {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+
+/* สีปุ่ม 3D */
+.number-block.left { background-color: #ff6b81; } /* แดงพาสเทล */
+.number-block.right { background-color: #1e90ff; } /* ฟ้าพาสเทล */
+.number-block.sorted { background-color: #2ed573; cursor: default; transform: none; box-shadow: none; } /* เขียว */
+
+.number-block:disabled {
+  background-color: #ced6e0;
+  color: #ffffff;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Scanner Highlight */
+.scanner-highlight {
+  border: 4px solid #fbc531;
+  transform: scale(1.1);
+  z-index: 5;
+}
+
+.pointer-arrow {
+  position: absolute;
+  top: -30px;
+  color: #fbc531;
+  font-size: 1.5rem;
+  animation: bounce 0.8s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.reset-btn {
+  margin-top: 40px;
+  background: transparent;
+  border: 2px solid #a4b0be;
+  color: #747d8c;
+  padding: 12px 30px;
+  border-radius: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.reset-btn:hover { background: #747d8c; color: white; }
