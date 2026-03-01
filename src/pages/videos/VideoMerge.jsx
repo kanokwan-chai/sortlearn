@@ -13,7 +13,7 @@ const FALLBACK_USER = {
   email: "kanokwan@test.com",
 };
 
-export default function InsertionSortVideo() {
+export default function MergeSortVideo() {
 
   const navigate = useNavigate();
   const playerRef = useRef(null);
@@ -62,7 +62,7 @@ export default function InsertionSortVideo() {
     } catch {}
 
     const userKey = getUserKey();
-const progressKey = `progress_${userKey}_insertion`;
+const progressKey = `progress_${userKey}_merge`;
 
     const history = JSON.parse(localStorage.getItem(progressKey)) || {};
 
@@ -72,7 +72,7 @@ const progressKey = `progress_${userKey}_insertion`;
       return;
     }
 
-    fetch(`${GET_QUIZ_URL}?type=video_insertion`)
+    fetch(`${GET_QUIZ_URL}?type=video_merge`)
       .then((res) => res.json())
       .then((data) => {
         setQuestions(data.sort((a, b) => a.time - b.time));
@@ -153,13 +153,13 @@ const progressKey = `progress_${userKey}_insertion`;
         firstname: user.firstname || FALLBACK_USER.firstname,
         lastname: user.lastname,
         email: user.email,
-        videoName: "Insertion Sort",
+        videoName: "Merge Sort",
         score: finalScore,
       }),
     });
 
         const userKey = getUserKey();
-const key = `progress_${userKey}_insertion`;
+const key = `progress_${userKey}_merge`;
 localStorage.setItem(key, JSON.stringify({ video: true }));
 
   };
@@ -172,7 +172,7 @@ if (isAlreadyDone) return (
           <div className="lesson-detail-hero" style={{ backgroundImage: `url(${bg2})` }}>
             <div className="hero-center">
                 <p className="hero-sub">บทเรียน</p>
-                <h1 className="hero-title">ielection Sort</h1>
+                <h1 className="hero-title">Merge Sort</h1>
             </div>
           </div>
 
@@ -207,7 +207,7 @@ if (isAlreadyDone) return (
       <div className="lesson-detail-hero" style={{ backgroundImage: `url(${bg2})` }}>
         <div className="hero-center">
           <p className="hero-sub">บทเรียน</p>
-          <h1 className="hero-title">Insertion Sort</h1>
+          <h1 className="hero-title">Merge Sort</h1>
         </div>
       </div>
 
@@ -216,7 +216,7 @@ if (isAlreadyDone) return (
 
           <div className="video-wrapper">
             <YouTube
-              videoId="6Zc4ck3aruE"
+              videoId="usJJpiB47K8"
               onReady={onReady}
               opts={{
                 playerVars: { controls: 1, rel: 0, modestbranding: 1 },

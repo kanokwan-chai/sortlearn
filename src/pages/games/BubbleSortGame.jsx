@@ -16,7 +16,7 @@ import sfxBubble from "../../assets/sounds/bubble.mp3";
 import sfxWin from "../../assets/sounds/win.mp3";
 
 // ✅ CONFIG
-const LESSON_KEY = "bubble_sort"; 
+const LESSON_KEY = "bubble"; 
 const SCORE_API = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
 
 const LEVELS = [
@@ -530,11 +530,3 @@ export default function BubbleSortGame() {
     </MainLayout>
   );
 }
-
-// เพิ่ม CSS Animation สำหรับตัวละครลอย (หากยังไม่มีใน bubble-game.css)
-/*
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
-}
-*/

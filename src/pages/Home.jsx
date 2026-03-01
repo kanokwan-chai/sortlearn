@@ -41,8 +41,8 @@ const isLessonDone = (lessonKey) => {
   const data = JSON.parse(localStorage.getItem(key)) || {};
 
   return (
-    data.pretest !== null &&
-    data.posttest !== null &&
+    data.pretest != null &&
+    data.posttest != null &&
     data.video === true &&
     data.game === true
   );
@@ -95,9 +95,9 @@ const isLessonDone = (lessonKey) => {
         <div className="lesson-card">
           <img src={bubbleImg} className="lesson-img" alt="Bubble Sort" />
           <h3 className="lesson-title">BUBBLE SORT</h3>
-          <LessonProgress lessonKey="bubble_sort" />
+          <LessonProgress lessonKey="bubble" />
 
-          {!isLessonDone("bubble_sort") && (
+          {!isLessonDone("bubble") && (
             <Link to="/bubble-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
           )}
         </div>
