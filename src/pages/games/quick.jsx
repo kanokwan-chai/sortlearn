@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 
@@ -15,535 +15,1002 @@ import sfxWin from "../../assets/sounds/win.mp3";
 
 import "../../styles/quick-game.css";
 
-// --- CONSTANTS ---
+const LESSON_KEY = "quick"; 
 const SCORE_API = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
-
 const CHARACTERS = [
-  { id: "arin", nameEn: "Arin Goldhand", nameTh: "อาริน มือทอง", desc: "⚡ เพิ่มเวลาขุดแร่ +40 วินาที", hp: 3, timeBonus: 40, color: "#ffca28", img: charArin },
-  { id: "luna", nameEn: "Luna Ember", nameTh: "ลูน่า เอ็มเบอร์", desc: "⚖️ HP 4 และเพิ่มเวลา +20 วินาที", hp: 4, timeBonus: 20, color: "#4fc3f7", img: charLuna },
-  { id: "mira", nameEn: "Mira Stonewhisper", nameTh: "มิร่า สโตนวิสเปอร์", desc: "🛡️ ป้องกันความผิดพลาดได้ 5 ครั้ง", hp: 5, timeBonus: 0, color: "#ab47bc", img: charMira }
+  {
+    id: "arin",
+    nameEn: "Arin Goldhand",
+    nameTh: "อาริน มือทอง",
+    desc: "⚡ เพิ่มเวลาขุดแร่ +40 วินาที",
+    hp: 3,
+    timeBonus: 40,
+    img: charArin,
+  },
+  {
+    id: "luna",
+    nameEn: "Luna Ember",
+    nameTh: "ลูน่า เอ็มเบอร์",
+    desc: "⚖️ HP 4 และเพิ่มเวลา +20 วินาที",
+    hp: 4,
+    timeBonus: 20,
+    img: charLuna,
+  },
+  {
+    id: "mira",
+    nameEn: "Mira Stonewhisper",
+    nameTh: "มิร่า สโตนวิสเปอร์",
+    desc: "🛡️ ป้องกันความผิดพลาดได้ 5 ครั้ง",
+    hp: 5,
+    timeBonus: 0,
+    img: charMira,
+  },
 ];
 
 const LEVELS = [
-  { id: 1, name: "ด่านที่ 1: เหมืองเริ่มต้น", count: 5, baseTime: 60, task: "เรียงลำดับจาก น้อย ➡️ มาก" },
-  { id: 2, name: "ด่านที่ 2: หุบเขาพาร์ทิชัน", count: 7, baseTime: 90, task: "เรียงลำดับจาก มาก ➡️ น้อย" },
-  { id: 3, name: "ด่านที่ 3: ปริศนาศิลาสุดท้าย", count: 12, baseTime: 150, task: "เรียงลำดับจาก น้อย ➡️ มาก (ระดับความยากเพิ่มขึ้น)" }
+  { id: 1, name: "ด่านที่ 1", count: 5, sortMode: 'asc', timeLimit: 90 },  // 5 ตัว / น้อย -> มาก
+  { id: 2, name: "ด่านที่ 2", count: 7, sortMode: 'desc', timeLimit: 100 }, // 7 ตัว / มาก -> น้อย
+  { id: 3, name: "ด่านที่ 3", count: 9, sortMode: 'asc', timeLimit: 120 }  // 9 ตัว / น้อย -> มาก
 ];
-
-// --- HELPER: SOUND ---
-const playSound = (audioFile) => {
-  if (!audioFile) return;
-  const audio = new Audio(audioFile);
-  audio.play().catch(() => { });
+const getUserKey = () => {
+  let user = {};
+  try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch(e) {}
+  if (user.email) return user.email;
+  let guestId = localStorage.getItem("guest_id");
+  if (!guestId) {
+    guestId = crypto.randomUUID();
+    localStorage.setItem("guest_id", guestId);
+  }
+  return `guest_${guestId}`;
 };
 
 export default function QuickSortGame() {
   const navigate = useNavigate();
 
-  // --- STATES ---
-  const [gameState, setGameState] = useState("SELECT_CHAR");
-  const [selectedMiner, setSelectedMiner] = useState(null);
-  const [selectedLevel, setSelectedLevel] = useState(null);
-  const [completedLevels, setCompletedLevels] = useState([]);
-  const [score, setScore] = useState(0);
+  // --- 1. UI & PROGRESS STATES ---
+  const [gameState, setGameState] = useState("CHARACTER");
+  const [screen, setScreen] = useState("character");
+  const [character, setCharacter] = useState(null);
+  const [level, setLevel] = useState(null);
   const [hp, setHp] = useState(3);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [resultStatus, setResultStatus] = useState(null);
-  const [gameOverReason, setGameOverReason] = useState("");
+  const [time, setTime] = useState(60);
+  const [totalScore, setTotalScore] = useState(0);
+const [unlockedLevel, setUnlockedLevel] = useState(1);
+  const [score, setScore] = useState(0);
+  const [selectedChar, setSelectedChar] = useState(null);
+  
 
+  // --- 2. GAME LOGIC STATES ---
   const [array, setArray] = useState([]);
-  const [tasks, setTasks] = useState([]);
-  const [currentTask, setCurrentTask] = useState(null);
-  const [pivotIdx, setPivotIdx] = useState(null);
+  const [stack, setStack] = useState([]);
+  const [currentRange, setCurrentRange] = useState({ low: 0, high: 4 });
+  const [pivotIndex, setPivotIndex] = useState(null);
   const [leftPtr, setLeftPtr] = useState(null);
   const [rightPtr, setRightPtr] = useState(null);
-  const [sortedIndices, setSortedIndices] = useState(new Set());
+  const [phase, setPhase] = useState("IDLE");
+  const [sortedIndices, setSortedIndices] = useState([]);
 
-  // --- TIMER ---
-  useEffect(() => {
-    let timer;
-    const activeStates = ["PLAYING", "MOVE_LEFT", "MOVE_RIGHT", "CHECK_SWAP", "FINAL_SWAP"];
-    if (activeStates.includes(gameState) && timeLeft > 0) {
-      timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-    } else if (timeLeft === 0 && activeStates.includes(gameState)) {
-      handleGameOver("TIME_UP");
-    }
-    return () => clearInterval(timer);
-  }, [timeLeft, gameState]);
+  // --- 3. REFS & SUBMISSION ---
+  const scoreRef = useRef(0);
+  const sounds = useRef({
+    click: new Audio(sfxClick),
+    correct: new Audio(sfxCorrect),
+    wrong: new Audio(sfxWrong),
+    win: new Audio(sfxWin),
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // --- HANDLERS ---
-  const handleSelectChar = (char) => {
-    playSound(sfxClick);
-    setSelectedMiner(char);
-    setGameState("MAP");
+const saveProgress = useCallback((data) => {
+  const userKey = getUserKey();
+  const key = `progress_${userKey}_${LESSON_KEY}`;
+  const old = JSON.parse(localStorage.getItem(key)) || {};
+
+  const merged = { ...old, ...data };
+  localStorage.setItem(key, JSON.stringify(merged));
+}, []);
+
+  // ✅ ส่งคะแนนรวมด่านสุดท้ายลง Google Sheets
+  const submitScoreToSheet = async (finalScore) => {
+    const user = JSON.parse(localStorage.getItem("user")) || {};
+    const payload = { 
+      activity: "GAMES", 
+      firstname: user.firstname || "Guest", 
+      lastname: user.lastname || "-", 
+      gameName: "Quick Sort Mine", 
+      score: finalScore 
+    };
+    try { 
+      await fetch(SCORE_API, { 
+        method: "POST", 
+        mode: "no-cors", 
+        body: JSON.stringify(payload), 
+        headers: { "Content-Type": "text/plain" } 
+      }); 
+    } catch (e) { console.error("Submit Error:", e); }
   };
 
-  const clickLevel = (lvl) => {
-    playSound(sfxClick);
-    setSelectedLevel(lvl);
-    setGameState("LEVEL_INTRO");
-  };
+  const playSfx = (name) => {
+  const sfx = sounds.current[name];
+  if (sfx) {
+    sfx.pause();
+    sfx.currentTime = 0;
+    sfx.play().catch(() => {});
+  }
+};
+  const playClick = () => playSfx("click");
 
-  // --- Updated CORE QUICK SORT LOGIC ---
+// --- แก้ไขใน startLevel และ moveRight ---
+const startLevel = (lvl) => {
+  if (!lvl) return;   // 🔥 กัน null
 
-// 1. ฟังก์ชันเริ่มเกม (Initialization)
-const startGame = () => {
-  playSound(sfxClick);
-  setHp(selectedMiner.hp);
-  setTimeLeft(selectedLevel.baseTime + selectedMiner.timeBonus);
-  setScore(0);
-
-  const newArr = Array.from(
-    { length: selectedLevel.count },
-    () => Math.floor(Math.random() * 95) + 1
+  const arr = Array.from(
+    { length: lvl.count },
+    () => Math.floor(Math.random() * 99) + 1
   );
 
-  setArray(newArr);
-  // เริ่มต้นด้วย Task แรกคือทั้ง Array
-  setTasks([{ low: 0, high: newArr.length - 1 }]);
-  setCurrentTask(null);
-  setPivotIdx(null);
+  setArray(arr);
+  setLevel(lvl);
+  setHp(character?.hp || 3);
+  setScore(0);
+  setTime(lvl.timeLimit + (character?.timeBonus || 0));
+  setSortedIndices([]);
+  setStack([]);
+  setCurrentRange({ low: 0, high: arr.length - 1 });
+  setPivotIndex(null);
   setLeftPtr(null);
   setRightPtr(null);
-  setGameState("PLAYING");
+  setPhase("PICK_PIVOT");
+  setScreen("game");
 };
 
-// 2. จัดการคิวของ Task (Main Loop - Watcher)
-useEffect(() => {
-  if (gameState !== "PLAYING") return;
+const handleWrongMove = (message) => {
 
-  // ถ้ายังไม่มี task ปัจจุบัน → ดึง task ใหม่
-  if (!currentTask && tasks.length > 0) {
-    const next = tasks[0];
+  playSfx("wrong");   // 🔥 เพิ่มเสียงผิดตรงนี้
 
-    setTasks(prev => prev.slice(1));
-
-    if (next.low < next.high) {
-      setCurrentTask(next);
-    } else {
-      setCurrentTask(null);
-    }
-  }
-
-  // 🔥 ชนะเมื่อไม่มี task จริงๆ
-  if (!currentTask && tasks.length === 0 && array.length > 0) {
-    handleWinLevel();
-  }
-
-}, [tasks, currentTask, gameState]);
-
-
-// 3. เลือก Pivot (ต้องเป็นตัวสุดท้ายของช่วงปัจจุบัน)
-const selectPivot = (idx) => {
-  if (gameState !== "PLAYING" || !currentTask) return;
-
-  if (idx !== currentTask.high) {
-    playSound(sfxWrong);
-    decreaseHp();
-    return;
-  }
-
-  playSound(sfxCorrect);
-  setPivotIdx(idx);
-  setLeftPtr(currentTask.low);
-  setRightPtr(currentTask.high - 1);
-  setGameState("MOVE_LEFT");
-};
-
-const handlePointerAction = (action) => {
-  if (pivotIdx === null || !currentTask) return;
-
-  const pivotVal = array[pivotIdx];
-  const isAsc = selectedLevel.id !== 2;
-
-  // ---------------- LEFT POINTER (L) ----------------
-  if (gameState === "MOVE_LEFT") {
-    const val = array[leftPtr];
-    const shouldMove = isAsc ? val < pivotVal : val > pivotVal;
-
-    if (action === "MOVE") {
-      // L วิ่งไปได้จนถึงตัวก่อน Pivot (high)
-      if (leftPtr < currentTask.high) {
-        playSound(sfxClick);
-        setLeftPtr(prev => prev + 1);
-      }
-    }
-    else if (action === "STOP") {
-      if (!shouldMove || leftPtr === currentTask.high) {
-        playSound(sfxCorrect);
-        setGameState("MOVE_RIGHT"); // หยุดแล้วไปให้ R วิ่งต่อ
-      } else {
-        decreaseHp(); // ค่ายังน้อยกว่า Pivot ต้องวิ่งต่อสิ!
-      }
-    }
-  }
-
-  // ---------------- RIGHT POINTER (R) ----------------
-  else if (gameState === "MOVE_RIGHT") {
-    const val = array[rightPtr];
-    const shouldMove = isAsc ? val > pivotVal : val < pivotVal;
-
-    if (action === "MOVE") {
-      // ตรงนี้คือสิ่งที่คุณต้องการ: R สามารถวิ่งสวน L ไปทางซ้ายได้ (ไปจนถึง low)
-      if (rightPtr > currentTask.low) {
-        playSound(sfxClick);
-        setRightPtr(prev => prev - 1);
-      } else {
-        // ถ้าวิ่งจนสุดทางซ้ายแล้วยังไม่เจอค่าที่ต้องหยุด ให้ไป Final Swap
-        setGameState("FINAL_SWAP");
-      }
-    }
-    else if (action === "STOP") {
-      if (!shouldMove) {
-        playSound(sfxCorrect);
-        
-        // --- จุดตัดสินใจ (Decision Point) ---
-        if (leftPtr < rightPtr) {
-          // ถ้ายังไม่สวนกัน (เหมือนรูปที่ 1) -> ให้สลับ L กับ R
-          setGameState("CHECK_SWAP");
-        } else {
-          // ถ้าสวนกันแล้ว (เหมือนรูปที่ 2) -> ให้ไปสลับ Pivot กับ L
-          setGameState("FINAL_SWAP");
-        }
-      } else {
-        decreaseHp(); // ค่ายังมากกว่า Pivot ต้องวิ่งต่อ!
-      }
-    }
-  }
-};
-
-const executeSwap = (isFinal) => {
-  const newArr = [...array];
-
-  if (!isFinal) {
-    // 🔁 สลับ L กับ R ตามปกติ
-    [newArr[leftPtr], newArr[rightPtr]] = [newArr[rightPtr], newArr[leftPtr]];
-    setArray(newArr);
-    playSound(sfxCorrect);
-
-    setLeftPtr(prev => prev + 1);
-    setRightPtr(prev => prev - 1);
-    setGameState("MOVE_LEFT");
-  } 
-  else {
-    // ✨ FINAL SWAP: วาง Pivot ในตำแหน่ง L
-    [newArr[leftPtr], newArr[pivotIdx]] = [newArr[pivotIdx], newArr[leftPtr]];
-    setArray(newArr);
-    playSound(sfxWin);
-
-    const splitIdx = leftPtr; 
-    const nextTasks = [];
-
-    // --- ลอจิก: ทำซ้ายก่อนขวา ---
-    // 1. ใส่ฝั่งขวาลงไปใน List ก่อน
-    if (splitIdx + 1 < currentTask.high) {
-      nextTasks.push({ low: splitIdx + 1, high: currentTask.high });
-    }
-    // 2. ใส่ฝั่งซ้ายตามลงไป 
-    if (splitIdx - 1 > currentTask.low) {
-      nextTasks.push({ low: currentTask.low, high: splitIdx - 1 });
-    }
-
-    // 3. เอาไปต่อ "ข้างหน้า" ของ tasks เดิม (LIFO Style)
-    // เพื่อให้รอบหน้าเครื่องดึงเอา 'ฝั่งซ้ายล่าสุด' ออกมาทำก่อน
-    setTasks(prev => [...nextTasks, ...prev]);
-
-    // Reset สถานะสำหรับรอบถัดไป
-    setPivotIdx(null);
-    setLeftPtr(null);
-    setRightPtr(null);
-    setCurrentTask(null);
-    setGameState("PLAYING");
-  }
-};
-
-
-// Helper: ลดเลือด
-const decreaseHp = () => {
-  playSound(sfxWrong);
-  setHp(h => {
-    const newHp = h - 1;
-    if (newHp <= 0) {
-      handleGameOver("HP_ZERO");
-      return 0;
-    }
-    return newHp;
+  setHp(prev => {
+    const nextHp = Math.max(0, prev - 1);
+    if (nextHp === 0) setScreen("gameover");
+    return nextHp;
   });
 };
 
-// 6. เพิ่มเงื่อนไขใน useEffect ของ CHECK_SWAP (Auto-Transition)
+// --- ฟังก์ชันหยุด L: เช็คว่าหยุดถูกตัวตามเงื่อนไขด่านไหม ---
+const stopL = () => {
+  const val = array[leftPtr];
+  const pVal = array[pivotIndex];
+
+  const isCorrect = level.sortMode === "asc"
+    ? val > pVal
+    : val < pVal;
+
+  if (!isCorrect && leftPtr < pivotIndex) {
+    handleWrongMove("หยุด L ผิดตำแหน่ง!");
+    return;
+  }
+
+  setPhase("SCAN_RIGHT");
+};
+
+const placePivot = () => {
+
+  if (leftPtr < rightPtr) {
+    handleWrongMove("ยังไม่สวนกัน ห้ามวาง Pivot!");
+    return;
+  }
+
+  const newArr = [...array];
+  const pVal = newArr[pivotIndex];
+
+  [newArr[leftPtr], newArr[pivotIndex]] =
+    [newArr[pivotIndex], newArr[leftPtr]];
+
+  // 🔥 ตรวจว่าฝั่งซ้ายและขวาถูกจริงไหม
+  const leftSide = newArr.slice(currentRange.low, leftPtr);
+  const rightSide = newArr.slice(leftPtr + 1, currentRange.high + 1);
+
+  const leftValid = level.sortMode === "asc"
+    ? leftSide.every(n => n <= pVal)
+    : leftSide.every(n => n >= pVal);
+
+  const rightValid = level.sortMode === "asc"
+    ? rightSide.every(n => n >= pVal)
+    : rightSide.every(n => n <= pVal);
+
+  if (!(leftValid && rightValid)) {
+    handleWrongMove("วาง Pivot ผิดตำแหน่ง!");
+    return;
+  }
+
+  setArray(newArr);
+  setScore(s => s + 200);
+  handlePartitionComplete(leftPtr);
+};
+
+const handlePivot = (idx) => {
+  if (phase !== "PICK_PIVOT") return;
+
+  // 🚩 จุดที่แก้: ต้องเลือกตัวขวาสุดของ "ช่วงปัจจุบัน" เท่านั้น
+  if (idx !== currentRange.high) {
+    handleWrongMove("ต้องเลือกคริสตัลขวาสุดของกลุ่มที่ไฮไลต์อยู่เป็น Pivot ค่ะ!");
+    return;
+  }
+
+  setPivotIndex(idx);
+  // ตั้งค่า L และ R เริ่มต้นภายในช่วงที่กำหนด
+  setLeftPtr(currentRange.low);
+  setRightPtr(currentRange.high - 1);
+  setPhase("SCAN_LEFT");
+  playSfx("correct");
+};
+
+// ขยับ L ให้กระโดดไปข้างหน้า
+const moveLeft = () => {
+  if (leftPtr >= pivotIndex) return;
+
+  const pivotVal = array[pivotIndex];
+  const currentVal = array[leftPtr];
+
+  const shouldStop = level.sortMode === "asc"
+    ? currentVal > pivotVal
+    : currentVal < pivotVal;
+
+  // ถ้าตำแหน่งปัจจุบันควรหยุด แต่ยังจะเลื่อนต่อ = ผิด
+  if (shouldStop) {
+    handleWrongMove("เลยตำแหน่งที่ควรหยุดของ L!");
+    return;
+  }
+
+  setLeftPtr(prev => prev + 1);
+};
+
+// ขยับ R ให้กระโดดถอยหลัง
+const moveRight = () => {
+  if (rightPtr <= currentRange.low) return;
+
+  const pivotVal = array[pivotIndex];
+  const currentVal = array[rightPtr];
+
+  const shouldStop = level.sortMode === "asc"
+    ? currentVal < pivotVal
+    : currentVal > pivotVal;
+
+  if (shouldStop) {
+    handleWrongMove("เลยตำแหน่งที่ควรหยุดของ R!");
+    return;
+  }
+
+  setRightPtr(prev => prev - 1);
+};
+
+// ปุ่มหยุด (Confirm) เพื่อล็อกตำแหน่ง
+const stopR = () => {
+  const val = array[rightPtr];
+  const pVal = array[pivotIndex];
+
+  const isCorrect = level.sortMode === "asc"
+    ? val < pVal
+    : val > pVal;
+
+  if (!isCorrect && rightPtr > leftPtr) {
+    handleWrongMove("หยุด R ผิดตำแหน่ง!");
+    return;
+  }
+
+  setPhase("CHECK");
+};
+const checkAndSwap = () => {
+
+  if (leftPtr >= rightPtr) {
+    handleWrongMove("สวนกันแล้ว ห้ามสลับ!");
+    return;
+  }
+
+  const leftVal = array[leftPtr];
+  const rightVal = array[rightPtr];
+  const pivotVal = array[pivotIndex];
+
+  let isCorrect;
+
+  if (level.sortMode === "asc") {
+    // Asc: ซ้ายต้องมากกว่า pivot และขวาต้องน้อยกว่า pivot
+    isCorrect = leftVal > pivotVal && rightVal < pivotVal;
+  } else {
+    // Desc
+    isCorrect = leftVal < pivotVal && rightVal > pivotVal;
+  }
+
+  if (!isCorrect) {
+    handleWrongMove("สลับผิดเงื่อนไข!");
+    return;
+  }
+
+  // ✅ swap จริง
+  const newArr = [...array];
+  [newArr[leftPtr], newArr[rightPtr]] =
+    [newArr[rightPtr], newArr[leftPtr]];
+
+  setArray(newArr);
+  setScore(s => s + 100);
+  setLeftPtr(prev => prev + 1);
+  setRightPtr(prev => prev - 1);
+  setPhase("SCAN_LEFT");
+};
+
+// --- 🚩 4. คะแนนไม่มั่ว และเห็นเลขเรียงครบก่อนจบ ---
+  const handlePartitionComplete = (pivotPos) => {
+    const newSorted = [...sortedIndices, pivotPos];
+    setSortedIndices(newSorted);
+
+    const nextStack = [...stack];
+    const { low, high } = currentRange;
+
+    if (pivotPos + 1 < high) nextStack.push({ low: pivotPos + 1, high: high });
+    else if (pivotPos + 1 === high) newSorted.push(high); // เก็บตกตัวที่เหลือ 1 ตัว
+
+    if (low < pivotPos - 1) nextStack.push({ low: low, high: pivotPos - 1 });
+    else if (low === pivotPos - 1) newSorted.push(low);
+
+    setSortedIndices(newSorted);
+
+    if (nextStack.length > 0) {
+      const nextRange = nextStack.pop();
+      setStack(nextStack);
+      setCurrentRange(nextRange);
+      setPivotIndex(null);
+      setPhase("PICK_PIVOT");
+    } else {
+    // 🏆 กรณีเรียงครบทุกตัวแล้วจริงๆ
+    setTimeout(() => {
+  handleLevelComplete();
+}, 1500);
+  }
+};
+
+
+const getInstructionText = () => {
+  // 1. ตรวจสอบโหมดการเรียงของด่านปัจจุบัน
+  const isAsc = level?.sortMode === 'asc'; 
+
+  // 2. ส่งคืนข้อความตาม Phase และเงื่อนไข Hoare Partition
+  switch (phase) {
+    case "PICK_PIVOT":
+      return "⛏️ ภารกิจ: คลิกเลือกคริสตัลขวาสุดเพื่อกำหนดค่า Pivot";
+
+    case "SCAN_LEFT":
+      return isAsc 
+        ? "🔍 ขั้นตอนที่ 1: ขยับ L ไปทางขวา เพื่อหาค่าที่ 'มากกว่า' Pivot" 
+        : "🔍 ขั้นตอนที่ 1: ขยับ L ไปทางขวา เพื่อหาค่าที่ 'น้อยกว่า' Pivot";
+
+    case "SCAN_RIGHT":
+      return isAsc 
+        ? "🔍 ขั้นตอนที่ 2: ขยับ R ไปทางซ้าย เพื่อหาค่าที่ 'น้อยกว่า' Pivot" 
+        : "🔍 ขั้นตอนที่ 2: ขยับ R ไปทางซ้าย เพื่อหาค่าที่ 'มากกว่า' Pivot";
+
+    case "CHECK":
+      // ตรวจสอบว่าตัวชี้สวนกันหรือยังตามภาพลอจิกของคุณ
+      if (leftPtr >= rightPtr) {
+        return "🏁 ตัวชี้สวนกันแล้ว! (L >= R) ตามหลักการต้องกด 'วาง Pivot' ทันที";
+      }
+      return "🔄 พบค่าที่ผิดฝั่งทั้งคู่แล้ว! กดปุ่ม 'สลับ L ↔ R' เพื่อจัดระเบียบ";
+
+    case "FINAL_SWAP":
+      return "🏁 ขั้นตอนสุดท้าย: สลับ Pivot เข้าไปแทนที่ตำแหน่ง L เพื่อจบการแบ่งส่วน";
+
+    default:
+      return "เตรียมพร้อมเริ่มการขุดแร่!";
+  }
+};
+  // --- 4. DATA SUBMISSION (ที่เคย Error) ---
+  const submitScore = async () => {
+    if (isSubmitting || isSubmitted) return;
+    setIsSubmitting(true);
+    try {
+      const user = JSON.parse(localStorage.getItem("user")) || { username: "Guest" };
+      await fetch(SCORE_API, {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify({
+          username: user.username || user.firstname || "Anonymous",
+          character: character?.nameEn,
+          totalScore: totalScore,
+          lesson: LESSON_KEY,
+          date: new Date().toLocaleString()
+        }),
+      });
+      setIsSubmitted(true);
+      alert("บันทึกคะแนนลง Leaderboard เรียบร้อย!");
+    } catch (e) {
+      console.error("Submit error", e);
+      alert("ไม่สามารถส่งคะแนนได้ กรุณาลองใหม่");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+// --- 🚩 ส่วนที่ 2: การคำนวณคะแนนในขั้นตอนต่างๆ ---
+const updateGameScore = (points) => {
+    setScore(prev => {
+        const newScore = Math.max(0, prev + points);
+        return newScore;
+    });
+};
+const handleLevelComplete = () => {
+  const levelBonus = 200;
+  const currentLvlScore = score + levelBonus;
+
+  const userKey = getUserKey();
+  const key = `progress_${userKey}_${LESSON_KEY}`;
+  const old = JSON.parse(localStorage.getItem(key)) || {};
+
+  const finalTotal = (old.score || 0) + currentLvlScore;
+
+  // ---------- ด่านสุดท้าย ----------
+if (level.id === LEVELS.length) {
+  playSfx("win");
+  const updated = {
+    ...old,
+    score: finalTotal,
+    level: LEVELS.length,
+    game: true,      // ⭐ ตัวสำคัญ
+    submitted: true
+  };
+
+  localStorage.setItem(key, JSON.stringify(updated));
+
+  if (!old.submitted) {
+    submitScoreToSheet(finalTotal);
+  }
+
+  setTotalScore(finalTotal);
+  setUnlockedLevel(LEVELS.length);
+  setScreen("level");   // กลับหน้า map แบบจบแล้ว
+  playSfx("win");   // 🔥 เสียงผ่านด่าน
+  return;
+}
+
+  // ---------- ด่านปกติ ----------
+  const nextLevel = level.id + 1;
+
+  const updated = {
+    ...old,
+    score: finalTotal,
+    level: nextLevel
+  };
+
+  localStorage.setItem(key, JSON.stringify(updated));
+
+  setUnlockedLevel(nextLevel);
+  setTotalScore(finalTotal);
+  setScreen("level");
+};
+
+  useEffect(() => {
+  if (screen !== "game") return;
+
+  const timer = setInterval(() => {
+    setTime(prev => {
+      if (prev <= 1) {
+        clearInterval(timer);
+        setScreen("gameover");
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+  return () => clearInterval(timer);
+}, [screen]);
 useEffect(() => {
-  if (gameState === "CHECK_SWAP") {
-    if (leftPtr >= rightPtr) {
-      setGameState("FINAL_SWAP");
+  if (screen === "game" && (!level || array.length === 0)) {
+    setScreen("level");
+  }
+}, [screen, level, array]);
+
+useEffect(() => {
+  const key = `progress_${getUserKey()}_${LESSON_KEY}`;
+  const saved = JSON.parse(localStorage.getItem(key));
+
+  if (!saved) {
+    setScreen("character");
+    return;
+  }
+
+  // โหลดตัวละคร
+  if (saved.charId) {
+    const found = CHARACTERS.find(c => c.id === saved.charId);
+    if (found) {
+      setCharacter(found);
+      setHp(found.hp);
     }
   }
-}, [gameState, leftPtr, rightPtr]);
 
+  // โหลดด่านปัจจุบัน
+  setUnlockedLevel(saved.level || 1);
 
-// --- FUNCTIONS สำหรับจัดการสถานะ จบเกม/ชนะ ---
+  // โหลดคะแนนสะสม
+  setTotalScore(saved.score || 0);
 
-// 1. จัดการเมื่อแพ้ (เวลาหมด หรือ HP หมด)
-const handleGameOver = (reason) => {
-  playSound(sfxWrong);
-  setGameOverReason(reason);
-  setResultStatus("LOSE");
-  setGameState("RESULTS");
-};
+  // ถ้าเกมจบแล้ว → อยู่หน้า map แบบล็อก
+  if (saved.game === true) {
+  setTotalScore(saved.score || 0);
+  setScreen("final");   // ⭐ เปลี่ยนตรงนี้
+  return;
+}
 
-// 2. จัดการเมื่อเรียงสำเร็จ (ชนะ)
-const handleWinLevel = () => {
-  playSound(sfxWin);
-  setResultStatus("WIN");
-  // เพิ่มคะแนนโบนัสเมื่อผ่านด่าน
-  setScore(prev => prev + 500);
-  // เก็บประวัติด่านที่ผ่านแล้ว
-  setCompletedLevels(prev => [...prev, selectedLevel.id]);
-  setGameState("RESULTS");
-};
+  setScreen("level");
+}, []);
+  
+  // ------------------ SCREENS ------------------
 
+if (screen === "character") {
   return (
     <MainLayout>
-      <div className="mining-app-container" style={{ backgroundImage: `url(${bgMining})` }}>
-        <div className="content-layer">
+      <div
+        className="mine-screen"
+        style={{ backgroundImage: `url(${bgMining})` }}
+      >
+        <div className="mine-overlay"></div>
 
-          {/* 🛤️ HUD RAIL */}
-          {["PLAYING", "MOVE_LEFT", "MOVE_RIGHT", "CHECK_SWAP", "FINAL_SWAP"].includes(gameState) && (
-            <div className="hud-rail-wrapper fade-in">
-              <div className="hud-rail-glass">
-                <div className="rail-section"><div className="rail-badge">LV.{selectedLevel?.id || 1}</div></div>
-                <div className="rail-divider"></div>
-                <div className="rail-section">
-                  <span className="rail-icon">❤️</span> <span className="rail-value">{hp}</span>
-                  <span className="rail-icon pulse">⏳</span> <span className="rail-value gold">{timeLeft}s</span>
-                  <span className="rail-icon">💎</span> <span className="rail-value blue">{score}</span>
-                </div>
-                <div className="rail-divider"></div>
-                <div className="rail-section">
-                  <span className="rail-value-text" style={{ color: selectedMiner?.color }}>{selectedMiner?.nameTh}</span>
-                  <div className="rail-avatar-ring" style={{ borderColor: selectedMiner?.color }}>
-                    <img src={selectedMiner?.img} alt="char" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 👤 CHARACTER SELECTION */}
-          {gameState === "SELECT_CHAR" && (
-            <div className="centered-selection fade-in">
-              <h1 className="neon-title">QuickSort Master Miner</h1>
-              <h2 className="neon-title1">ยอดนักขุดเหมือง</h2>
-              <div className="char-grid-balanced">
-                {CHARACTERS.map(c => (
-                  <div key={c.id} className="mining-char-card premium-card" onClick={() => handleSelectChar(c)} style={{ '--char-color': c.color }}>
-                    <div className="card-image-wrapper"><img src={c.img} alt={c.nameEn} /></div>
-                    <div className="card-content">
-                      <div className="name-tag">
-                        <p className="en">{c.nameEn}</p>
-                        <p className="th">{c.nameTh}</p>
-                      </div>
-                      <p className="char-desc">{c.desc}</p>
-                      <div className="skill-badge" style={{ background: c.color, color: '#000', padding: '4px 15px', borderRadius: '10px', marginTop: '10px', fontSize: '0.85rem', fontWeight: '900', display: 'inline-block', boxShadow: `0 0 15px ${c.color}66` }}>
-                        {c.skillIcon} {c.skill}
-                      </div>
-                    </div>
-                    <div className="shimmer"></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 🗺️ MINING MAP */}
-          {gameState === "MAP" && (
-            <div className="mining-map-wrapper fade-in">
-              <div className="map-header-zone">
-                <h1 className="main-title-gold">QuickSort Master Miner</h1>
-                <h2 className="sub-title-silver">ยอดนักขุดเหมือง</h2>
-              </div>
-              <div className="score-display-v6">
-                <div className="score-capsule-v6">
-                  <span className="gem-icon">💎</span>
-                  <span className="score-text">คะแนนสะสม: {score}</span>
-                </div>
-              </div>
-              <div className="rail-system-v6">
-                <div className="truck-v6" style={{ left: `${(completedLevels.length / (LEVELS.length - 1)) * 100}%` }}>
-                  <div className="truck-emoji">🚚</div>
-                </div>
-                <div className="master-rail-v6">
-                  <div className="progress-fill-v6" style={{ width: `${(completedLevels.length / (LEVELS.length - 1)) * 100}%` }}></div>
-                  {LEVELS.map((lvl, idx) => {
-                    const isDone = completedLevels.includes(lvl.id);
-                    const isCurrent = completedLevels.length === idx;
-                    const isLocked = idx > completedLevels.length;
-                    return (
-                      <div key={lvl.id} className={`node-v6-box ${isDone ? 'done' : ''} ${isCurrent ? 'active' : ''}`} style={{ left: `${(idx / (LEVELS.length - 1)) * 100}%` }}>
-                        <button className="node-btn-v6" onClick={() => !isLocked && clickLevel(lvl)} disabled={isLocked}>
-                          {isDone ? "💎" : isLocked ? "🔒" : lvl.id}
-                          {isCurrent && <div className="glow-ring-v6"></div>}
-                        </button>
-                        <div className="node-label-v6">
-                          <p className="label-name">{lvl.name}</p>
-                          {isCurrent && <p className="label-status">ด่านปัจจุบัน</p>}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="map-footer-v7">คลิกที่ด่านปัจจุบันเพื่อเริ่มภารกิจ</div>
-            </div>
-          )}
-
-          {/* 🎮 GAMEPLAY */}
-{["PLAYING", "MOVE_LEFT", "MOVE_RIGHT", "CHECK_SWAP", "FINAL_SWAP"].includes(gameState) && (
-  <div className="tree-game-layout fade-in">
-
-    {/* 📜 Mission & Context */}
-    <div className="mission-instruction-box">
-      <div className="task-badge">ภารกิจปัจจุบัน</div>
-      <p className="mission-text-display">
-        {selectedLevel?.task} 
-        {currentTask && <span className="range-text"> (ขอบเขตดัชนี: {currentTask.low} - {currentTask.high})</span>}
-      </p>
-    </div>
-
-    {/* 💎 ARRAY DISPLAY */}
-  <div className="level-row main">
-  {array.map((v, i) => {
-    const isPivot = i === pivotIdx;
-    const isLeft = i === leftPtr;
-    const isRight = i === rightPtr;
-    const isOutOfRange = currentTask && (i < currentTask.low || i > currentTask.high);
-
-    return (
-      <div key={i} className="gem-container">
-        {/* 1. Pivot Label (อยู่บนสุด) */}
-        <div className={`pivot-label-area ${isPivot ? "active" : ""}`}>
-          {isPivot ? "PIVOT" : ""}
+        <div className="mine-header">
+          ⛏️ QUICK SORT MINE
+          <div className="mine-subtitle">
+            เลือกนักขุดแร่เพื่อเริ่มภารกิจจัดเรียงคริสตัล
+          </div>
         </div>
 
-        {/* 2. กล่องตัวเลข */}
-        <div
-          className={`gem-stone ${isPivot ? "pivot" : ""} ${isOutOfRange ? "dimmed" : ""}`}
-          onClick={() => gameState === "PLAYING" && selectPivot(i)}
-        >
-          <span>{v}</span>
-        </div>
+        <div className="mine-grid">
+          {CHARACTERS.map((c) => (
+            <div
+              key={c.id}
+              className="mine-card"
+              onClick={() => {
+  setCharacter(c);
+  setHp(c.hp);
 
-        {/* 3. Pointers (อยู่ล่างสุด) */}
-        <div className="pointer-area">
-          {isLeft && <div className="pointer-label left-p">⬆️ L</div>}
-          {isRight && <div className="pointer-label right-p">⬆️ R</div>}
+  saveProgress({ charId: c.id });
+
+  setScreen("level");
+}}
+            >
+              <div className="mine-avatar">
+                <img src={c.img} alt={c.nameEn} />
+              </div>
+
+              <h3>{c.nameEn}</h3>
+              <p>{c.desc}</p>
+
+              <div className="mine-btn">
+                เริ่มขุดแร่ 🔥
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    );
-  })}
-</div>
+    </MainLayout>
+  );
+}
+if (screen === "final") {
+  return (
+    <MainLayout>
+      <div
+        className="final-mine-overlay"
+        style={{ backgroundImage: `url(${bgMining})` }}
+      >
+        <div className="final-dark-layer"></div>
 
-    {/* 🎮 CONTROL PANEL */}
-    <div className="logic-control-panel fade-in">
-      
-      {/* 💡 ACTION HINTS: แสดงคำแนะนำตามสถานะเกม */}
-      <div className="status-message-box">
-        {gameState === "PLAYING" && !currentTask && <div className="hint pulse">กำลังเตรียมข้อมูล...</div>}
-        {gameState === "PLAYING" && currentTask && <div className="hint neon">เลือกค่าด้านขวาสุดเพื่อใช้เป็น Pivot ⛏️</div>}
-        
-        {gameState === "MOVE_LEFT" && (
-          <div className="hint-group">
-            <span className="icon">👉</span> 
-            <span>พิจารณาฝั่ง <b>LEFT</b> (ค่า: {array[leftPtr]})</span>
-            <small>ต้องหยุดเมื่อเจอค่าที่ {selectedLevel.id === 2 ? "น้อยกว่าหรือเท่ากับ" : "มากกว่าหรือเท่ากับ"} Pivot ({array[pivotIdx]})</small>
+        <div className="final-mine-card">
+
+          <div className="final-trophy">🏆</div>
+
+          <h1 className="final-mine-title">
+            ภารกิจสำเร็จ!
+          </h1>
+
+          <div className="final-mine-score">
+            {totalScore.toLocaleString()}
           </div>
-        )}
 
-        {gameState === "MOVE_RIGHT" && (
-          <div className="hint-group">
-            <span className="icon">👈</span> 
-            <span>พิจารณาฝั่ง <b>RIGHT</b> (ค่า: {array[rightPtr]})</span>
-            <small>ต้องหยุดเมื่อเจอค่าที่ {selectedLevel.id === 2 ? "มากกว่าหรือเท่ากับ" : "น้อยกว่าหรือเท่ากับ"} Pivot ({array[pivotIdx]})</small>
+          <div className="final-mine-sub">
+            คะแนนรวมที่ทำได้
           </div>
-        )}
 
-        {gameState === "CHECK_SWAP" && <div className="hint gold-glow">ตรวจพบตัวเลขที่ผิดตำแหน่ง! กด "สลับ" เพื่อดำเนินการต่อ 🔁</div>}
-        {gameState === "FINAL_SWAP" && <div className="hint win-glow">Pointer ชนกันแล้ว! วาง Pivot ลงในตำแหน่งที่ถูกต้อง ✨</div>}
-      </div>
-
-      {/* 🔹 BUTTONS: แสดงตามสถานะ */}
-      <div className="control-actions-wrapper" style={{ display: 'flex', gap: '15px' }}>
-    {/* ในส่วน Control Panel */}
-{(gameState === "MOVE_LEFT" || gameState === "MOVE_RIGHT") && (
-  <>
-    <button className="btn-logic move-btn" onClick={() => handlePointerAction("MOVE")}>
-      ➡️ ขยับต่อ
-    </button>
-    <button className="btn-logic stop-btn" onClick={() => handlePointerAction("STOP")}>
-      ⛔ หยุดตรวจสอบ
-    </button>
-  </>
-)}
-
-    {gameState === "CHECK_SWAP" && (
-      <button className="btn-logic swap-btn" onClick={() => executeSwap(false)}>
-        🔁 สลับค่า L และ R
-      </button>
-    )}
-
-    {gameState === "FINAL_SWAP" && (
-      <button className="btn-logic final-btn" onClick={() => executeSwap(true)}>
-        ✨ วางตำแหน่ง Pivot
-      </button>
-    )}
-  </div>
-</div>
-  </div>
-)}
-
-
-          {/* 💎 LEVEL INTRO */}
-          {gameState === "LEVEL_INTRO" && (
-            <div className="mine-intro-overlay fade-in">
-              <div className="mine-intro-card">
-                <div className="level-medal"><span>LV.{selectedLevel?.id || "1"}</span></div>
-                <h1 className="mine-title">{selectedLevel?.name}</h1>
-                <div className="gold-divider"></div>
-                <div className="mission-paper">
-                  <div className="mission-label"><span>📜</span> ภารกิจหลัก</div>
-                  <p className="mission-desc">ใช้ลอจิก <span className="highlight-word">QuickSort</span> คัดแยกหินแร่ โดยเปรียบเทียบกับค่า <span className="highlight-word">Pivot</span> ให้ถูกต้อง</p>
-                  <div className="rule-box">⬅️ น้อยกว่า (ซ้าย) | มากกว่า (ขวา) ➡️</div>
-                  <div className="tags-row">
-                    <span className="tag-gold">🎯 Partitioning</span>
-                    <span className="tag-dark">⚡ {selectedMiner?.skill}</span>
-                  </div>
-                </div>
-                <button className="btn-gold-start" onClick={() => startGame()}><span className="btn-label">ลุยกันเลย! ⛏️</span></button>
-                <div className="miner-footer">
-                  <div className="miner-avatar-circle">{selectedMiner?.img && <img src={selectedMiner.img} alt="miner" />}</div>
-                  <p><b>{selectedMiner?.nameTh}</b> พร้อมขุดเจาะแล้ว!</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 🏆 RESULTS */}
-          {gameState === "RESULTS" && (
-            <div className="result-overlay fade-in">
-              <div className={`result-card ${resultStatus === 'WIN' ? 'border-gold' : 'border-red'}`}>
-                <h1 className={resultStatus === 'WIN' ? 'text-win' : 'text-lose'}>{resultStatus === 'WIN' ? 'MISSION SUCCESS' : 'MISSION FAILED'}</h1>
-                <div className="stat-grid">
-                  <div className="stat-item-box"><span>คะแนนจากการขุด</span><span className="val-total">{score}</span></div>
-                </div>
-                <div className="result-footer">
-                  <button className="btn-retry" onClick={() => { playSound(sfxClick); setGameState("MAP"); }}>กลับสู่แผนที่</button>
-                </div>
-              </div>
-            </div>
-          )}
+          <button
+            className="final-mine-btn"
+            onClick={() => navigate("/home")}
+          >
+            กลับหน้าหลัก 🏠
+          </button>
 
         </div>
       </div>
     </MainLayout>
   );
+}
+
+if (screen === "level") {
+
+  const userKey = getUserKey();
+  const key = `progress_${userKey}_${LESSON_KEY}`;
+  const savedProgress = JSON.parse(localStorage.getItem(key));
+  const isGameDone = savedProgress?.game === true;
+
+  const progressPercent =
+    unlockedLevel <= 1
+      ? 0
+      : ((unlockedLevel - 1) / (LEVELS.length - 1)) * 100;
+
+  return (
+    <MainLayout>
+      <div
+        className="mine-map-screen-v2"
+        style={{ backgroundImage: `url(${bgMining})` }}
+      >
+        <div className="mine-overlay-dark"></div>
+
+        <div className="mine-map-panel-v2">
+
+          {/* ===== HEADER ===== */}
+          <h2 className="mine-map-title">
+            ⛏️ แผนที่เส้นทางเหมือง
+          </h2>
+
+          <p className="mine-map-sub">
+            ผ่านทีละด่านเพื่อขุดลึกลงไป
+          </p>
+
+          {/* ===== SCORE ===== */}
+          <div style={{
+            margin: "10px 0 20px 0",
+            fontSize: "1.1rem",
+            fontWeight: "bold",
+            color: "#a8ff78"
+          }}>
+            💎 คะแนนสะสมทั้งหมด: {totalScore}
+          </div>
+
+          {/* ===== GAME COMPLETE MESSAGE ===== */}
+          {isGameDone && (
+            <div style={{
+              marginBottom: "25px",
+              padding: "12px 20px",
+              background: "rgba(0,255,120,0.15)",
+              borderRadius: "12px",
+              fontWeight: "bold",
+              color: "#a8ff78"
+            }}>
+              🎉 ภารกิจสำเร็จครบทุกด่านแล้ว!
+            </div>
+          )}
+
+          {/* ===== PROGRESS BAR ===== */}
+          <div className="mine-progress-container">
+
+            <div className="mine-track-base"></div>
+
+            <div
+              className="mine-track-progress"
+              style={{ width: `${progressPercent}%` }}
+            ></div>
+
+            {LEVELS.map((lvl) => {
+
+            const isCurrent = lvl.id === unlockedLevel;
+
+            const isDone = isGameDone
+              ? true
+              : lvl.id < unlockedLevel;
+
+            const isLocked = !isGameDone && lvl.id > unlockedLevel;
+
+            return (
+              <button
+                key={lvl.id}
+                className={`mine-node-v2 
+                  ${isCurrent && !isGameDone ? "current" : ""} 
+                  ${isDone ? "completed" : ""} 
+                  ${isLocked ? "locked" : ""}`
+                }
+                disabled={isGameDone || !isCurrent}
+                onClick={() => {
+                  if (isGameDone) return;
+                  setLevel(lvl);
+                  setScreen("rule");
+                }}
+              >
+                {isDone ? "✔" : lvl.id}
+              </button>
+            );
+          })}
+
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+}
+
+if (screen === "rule") {
+  return (
+    <MainLayout>
+      <div
+        className="mine-rule-overlay fade-in"
+        style={{ backgroundImage: `url(${bgMining})` }}
+      >
+        <div className="mine-rule-card">
+
+          <h2 className="mine-rule-title">
+            ⛏️ ภารกิจจัดเรียงคริสตัล (Quick Sort)
+          </h2>
+
+          <div className="mine-rule-layout-balanced">
+
+  {/* LEFT SIDE */}
+  {character && (
+    <div className="rule-left">
+      <div className="rule-avatar-wrapper">
+        <img src={character.img} alt="char" />
+      </div>
+
+      <h3 className="rule-char-name">{character.nameEn}</h3>
+
+      <div className="rule-char-stats">
+        <div>❤️ HP: {character.hp}</div>
+        <div>⏳ เวลาโบนัส: +{character.timeBonus}s</div>
+      </div>
+    </div>
+  )}
+
+  {/* RIGHT SIDE */}
+  <div className="rule-right">
+
+    <div className="rule-steps-box">
+      <div>💎 เลือก <strong>Pivot</strong></div>
+      <div>⬅️ ขยับ L เพื่อหาแร่ที่ควรสลับ</div>
+      <div>➡️ ขยับ R เช่นเดียวกัน</div>
+      <div>🔄 Swap แร่ซ้าย–ขวา</div>
+      <div>🏁 Final Swap วาง Pivot ให้ถูกตำแหน่ง</div>
+      <div>♻️ แบ่งซ้าย–ขวา แล้วทำซ้ำ</div>
+    </div>
+
+    <div className="rule-warning-box">
+      ⚠️ ถ้า HP หมด หรือเวลาเหลือ 0 ภารกิจล้มเหลว!
+    </div>
+
+    <button
+      className="rule-start-btn"
+      onClick={() => {
+        playClick();
+        startLevel(level);
+      }}
+    >
+      🚀 เริ่มขุดเหมือง
+    </button>
+
+  </div>
+</div>
+          {/* ===== END LAYOUT ===== */}
+
+        </div>
+      </div>
+    </MainLayout>
+  );
+}
+
+
+if (screen === "result") {
+  // ✅ เพิ่มบรรทัดนี้เพื่อหาว่ามีด่านถัดไปไหม (แก้ Error nextLvl is not defined)
+  const nextLvl = LEVELS.find(l => l.id === level?.id + 1);
+
+  return (
+    <MainLayout>
+      <div className="mine-result-screen-centered">
+        {/* เลเยอร์มืดด้านหลังเพื่อให้ข้อความสีขาวสว่างจึ้ง */}
+        <div className="result-overlay" style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)' }}></div>
+
+        <div className="result-card-v8 glass-panel-neon pop-in">
+          <h1 className="neon-text-white-bold" style={{ color: '#FFFFFF', textShadow: '0 0 10px #00f2ff, 0 0 20px #00f2ff', fontSize: '2.8rem', fontWeight: '900' }}>
+            ภารกิจสำเร็จ!
+          </h1>
+
+          <div className="score-main-v8" style={{ background: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '20px', margin: '20px 0' }}>
+            <p className="score-label-v8" style={{ color: '#00f2ff', fontWeight: 'bold' }}>คะแนนที่ทำได้ในด่านนี้</p>
+            {/* ตัวเลขคะแนนสีขาวสว่างเด่นชัด */}
+            <h2 className="score-number-v8" style={{ color: '#FFFFFF', fontSize: '4rem', margin: '10px 0' }}>{score}</h2>
+          </div>
+
+          <div className="score-footer-v8" style={{ color: '#a8ff78', fontWeight: 'bold', marginBottom: '30px' }}>
+          </div>
+
+          <div className="result-actions-v8" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            {/* ปุ่มด่านถัดไป: ไม่มีปุ่มเล่นซ้ำตามกฎที่คุณตั้งไว้ */}
+            {nextLvl ? (
+  <button 
+    className="btn-v8-next"
+    onClick={() => {
+      // 🚩 1. ปลดล็อกด่านถัดไป
+      const nextLevelId = nextLvl.id;
+
+      setUnlockedLevel(nextLevelId);
+
+      saveProgress({
+        level: nextLevelId
+      });
+
+      // 🚩 2. เริ่มด่านใหม่
+      startLevel(nextLvl);
+    }}
+    style={{
+      padding: '15px',
+      borderRadius: '15px',
+      background: 'linear-gradient(135deg, #00f2ff, #007bff)',
+      color: 'white',
+      fontWeight: 'bold',
+      border: 'none',
+      cursor: 'pointer'
+    }}
+  >
+    เข้าสู่เหมืองด่านถัดไป ⛏️
+  </button>
+) : (
+  <button 
+    className="btn-v8-next"
+    onClick={() => setScreen("level")}
+    style={{
+      padding: '15px',
+      borderRadius: '15px',
+      background: 'linear-gradient(135deg, #00f2ff, #007bff)',
+      color: 'white',
+      fontWeight: 'bold',
+      border: 'none',
+      cursor: 'pointer'
+    }}
+  >
+    จบภารกิจ กลับหน้าแผนที่ 🗺️
+  </button>
+)}
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+}
+
+//ใช้ตัวนี้ตัวเดียวพอครับ
+if (screen === "gameover") {
+  return (
+    <MainLayout>
+      <div className="mine-gameover-screen" style={{ backgroundImage: `url(${bgMining})` }}>
+        <div className="mine-dark-overlay"></div>
+        <div className="gameover-card pop-in">
+          <div className="skull-icon">💀</div>
+          <h2 className="gameover-title">ภารกิจล้มเหลว</h2>
+          <p className="gameover-sub">พลังชีวิตหมดแล้ว คริสตัลพังหมดเหมือง!</p>
+          <div className="gameover-score">💎 คะแนนที่ได้: {score}</div>
+          <div className="gameover-buttons">
+            <button className="retry-btn" onClick={() => startLevel(level)}>🔄 ลองใหม่</button>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+}
+
+return (
+  <MainLayout>
+    {/* คอนเทนเนอร์หลัก: จัดกึ่งกลางและใช้พื้นหลังเหมือง */}
+    <div className="mine-game-screen" style={{ 
+      backgroundImage: `url(${bgMining})`, 
+      backgroundSize: 'cover', 
+      backgroundPosition: 'center',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      minHeight: '100vh',
+      padding: '20px'
+    }}>
+      
+      {/* 1. HUD: แสดงสถานะเกมด้วยสีโทนพาสเทลอ่อน (Soft Colors) */}
+      <div className="hud-capsule-landscape" style={{ background: 'rgba(0, 0, 0, 0.7)', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+        <div className="soft-mint-text" style={{ color: '#b2fab4' }}>⏳ {time}s</div>
+        <div className="soft-purple-text" style={{ fontWeight: '800', color: '#d7bdf2' }}>
+          {level?.name} ({level?.sortMode === 'asc' ? "น้อยไปมาก" : "มากไปน้อย"})
+        </div>
+        <div className="soft-pink-text" style={{ color: '#ffb3ba' }}>❤️ {hp}</div>
+        <div className="soft-blue-text" style={{ color: '#bae1ff' }}>💎 {score}</div>
+      </div>
+
+      {/* 2. พื้นที่เล่นเกม: กล่องคำอธิบายและคริสตัล */}
+      <div className="game-main-area" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+        
+        {/* กล่องคำอธิบายภารกิจแบบ Compact: สีฟ้าพาสเทล */}
+        <div className="instruction-compact-v8" style={{ 
+          background: 'rgba(0, 0, 0, 0.85)', 
+          border: '1.5px solid #00f2ff', 
+          padding: '12px 25px', 
+          borderRadius: '12px',
+          marginBottom: '30px',
+          width: 'fit-content',
+          maxWidth: '650px',
+          textAlign: 'center'
+        }}>
+          <div style={{ color: '#ffb3ba', fontSize: '0.9rem', marginBottom: '4px', fontWeight: 'bold' }}>
+            ภารกิจรอบนี้: {currentRange.low} ถึง {currentRange.high}
+          </div>
+          <p style={{ color: '#bae1ff', fontSize: '1.2rem', fontWeight: 'bold', margin: 0, lineHeight: '1.4' }}>
+            {getInstructionText()} 
+          </p>
+        </div>
+
+        {/* แถวคริสตัล: จัดกึ่งกลางและแยกสีตัวที่เรียงเสร็จแล้ว */}
+        <div className="crystal-row" style={{ display: 'flex', justifyContent: 'center', gap: '15px', alignItems: 'flex-end' }}>
+          {array.map((num, idx) => {
+            const isSorted = sortedIndices.includes(idx); // เช็คว่าตัวนี้เรียงเสร็จหรือยัง
+            const isInRange = idx >= currentRange.low && idx <= currentRange.high; // อยู่ในรอบที่เล่นอยู่ไหม
+
+            return (
+              <div key={idx} className={`crystal-item-v4 ${idx === pivotIndex ? "pivot" : ""}`} style={{ textAlign: 'center', opacity: isInRange || isSorted ? 1 : 0.3 }}>
+                
+                {/* คำว่า PIVOT ปรากฏด้านบนตัวเลข (สีเหลืองทองทึบ) */}
+                <div style={{ 
+                  height: '25px', 
+                  color: '#ffcc00', 
+                  fontSize: '0.85rem', 
+                  fontWeight: 'bold',
+                  visibility: idx === pivotIndex ? 'visible' : 'hidden' 
+                }}>
+                  PIVOT
+                </div>
+
+                <div className="crystal-box-v4" 
+                     style={{ 
+                       background: isSorted ? '#1a1a1a' : '#000', // เรียงแล้วจะมืดลง
+                       color: isSorted ? '#666' : '#ffffff', // เรียงแล้วเลขจะจางลง อ่านง่ายไม่เรืองแสง
+                       border: idx === pivotIndex ? '3px solid #ffcc00' : (isSorted ? '2px solid #222' : '2px solid #444'),
+                       cursor: isInRange && phase === "PICK_PIVOT" ? 'pointer' : 'default'
+                     }}
+                     onClick={() => isInRange && phase === "PICK_PIVOT" && handlePivot(idx)}>
+                  {num}
+                </div>
+
+                {/* ตัวชี้ L และ R (สีเขียวและแดงพาสเทล) */}
+{/* ตัวชี้ L และ R: จะแสดงก็ต่อเมื่อเลือก Pivot เรียบร้อยแล้วเท่านั้น */}
+<div className="pointer-space" style={{ height: '35px', marginTop: '8px', position: 'relative' }}>
+  {/* 🚩 เพิ่มเงื่อนไข phase !== "PICK_PIVOT" เข้าไป */}
+  {phase !== "PICK_PIVOT" && idx === leftPtr && (
+    <div className="ptr-v4 l" style={{ color: '#b2fab4', fontWeight: '900', fontSize: '1.2rem' }}>L</div>
+  )}
+  
+  {/* 🚩 เพิ่มเงื่อนไข phase !== "PICK_PIVOT" เข้าไป */}
+  {phase !== "PICK_PIVOT" && idx === rightPtr && (
+    <div className="ptr-v4 r" style={{ color: '#ffb3ba', fontWeight: '900', fontSize: '1.2rem' }}>R</div>
+  )}
+</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 3. แผงควบคุม 6 ปุ่ม: จัดกึ่งกลางด้านล่าง */}
+      <div className="controls-wrapper-bottom" style={{ width: '100%', display: 'flex', justifyContent: 'center', paddingBottom: '30px' }}>
+        <div className="controls-panel-landscape" style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(6, 1fr)', 
+          gap: '12px', 
+          background: 'rgba(0,0,0,0.6)', 
+          padding: '15px', 
+          borderRadius: '15px' 
+        }}>
+          <button disabled={phase !== "SCAN_LEFT"} onClick={moveLeft} className="btn-ctrl-v2">🔵 ขยับ L</button>
+          <button disabled={phase !== "SCAN_LEFT"} onClick={stopL} className="btn-ctrl-v2">🛑 หยุด L</button>
+          <button disabled={phase !== "SCAN_RIGHT"} onClick={moveRight} className="btn-ctrl-v2">🔴 ขยับ R</button>
+          <button disabled={phase !== "SCAN_RIGHT"} onClick={stopR} className="btn-ctrl-v2">🛑 หยุด R</button>
+          {/* ปุ่มสลับและปุ่มวาง: ตรวจลอจิกการสวนกันตามภาพ image_18d77b.png */}
+          <button disabled={phase !== "CHECK" || leftPtr >= rightPtr} onClick={checkAndSwap} className="btn-ctrl-v2">🔄 สลับ</button>
+          <button disabled={phase !== "CHECK" || leftPtr < rightPtr} onClick={placePivot} className="btn-ctrl-v2">🏁 วาง Pivot</button>
+        </div>
+      </div>
+
+    </div>
+  </MainLayout>
+);
 }

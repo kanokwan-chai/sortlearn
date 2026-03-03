@@ -399,9 +399,7 @@ export default function SelectionGame() {
     </div>
   </div>
 )}
-            
-            
-
+    
         {/* RULES */}
         {gameState === "RULES" && (
           <div className="overlay-backdrop fade-in">
