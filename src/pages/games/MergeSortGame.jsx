@@ -395,7 +395,7 @@ const findNextMergeNode = (root) => {
   playSound("win");
   setInstruction("🎉 ยอดเยี่ยม! คุณผสานครบทุกโหนดแล้ว");
 
-  const levelBonus = (time * 2) + (hp * 50);
+  const levelBonus = 200 + (time * 2);
 
   handleLevelComplete(levelBonus);
 } else {

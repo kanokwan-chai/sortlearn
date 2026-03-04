@@ -309,6 +309,7 @@ export default function InsertionGame() {
   };
 
   const handleMistake = (msg) => {
+        updateScore(-5);
     if (insurance > 0) {
         setInsurance(prev => prev - 1);
         setFeedback(`🛡️ โล่ทำงาน! ป้องกันความเสียหาย (เหลือ ${insurance - 1})`);
@@ -342,7 +343,11 @@ export default function InsertionGame() {
 
   const handleWin = () => {
     playSound("win"); // 🔊
-    let finalScore = scoreRef.current + (hp * 50) + timeLeft;
+    const levelBonus = 200;
+    const hpBonus = hp * 10;
+    const timeBonus = timeLeft * 2;
+
+    let finalScore = scoreRef.current + levelBonus + hpBonus + timeBonus;
     setScore(finalScore);
     scoreRef.current = finalScore;
 

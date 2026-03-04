@@ -240,7 +240,7 @@ export default function SelectionGame() {
         if (newHp <= 0) handleGameOver("พลังชีวิตหมด 💀");
         return newHp;
       });
-      setScore(s => Math.max(0, s - 20));
+      setScore(s => Math.max(0, s - 5));
     }
   };
 
@@ -259,12 +259,12 @@ export default function SelectionGame() {
     const newBooks = [...books];
     [newBooks[sortedIndex], newBooks[candidateIndex]] = [newBooks[candidateIndex], newBooks[sortedIndex]];
     setBooks(newBooks);
-    setScore(s => s + 50);
+    setScore(s => s + 20);
     const nextSorted = sortedIndex + 1;
     setSortedIndex(nextSorted);
 
     if (nextSorted >= books.length - 1) {
-      setFeedback("🎉 ยอดเยี่ยม! รอสักครู่...");
+      setFeedback(`🎉 ผ่านด่าน! โบนัสเวลา +${timeLeft * 2}`);
       setTimeout(() => {
         handleLevelComplete();
       }, 1500); 
@@ -279,8 +279,9 @@ export default function SelectionGame() {
   const handleLevelComplete = () => {
     clearInterval(timerRef.current);
     playSound("win");
-    const levelScore = 100; 
-    const newTotalScore = score + levelScore;
+    const levelScore = 200;
+    const timeBonus = timeLeft * 2;
+    const newTotalScore = score + levelScore + timeBonus;
     setScore(newTotalScore);
 
     // ✅ บันทึก Level และ Score ทันทีที่จบด่าน

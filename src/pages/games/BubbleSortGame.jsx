@@ -137,42 +137,76 @@ export default function BubbleSortGame() {
     setGameState("RULES");
   };
 
-  const handleDecision = (userWantsSwap) => {
-    if (isProcessing) return;
-    const i = currentIndex;
-    const isAsc = LEVELS[levelIdx].order === "ASC";
-    const mustSwap = isAsc ? (bubbles[i] > bubbles[i + 1]) : (bubbles[i] < bubbles[i + 1]);
+const handleDecision = (userWantsSwap) => {
+  if (isProcessing) return;
 
-    if (userWantsSwap === mustSwap) {
-      setIsProcessing(true);
-      playSound(userWantsSwap ? "bubble" : "correct");
-      setScore(s => s + 25);
-      scoreRef.current += 25;
-      let newB = [...bubbles];
-      if (userWantsSwap) [newB[i], newB[i + 1]] = [newB[i + 1], newB[i]];
-      setBubbles(newB);
-      setTimeout(() => {
-        const nextI = currentIndex + 1;
-        const limit = bubbles.length - 1 - passCompleted;
-        if (nextI < limit) { setCurrentIndex(nextI); }
-        else {
-          if (passCompleted + 1 >= bubbles.length - 1) { handleWin(); }
-          else { setPassCompleted(p => p + 1); setCurrentIndex(0); setFeedback("หนึ่งรอบสำเร็จ! 🫧"); }
-        }
-        setIsProcessing(false);
-      }, 500);
-    } else {
-      if (shield > 0) { setShield(s => s - 1); setFeedback("🛡️ โล่ป้องกันช่วยไว้!"); }
-      else {
-        playSound("wrong");
-        setHp(prev => { if (prev <= 1) setGameState("GAMEOVER"); return prev - 1; });
-      }
+  const i = currentIndex;
+  const isAsc = LEVELS[levelIdx].order === "ASC";
+  const mustSwap = isAsc ? (bubbles[i] > bubbles[i + 1]) : (bubbles[i] < bubbles[i + 1]);
+
+  if (userWantsSwap === mustSwap) {
+    setIsProcessing(true);
+    playSound(userWantsSwap ? "bubble" : "correct");
+
+    // ✅ คะแนนการตัดสินใจถูก
+    setScore(s => s + 10);
+    scoreRef.current += 10;
+
+    let newB = [...bubbles];
+
+    // ✅ ถ้ามีการ swap จริง
+    if (userWantsSwap) {
+      [newB[i], newB[i + 1]] = [newB[i + 1], newB[i]];
+
+      setScore(s => s + 20);
+      scoreRef.current += 20;
     }
-  };
+
+    setBubbles(newB);
+
+    setTimeout(() => {
+      const nextI = currentIndex + 1;
+      const limit = bubbles.length - 1 - passCompleted;
+
+      if (nextI < limit) {
+        setCurrentIndex(nextI);
+      } else {
+        if (passCompleted + 1 >= bubbles.length - 1) {
+          handleWin();
+        } else {
+          setPassCompleted(p => p + 1);
+          setCurrentIndex(0);
+          setFeedback("หนึ่งรอบสำเร็จ! 🫧");
+        }
+      }
+
+      setIsProcessing(false);
+    }, 500);
+
+  } else {
+
+    // ❌ หักคะแนนเมื่อผิด
+    setScore(s => Math.max(0, s - 5));
+    scoreRef.current = Math.max(0, scoreRef.current - 5);
+
+    if (shield > 0) {
+      setShield(s => s - 1);
+      setFeedback("🛡️ โล่ป้องกันช่วยไว้!");
+    } else {
+      playSound("wrong");
+      setHp(prev => {
+        if (prev <= 1) setGameState("GAMEOVER");
+        return prev - 1;
+      });
+    }
+  }
+};
 
   const handleWin = () => {
     playSound("win");
-    const finalScore = scoreRef.current + (hp * 100) + (timeLeft * 10);
+    const levelBonus = 200;
+    const timeBonus = timeLeft * 2;
+    const finalScore = scoreRef.current + levelBonus + timeBonus;
     const isLastLevel = levelIdx === LEVELS.length - 1;
     const nextLvlNum = levelIdx + 2;
     const updateData = { score: finalScore };

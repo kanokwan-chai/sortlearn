@@ -171,7 +171,9 @@ const startLevel = (lvl) => {
 
 const handleWrongMove = (message) => {
 
-  playSfx("wrong");   // 🔥 เพิ่มเสียงผิดตรงนี้
+  playSfx("wrong");
+
+  setScore(s => Math.max(0, s - 10)); // 🔻 ลดคะแนน
 
   setHp(prev => {
     const nextHp = Math.max(0, prev - 1);
@@ -228,7 +230,7 @@ const placePivot = () => {
   }
 
   setArray(newArr);
-  setScore(s => s + 200);
+  setScore(s => s + 100);
   handlePartitionComplete(leftPtr);
 };
 
@@ -336,7 +338,7 @@ const checkAndSwap = () => {
     [newArr[rightPtr], newArr[leftPtr]];
 
   setArray(newArr);
-  setScore(s => s + 100);
+  setScore(s => s + 50);
   setLeftPtr(prev => prev + 1);
   setRightPtr(prev => prev - 1);
   setPhase("SCAN_LEFT");
@@ -441,7 +443,8 @@ const updateGameScore = (points) => {
 };
 const handleLevelComplete = () => {
   const levelBonus = 200;
-  const currentLvlScore = score + levelBonus;
+  const timeBonus = time * 2;   // ⭐ โบนัสเวลา
+  const currentLvlScore = score + levelBonus + timeBonus;
 
   const userKey = getUserKey();
   const key = `progress_${userKey}_${LESSON_KEY}`;

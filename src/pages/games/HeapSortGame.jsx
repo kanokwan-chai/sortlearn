@@ -4,13 +4,13 @@ import "../../styles/heap-game.css";
 import { useNavigate } from "react-router-dom";
 
 
-// ✅ 1. Assets Mapping (ห้ามลบ) [cite: 75, 76]
+// ✅ 1. Assets Mapping 
 import bgForest from "../../assets/bg-forest.png";
 import h1 from "../../assets/h1.png"; import h2 from "../../assets/h2.png"; import h3 from "../../assets/h3.png"; 
 import sfxClick from "../../assets/sounds/click.mp3"; import sfxCorrect from "../../assets/sounds/correct.mp3";
 import sfxWrong from "../../assets/sounds/wrong.mp3"; import sfxWin from "../../assets/sounds/win.mp3";
 
-// ✅ 2. Constants (ชุดข้อมูลที่ผ่านการตรวจสอบแล้ว) [cite: 4, 5, 77, 78]
+// ✅ 2. Constants (ชุดข้อมูลที่ผ่านการตรวจสอบแล้ว) 
 const STAGES = [
     { id: 1, title: "ปลุกพลังรากไม้", icon: "🌱", type: "MAX", goal: "สร้าง Max & Min Heap" },
     { id: 2, title: "เก็บเกี่ยวแห่งลำดับ", icon: "🌾", type: "SORT_ASC", goal: "เรียงลำดับ น้อย -> มาก" },
@@ -39,7 +39,7 @@ const GUARDIANS = [
 
 export default function HeapSortGame() {
     const navigate = useNavigate();
-    // ================= 3. State Management (ครบถ้วนห้ามลบ) [cite: 7-10, 80-84] =================
+    // ================= 3. State Management (ครบถ้วนห้ามลบ)  =================
     const [gameState, setGameState] = useState("LOADING");
     const [selectedChar, setSelectedChar] = useState(null);
     const [currentTaskIdx, setCurrentTaskIdx] = useState(0); 
@@ -305,6 +305,7 @@ const handleManualCheck = () => {
 
     if (errorIdx !== null) {
         playSound(sfxWrong);
+        setScore(s => Math.max(0, s - 10));
         setViolationIdx(errorIdx);
         setHp(prevHp => {
             const newHp = Math.max(0, prevHp - 1);
@@ -314,7 +315,7 @@ const handleManualCheck = () => {
         setIsVerified(false);
     } else {
         playSound(sfxCorrect);
-        setScore(s => s + 100);
+        setScore(s => s + 50);
         setViolationIdx(null);
         setIsVerified(true);
     }
@@ -335,6 +336,7 @@ const handleExtraction = () => {
     
     if (harvested !== currentTarget) {
         playSound(sfxWrong);
+        setScore(s => Math.max(0, s - 10));
         setViolationIdx(lastIdx);
         setHp(prev => Math.max(0, prev - 1));
         triggerToast(currentTask.type === "SORT_ASC" ? "ต้องเป็นมวลสารที่มากที่สุด!" : "ต้องเป็นมวลสารที่น้อยที่สุด! ⚠️");
@@ -350,7 +352,7 @@ const handleExtraction = () => {
     const targetSlot = newSorted.lastIndexOf(null);
     if (targetSlot !== -1) newSorted[targetSlot] = harvested;
     setSortedArray(newSorted);
-    setScore(s => s + 150);
+    setScore(s => s + 80);
     playSound(sfxCorrect);
 
     // ✨ เช็คสมดุลใหม่ (ด่าน 3 ใช้ลอจิก MIN)
@@ -682,12 +684,17 @@ const handleSelectGuardian = (guardian) => {
         setGameState("RULES");
     }
     else if (currentTaskIdx === 3) {
-        // ✅ 4. จบด่าน 3 -> บันทึกคะแนนจริงที่เล่นได้รอบนี้ (เช่น 2150)
-        saveProgressToStorage({ game: true, score: score }); 
-        setGameState("RESULT"); 
+
+        const finalScore = score + 200 + timeLeft * 2;  // +200 ผ่านด่าน + โบนัสเวลา
+
+        saveProgressToStorage({ game: true, score: finalScore });
+
+        setScore(finalScore);
+
+        setGameState("RESULT");
         playSound(sfxWin);
     }
-}}>
+    }}>
     {currentTaskIdx === 3 ? "ดูผลลัพธ์ 🏆" : "ต่อไป ⮕"}
 </button>
                                 )
