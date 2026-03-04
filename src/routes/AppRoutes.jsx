@@ -38,9 +38,8 @@ import InsertionGame from "../pages/games/InsertionGame";
 import BubbleSortGame from "../pages/games/BubbleSortGame";
 import HeapSortGame from "../pages/games/HeapSortGame";
 import QuickSortGame from "../pages/games/QuickSortGame";
-/*
-import MergeSortGame from "../pages/games/MergeSortGame";                                                                                                                                      
-*/
+import MergeSortGame from "../pages/games/MergeSortGame";
+                                                                                                                                  
 
 
 import SelectionPosttest from "../pages/posttest/SelectionPosttest"; 
@@ -91,6 +90,7 @@ export default function AppRoutes() {
       <Route path="/games/bubble-sort" element={<BubbleSortGame />} /> 
       <Route path="/games/heap-sort" element={<HeapSortGame />} />
       <Route path="/games/quick-sort" element={<QuickSortGame />} />
+      <Route path="/games/merge-sort" element={<MergeSortGame />} />
 
 
       {/* แบบทดสอบหลังเรียน */}

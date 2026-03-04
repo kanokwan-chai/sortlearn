@@ -20,9 +20,9 @@ const LESSON_KEY = "bubble";
 const SCORE_API = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
 
 const LEVELS = [
-  { id: 1, name: "โซนปะการัง", count: 4, baseTime: 50, maxVal: 50, order: "ASC", desc: "น้อย ⮕ มาก" },
-  { id: 2, name: "ร่องลึกสมุทร", count: 5, baseTime: 45, maxVal: 75, order: "DESC", desc: "มาก ⮕ น้อย" },
-  { id: 3, name: "เมืองบาดาล", count: 6, baseTime: 40, maxVal: 99, order: "ASC", desc: "น้อย ⮕ มาก" }
+  { id: 1, name: "โซนปะการัง", count: 5, baseTime: 50, maxVal: 99, order: "ASC", desc: "น้อย ⮕ มาก" },
+  { id: 2, name: "ร่องลึกสมุทร", count: 7, baseTime: 45, maxVal: 99, order: "DESC", desc: "มาก ⮕ น้อย" },
+  { id: 3, name: "เมืองบาดาล", count: 9, baseTime: 40, maxVal: 99, order: "ASC", desc: "น้อย ⮕ มาก" }
 ];
 
 const CHARACTERS = [

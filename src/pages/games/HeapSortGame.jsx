@@ -99,7 +99,7 @@ const userKey =
     } catch (e) { console.error("Score sending failed", e); }
 };
 
-// ✅ แก้ไข useEffect ตัวแรก (บรรทัดที่ 138-169)
+// ✅ แก้ไข useEffect ตัวแรก 
 useEffect(() => {
     const resumeJourney = () => {
         try {
@@ -193,12 +193,23 @@ const treePos = useMemo(() => {
     // ================= 4. Logic Functions (ลอจิกจากไฟล์ที่ใช้งานได้จริง) [cite: 16-42, 87-121] =================
     const playSound = (sfx) => { new Audio(sfx).play().catch(() => {}); };
 
-    const initGameData = (guardian) => {
-        playSound(sfxClick); setSelectedChar(guardian); setHp(guardian.hp); setTimeLeft(guardian.time);
-        setScore(0); setCurrentTaskIdx(0); setCurrentLvlIdx(0);
-        setHeap(new Array(7).fill(null)); setInputArray(new Array(7).fill("")); setSortedArray(new Array(7).fill(null));
-        setIsInputDone(false); setIsVerified(false); setViolationIdx(null); setSelectedIdx(null); setGameState("MAP");
-    };
+const initGameData = (guardian) => {
+    playSound(sfxClick); 
+    setSelectedChar(guardian); 
+    setHp(guardian.hp); 
+    setTimeLeft(guardian.time);
+    setScore(0); 
+    setCurrentTaskIdx(0); 
+    setCurrentLvlIdx(0);
+    setHeap(new Array(7).fill(null)); 
+    setInputArray(new Array(7).fill("")); 
+    setSortedArray(new Array(7).fill(null));
+    setIsInputDone(false); 
+    setIsVerified(false); 
+    setViolationIdx(null); 
+    setSelectedIdx(null); 
+    setGameState("MAP");
+};
 
     const handleArrayInputChange = (idx, val) => {
         const next = [...inputArray];

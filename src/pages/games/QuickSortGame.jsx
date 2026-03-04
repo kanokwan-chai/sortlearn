@@ -142,12 +142,17 @@ const saveProgress = useCallback((data) => {
 
 // --- แก้ไขใน startLevel และ moveRight ---
 const startLevel = (lvl) => {
-  if (!lvl) return;   // 🔥 กัน null
+  if (!lvl) return;
 
-  const arr = Array.from(
-    { length: lvl.count },
-    () => Math.floor(Math.random() * 99) + 1
-  );
+  const numbers = [];
+  while (numbers.length < lvl.count) {
+    const n = Math.floor(Math.random() * 99) + 1;
+    if (!numbers.includes(n)) {
+      numbers.push(n);
+    }
+  }
+
+  const arr = numbers;
 
   setArray(arr);
   setLevel(lvl);

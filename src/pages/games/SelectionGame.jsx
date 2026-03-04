@@ -436,8 +436,10 @@ export default function SelectionGame() {
         {/* ✅ ส่วนที่เพิ่ม: เส้นพื้นหลังและเส้นความคืบหน้า */}
         <div className="map-line-background"></div>
         <div 
-          className="map-line-progress" 
-          style={{ width: `${((unlockedLevel - 1) / (LEVELS.length - 1)) * 100}%` }}
+          className="map-line-progress"
+          style={{
+            width: `calc(${((unlockedLevel - 1) / (LEVELS.length - 1)) * 100}% - 90px)`
+          }}
         ></div>
 
         {LEVELS.map((level, idx) => {

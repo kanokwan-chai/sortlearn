@@ -317,17 +317,24 @@
   z-index: 1;
 }
 
-/* ✅ เส้นความคืบหน้า (เส้นสีสดที่วิ่งตามด่านที่ผ่าน) */
-.map-line-progress {
-  position: absolute;
-  top: 50%;
-  left: 50px;
-  height: 6px;
-  background: #ffeb3b; /* หรือสีเหลืองตามธีม */
-  box-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
-  transform: translateY(-50%);
-  z-index: 2;
-  transition: width 0.8s ease-in-out; /* เพิ่มแอนิเมชันตอนเส้นวิ่ง */
+.map-line-background{
+  position:absolute;
+  top:50%;
+  left:45px;
+  right:45px;
+  height:4px;
+  background:rgba(255,255,255,0.2);
+  transform:translateY(-50%);
+}
+
+.map-line-progress{
+  position:absolute;
+  top:50%;
+  left:50px;
+  height:4px;
+  background:#ffeb3b;
+  box-shadow:0 0 10px rgba(255,235,59,0.6);
+  transform:translateY(-50%);
 }
 
 /* ปรับ Wrapper ของปุ่มด่าน */
