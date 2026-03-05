@@ -198,15 +198,16 @@ const isLeafPair = (node) => {
 
 
 const selectMergeTarget = (node) => {
-
   if (phase !== "MERGE_SELECT") return;
 
- const nextNode = findNextMergeNode(root);
+  const nextNode = findNextMergeNode(root);
 
-if (node.id !== nextNode?.id) {
-  setInstruction("⚠️ ต้องรวมฝั่งซ้ายให้เสร็จก่อน!");
-  return;
-}
+  if (node.id !== nextNode?.id) {
+    // แจ้งเตือนให้ชัดเจนว่าต้องทำก้อนซ้ายให้จบก่อน
+    setInstruction("⚠️ อัลกอริทึม Merge Sort ต้องจัดการก้อนซ้ายให้เสร็จสมบูรณ์ก่อนจะไปก้อนขวานะ!");
+    applyError(); // หัก HP หรือคะแนนตามที่คุณตั้งไว้
+    return;
+  }
 
   setActiveNode(node);
   setMergeLeft([...node.left.values]);
@@ -302,86 +303,29 @@ const isSubtreeMerged = (node) => {
     isSubtreeMerged(node.right)
   );
 };
-const findNextMergeNode = (root) => {
+const findNextMergeNode = (node) => {
+  if (!node || node.isMerged) return null;
 
-  if (!root) return null;
-
-  const level = currentLevelIdx + 1;
-
-  // LEVEL 1-2 ปกติ
-  if (level < 3) {
-
-    const left = findNextMergeNode(root.left);
-    if (left) return left;
-
-    const right = findNextMergeNode(root.right);
-    if (right) return right;
-
-    if (
-      root.left &&
-      root.right &&
-      root.left.isMerged &&
-      root.right.isMerged &&
-      !root.isMerged
-    ) {
-      return root;
-    }
-
-    return null;
+  // 1. ตรวจสอบฝั่งซ้ายก่อนเสมอ: ถ้าลูกซ้ายยัง Merge ไม่เสร็จ 
+  // ต้องมุดลงไปจัดการในก้อนซ้ายให้จบก่อน
+  if (node.left && !node.left.isMerged) {
+    return findNextMergeNode(node.left);
   }
 
-  // ⭐ LEVEL 3
-
-  let candidates = [];
-
-  const walk = (node, depth = 0) => {
-
-    if (!node) return;
-
-    if (
-      node.left &&
-      node.right &&
-      node.left.isMerged &&
-      node.right.isMerged &&
-      !node.isMerged
-    ) {
-      candidates.push({ node, depth });
-    }
-
-    walk(node.left, depth + 1);
-    walk(node.right, depth + 1);
-  };
-
-  // ⭐ ค้นเฉพาะฝั่งซ้ายก่อน
-  walk(root.left);
-
-  if (candidates.length > 0) {
-    candidates.sort((a, b) => b.depth - a.depth);
-    return candidates[0].node;
+  // 2. ถ้าก้อนฝั่งซ้ายเสร็จหมดแล้ว (isMerged === true) 
+  // ถึงจะยอมให้ข้ามมาดูฝั่งขวาได้
+  if (node.right && !node.right.isMerged) {
+    return findNextMergeNode(node.right);
   }
 
-  // ⭐ ถ้าซ้ายเสร็จแล้ว ค่อยไปขวา
-  walk(root.right);
-
-  if (candidates.length > 0) {
-    candidates.sort((a, b) => b.depth - a.depth);
-    return candidates[0].node;
-  }
-
-  // ⭐ สุดท้าย merge root
-  if (
-    root.left &&
-    root.right &&
-    root.left.isMerged &&
-    root.right.isMerged &&
-    !root.isMerged
-  ) {
-    return root;
+  // 3. ถ้าทั้งลูกซ้ายและลูกขวาเสร็จแล้ว (isMerged ทั้งคู่) 
+  // แต่ตัวเอง (โหนดแม่) ยังไม่เสร็จ นี่คือโหนดที่ต้อง Merge ต่อไปครับ
+  if (node.left?.isMerged && node.right?.isMerged && !node.isMerged) {
+    return node;
   }
 
   return null;
 };
-
   useEffect(() => {
     if (phase === "MERGING" && mergeLeft.length === 0 && mergeRight.length === 0 && mergeResult.length > 0) {
       activeNode.values = [...mergeResult];
