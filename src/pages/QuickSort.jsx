@@ -99,91 +99,289 @@ export default function QuickSort() {
 
         {/* ================= ตัวอย่าง ================= */}
         <section className="fade-in-up">
-          <h3 className="section-header">🧮 ตัวอย่างการจัดเรียง</h3>
+          <h3 className="section-header">🧮 ตัวอย่างการจัดเรียง (Quick Sort)</h3>
+
           <div className="concept-card">
             <p><strong>Input:</strong> [7, 2, 13, 9, 1, 10]</p>
-            <p>
-              เลือก 10 เป็น Pivot  
-              <br/>
-              แบ่งกลุ่ม → [7, 2, 9, 1] | 10 | [13]  
-              <br/>
-              ทำซ้ำจนเรียงครบ  
-              <br/>
-              <strong>Output:</strong> [1, 2, 7, 9, 10, 13]
-            </p>
-          </div>
-        </section>
+            <p>Pivot = 10</p>
 
-        {/* ================= TIME COMPLEXITY (แก้ถูกต้อง) ================= */}
-        <section className="fade-in-up">
-          <h3 className="section-header">📊 ประสิทธิภาพเชิงเวลา</h3>
+        <pre style={{textAlign:"center"}}>
+        {`
+        Index :   0   1   2   3   4   5
+        Array :  [7,  2, 13,  9,  1, 10]
 
-          <div className="table-container">
-            <table className="analysis-table big-o">
-              <thead>
-                <tr>
-                  <th>กรณี</th>
-                  <th>Time Complexity</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Best Case</td>
-                  <td>O(n log n)</td>
-                </tr>
-                <tr>
-                  <td>Average Case</td>
-                  <td>O(n log n)</td>
-                </tr>
-                <tr>
-                  <td>Worst Case</td>
-                  <td>O(n²)</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+        L = 0
+        R = 4
+        `}
+        </pre>
 
-        {/* ================= ข้อดี ข้อเสีย ================= */}
-        <section className="fade-in-up">
-          <h3 className="section-header">⚖️ ข้อดี และ ข้อเสีย</h3>
+        <p>1️⃣ เริ่มเปรียบเทียบ</p>
 
-          <div className="pc-clean-grid">
+        <p>
+        <strong>L (Left Pointer)</strong> : หา <strong>ค่าที่มากกว่า Pivot</strong> จากด้านซ้าย  
+        <br/>
+        <strong>R (Right Pointer)</strong> : หา <strong>ค่าที่น้อยกว่า Pivot</strong> จากด้านขวา
+        </p>
 
-            <div className="pc-card pros">
-              <div className="pc-header">
-                <h3>✅ ข้อดี</h3>
-              </div>
-              <ul className="pc-clean-list">
-                <li>ทำงานได้รวดเร็วมากในทางปฏิบัติ</li>
-                <li>Average Case เป็น O(n log n)</li>
-                <li>เป็น In-place Sorting</li>
-                <li>เหมาะกับข้อมูลจำนวนมาก</li>
-              </ul>
-            </div>
-
-            <div className="pc-card cons">
-              <div className="pc-header">
-                <h3>❌ ข้อเสีย</h3>
-              </div>
-              <ul className="pc-clean-list">
-                <li>Worst Case เป็น O(n²)</li>
-                <li>ขึ้นอยู่กับการเลือก Pivot</li>
-                <li>ไม่เป็น Stable Sort</li>
-                <li>ใช้หน่วยความจำ Stack จาก Recursion</li>
-              </ul>
-            </div>
-
-          </div>
-        </section>
-
-        {/* ================= VIDEO ================= */}
-        <div className="lesson-detail-video fade-in-up">
-          <h3>🎬 พร้อมดูการทำงานของ Quick Sort หรือยัง?</h3>
-          <a href="/video/quick-sort" className="video-btn-styled">
-            เข้าสู่บทเรียนวิดีโอ ▶
-          </a>
+        <div style={{display:"flex", justifyContent:"center"}}>
+          <pre className="array-demo">
+        {`
+        Index :  0   1   2   3   4   5
+        Array : [7,  2, 13,  9,  1, 10]
+                ↑L              ↑R
+        `}
+          </pre>
         </div>
+
+        <p>2️⃣ L หาค่าที่มากกว่า Pivot</p>
+
+        <p>
+        L เลื่อนจากซ้ายไปขวา
+        <br/>
+        7 &lt; 10 ✔ ผ่าน
+        <br/>
+        2 &lt; 10 ✔ ผ่าน
+        <br/>
+        13 &gt; 10 ❗ หยุด
+        </p>
+
+        <div style={{display:"flex", flexDirection:"column", alignItems:"center", gap:"20px"}}>
+        <pre className="array-demo">
+        {`
+        Index :  0   1   2   3   4   5
+        Array : [7,  2, 13,  9,  1, 10]
+                    ↑L          ↑R
+        `}
+        </pre>
+        <pre className="array-demo">
+        {`
+        Index :  0   1   2   3   4   5
+        Array : [7,  2, 13,  9,  1, 10]
+                        ↑L       ↑R
+        `}
+        </pre>
+        </div>
+
+        <p>
+        ตอนนี้ L พบค่า <strong>13</strong> ซึ่งมากกว่า Pivot
+        </p>
+
+
+        <p>3️⃣ R หาค่าที่น้อยกว่า Pivot</p>
+
+        <p>
+        R เลื่อนจากขวาไปซ้าย
+        <br/>
+        1 &lt; 10 ❗ หยุด
+        </p>
+
+        <div style={{display:"flex", justifyContent:"center"}}>
+        <pre className="array-demo">
+        {`
+        Index :  0   1   2   3   4   5
+        Array : [7,  2, 13,  9,  1, 10]
+                        ↑L       ↑R
+        `}
+        </pre>
+        </div>
+
+        <p>
+        ตอนนี้ R พบค่า <strong>1</strong> ซึ่งน้อยกว่า Pivot
+        </p>
+
+
+        <p>4️⃣ สลับค่า</p>
+
+        <p>
+        เนื่องจาก
+        <br/>
+        L &gt; Pivot และ R &lt; Pivot
+        <br/>
+        จึงสลับค่า <strong>13</strong> กับ <strong>1</strong>
+        </p>
+
+        <div style={{display:"flex", justifyContent:"center"}}>
+        <pre className="array-demo">
+        {`
+        Array : [7,  2,  1,  9, 13, 10]
+        `}
+        </pre>
+        </div>
+
+
+        <p>5️⃣ เลื่อน Pointer ต่อ</p>
+
+        <p>
+        L เดินต่อ
+        <br/>
+        9 &lt; 10 ✔ ผ่าน
+        </p>
+
+        <div style={{display:"flex", justifyContent:"center"}}>
+        <pre className="array-demo">
+        {`
+        Array : [7,  2,  1,  9, 13, 10]
+                            ↑R↑L
+        `}
+        </pre>
+        </div>
+
+        <p>
+        ตอนนี้ <strong>L &gt; R</strong>  
+        จึงหยุด Partition
+        </p>
+
+
+        <p>6️⃣ วาง Pivot ในตำแหน่งที่ถูกต้อง</p>
+
+        <p>
+        สลับ Pivot (10) กับตำแหน่ง L
+        </p>
+
+        <div style={{display:"flex", justifyContent:"center"}}>
+        <pre className="array-demo">
+        {`
+        Array : [7,  2,  1,  9, 10, 13]
+        `}
+        </pre>
+        </div>
+
+
+        <p>7️⃣ แบ่งอาร์เรย์</p>
+
+        <div style={{display:"flex", justifyContent:"center"}}>
+        <pre className="array-demo">
+        {`
+        [7, 2, 1, 9] | 10 | [13]
+        `}
+        </pre>
+        </div>
+
+        <p>
+        ค่าด้านซ้ายทั้งหมด &lt; Pivot  
+        ค่าด้านขวาทั้งหมด &gt; Pivot
+        </p>
+
+
+        <p>8️⃣ ทำ Quick Sort กับฝั่งซ้าย</p>
+
+        <div style={{display:"flex", justifyContent:"center"}}>
+        <pre className="array-demo">
+        {`
+        Sort [7, 2, 1, 9]
+
+        → [1, 2, 7, 9]
+        `}
+        </pre>
+        </div>
+
+
+        <p>
+        <strong>Output :</strong> [1, 2, 7, 9, 10, 13]
+        </p>
+
+          </div>
+        </section>
+
+{/* ================= TIME COMPLEXITY ================= */}
+<section className="fade-in-up">
+  <h3 className="section-header">📊 การวิเคราะห์ประสิทธิภาพเชิงเวลา</h3>
+
+  <div className="formula-card">
+    <p>
+      ประสิทธิภาพของ Quick Sort ขึ้นอยู่กับการเลือก Pivot และการแบ่งข้อมูลในแต่ละครั้ง
+    </p>
+    <h2 className="math-big">T(n) = n log n (Average)</h2>
+    <p>
+      ในกรณีที่แบ่งข้อมูลได้สมดุล จะมีประสิทธิภาพใกล้เคียง <strong className="highlight-o">O(n log n)</strong>
+    </p>
+  </div>
+
+  <div className="table-container" style={{marginTop:'30px'}}>
+    <table className="analysis-table big-o">
+      <thead>
+        <tr>
+          <th>กรณี (Case)</th>
+          <th>Time Complexity</th>
+          <th>คำอธิบาย</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr>
+          <td>กรณีที่ดีที่สุด (Best Case)</td>
+          <td>O(n log n)</td>
+          <td>Pivot สามารถแบ่งข้อมูลออกเป็นสองส่วนที่มีขนาดใกล้เคียงกัน</td>
+        </tr>
+
+        <tr>
+          <td>กรณีโดยเฉลี่ย (Average Case)</td>
+          <td>O(n log n)</td>
+          <td>ข้อมูลมีลักษณะสุ่ม ทำให้การแบ่งข้อมูลค่อนข้างสมดุล</td>
+        </tr>
+
+        <tr>
+          <td>กรณีที่เลวร้ายที่สุด (Worst Case)</td>
+          <td>O(n²)</td>
+          <td>Pivot แบ่งข้อมูลไม่สมดุล เช่น เลือกค่าที่มากที่สุดหรือเล็กที่สุดเสมอ</td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+{/* ================= ข้อดี ข้อเสีย ================= */}
+<section className="fade-in-up">
+  <h3 className="section-header">⚖️ วิเคราะห์ข้อดี และ ข้อเสีย</h3>
+
+  <div className="pc-clean-grid">
+
+    <div className="pc-card pros">
+      <div className="pc-header">
+        <h3>✅ ข้อดี</h3>
+      </div>
+
+      <ul className="pc-clean-list">
+        <li><strong>ทำงานได้รวดเร็วมาก:</strong> เป็นหนึ่งในอัลกอริทึมที่เร็วที่สุดในทางปฏิบัติ</li>
+        <li><strong>Average Case ดี:</strong> มีประสิทธิภาพ O(n log n)</li>
+        <li><strong>In-place Sorting:</strong> ใช้หน่วยความจำเพิ่มเติมน้อย</li>
+        <li><strong>เหมาะกับข้อมูลจำนวนมาก:</strong> ใช้งานได้ดีในระบบจริง</li>
+      </ul>
+    </div>
+
+
+    <div className="pc-card cons">
+      <div className="pc-header">
+        <h3>❌ ข้อเสีย</h3>
+      </div>
+
+      <ul className="pc-clean-list">
+        <li><strong>Worst Case เป็น O(n²):</strong> ถ้าเลือก Pivot ไม่ดี</li>
+        <li><strong>ขึ้นอยู่กับการเลือก Pivot:</strong> Pivot ที่ไม่เหมาะสมทำให้ประสิทธิภาพลดลง</li>
+        <li><strong>ไม่เป็น Stable Sort:</strong> ลำดับของข้อมูลที่เท่ากันอาจเปลี่ยนได้</li>
+        <li><strong>ใช้ Recursion:</strong> ต้องใช้ Stack Memory เพิ่มเติม</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+
+{/* ================= VIDEO ================= */}
+<div className="lesson-detail-video fade-in-up">
+  <h3>🎬 พร้อมดูการทำงานของ Quick Sort หรือยัง?</h3>
+
+  <p style={{marginBottom:'30px', opacity:0.9}}>
+    รับชมแอนิเมชันการเลือก Pivot การแบ่งข้อมูล (Partition) และการเรียงลำดับแบบ Recursive ทีละขั้นตอน
+  </p>
+
+  <a href="/video/quick-sort" className="video-btn-styled">
+    เข้าสู่บทเรียนวิดีโอ ▶
+  </a>
+</div>
 
       </div>
     </MainLayout>

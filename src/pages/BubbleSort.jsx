@@ -105,7 +105,7 @@ export default function BubbleSort() {
           </div>
         </section>
 
-        {/* 4. ประสิทธิภาพเชิงเวลา - อ้างอิงหน้าที่ 3-4/5 */}
+        {/* 4. ประสิทธิภาพเชิงเวลา  */}
         <section className="fade-in-up">
           <h3 className="section-header">📊 การวิเคราะห์ประสิทธิภาพเชิงเวลา</h3>
           
