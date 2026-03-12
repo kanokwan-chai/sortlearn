@@ -216,7 +216,7 @@ if (isAlreadyDone) return (
 
           <div className="video-wrapper">
             <YouTube
-              videoId="ZN8RG1BE7p8"
+              videoId="6FDLUtW1tLY"
               onReady={onReady}
               opts={{
                 playerVars: { controls: 1, rel: 0, modestbranding: 1 },
