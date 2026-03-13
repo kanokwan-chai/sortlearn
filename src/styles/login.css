@@ -69,3 +69,39 @@
   color: #666;
   font-size: 13px;
 }
+/* ================= สำหรับมือถือ (Login Responsive) ================= */
+
+@media screen and (max-width: 768px) {
+  
+  /* 1. แก้ไขกล่อง Login ไม่ให้ล้นจอ */
+  .login-card {
+    width: 90% !important;   /* เปลี่ยนจาก 430px เป็น 90% ของหน้าจอ */
+    max-width: 350px;        /* ไม่ให้มันบานเกินไปในมือถือจอใหญ่ */
+    padding: 60px 20px 30px !important; /* ลด Padding ลง */
+    border-radius: 20px !important;
+  }
+
+  /* 2. ปรับขนาดโลโก้ที่ลอยอยู่ให้เล็กลงตามสัดส่วน */
+  .logo-wrapper {
+    top: -55px !important;   /* ขยับขึ้นน้อยลง */
+  }
+
+  .logo-circle {
+    padding: 12px !important;
+    border-width: 4px !important;
+  }
+
+  .logo-img {
+    width: 90px !important;  /* ลดขนาดโลโก้จาก 120px */
+  }
+
+  /* 3. ปรับขนาดตัวอักษร */
+  .login-title {
+    font-size: 22px !important; /* ลดขนาดชื่อ Login */
+    margin-top: 25px !important;
+  }
+
+  .login-subtitle {
+    font-size: 14px !important;
+  }
+}

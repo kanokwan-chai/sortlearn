@@ -123,3 +123,87 @@ body, html {
 .pretest-card:hover .pretest-text {
   color: #005f87;
 }
+/* ================= สำหรับมือถือ (เช็กชื่อ Class ตาม JSX แล้ว) ================= */
+@media screen and (max-width: 768px) {
+
+  /* 1. แก้ตัว Hero ไม่ให้ล้นและไม่ทับ Navbar */
+  .pretest-hero {
+    margin-top: 0 !important;      /* เลิกดึงขึ้นไปทับ Navbar */
+    height: auto !important;
+    min-height: 150px !important;
+    padding: 60px 15px 30px !important;
+    background-position: center !important;
+  }
+
+  /* 2. แก้คำว่า "แบบทดสอบหลังเรียน" (Subtitle) */
+  .pretest-subtitle {
+    font-size: 1.2rem !important;  /* ลดขนาดภาษาไทย */
+    margin-bottom: 5px !important;
+  }
+
+  /* 3. แก้คำว่า "Post-Test" (Title ตัวยักษ์) */
+  .pretest-title {
+    font-size: 2.2rem !important;  /* ลดจากขนาดเดิมลงมาให้พอดีจอ */
+    line-height: 1 !important;
+    margin: 0 !important;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.2) !important;
+  }
+
+  /* 4. แก้ Grid การ์ด (1, 2, 3...) ให้เรียงแถวเดียว */
+  .pretest-grid {
+    grid-template-columns: 1fr !important; /* บังคับแถวเดียว */
+    gap: 15px !important;
+    padding: 20px 15px !important;
+    width: 100% !important;
+  }
+
+  /* 5. ปรับขนาดการ์ดให้กดง่ายขึ้น */
+  .pretest-card {
+    flex-direction: row !important; /* ให้ตัวเลขกับชื่ออยู่แนวนอน */
+    padding: 15px !important;
+    border-radius: 20px !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  /* 6. ปรับวงกลมตัวเลขให้เล็กลงนิดนึง */
+  .pretest-circle {
+    width: 45px !important;
+    height: 45px !important;
+    font-size: 1.1rem !important;
+  }
+}
+
+/* สำหรับจอเล็กจิ๋ว (iPhone SE) */
+@media screen and (max-width: 380px) {
+  .pretest-title {
+    font-size: 1.8rem !important;
+  }
+}
+@media screen and (max-width: 768px) {
+  
+  /* 1. ซ่อนสามเหลี่ยมสีขาว (Flag) ทิ้งไปเลยในมือถือ */
+  /* เช็กชื่อ Class ให้ตรงนะครับ ถ้าใน JSX ชื่ออื่นให้เปลี่ยนตาม */
+  .hero-flag-right, 
+  [class*="flag"] {
+    display: none !important;
+  }
+
+  /* 2. จัดเนื้อหา Hero ให้มาอยู่ตรงกลางจอจริงๆ */
+  .pretest-hero {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important; /* จัดกึ่งกลางแนวนอน */
+    text-align: center !important;
+    padding: 40px 20px !important;
+    width: 100% !important;
+  }
+
+  /* 3. ปรับตัวหนังสือให้ไม่มีระยะห่างแปลกๆ */
+  .pretest-title, .pretest-subtitle {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+  }
+}

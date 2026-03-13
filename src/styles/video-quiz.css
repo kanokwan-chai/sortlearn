@@ -239,3 +239,67 @@
   transform: translateY(3px);
   box-shadow: none;
 }
+/* ================= RESPONSIVE SECTION ================= */
+
+/* เมื่อหน้าจอกว้างน้อยกว่า 768px (แท็บเล็ตและมือถือ) */
+@media (max-width: 768px) {
+  
+  /* 1. ปรับหัวข้อใหญ่ให้เล็กลง ไม่ให้ดันหน้าจอ */
+  .section-title h3 {
+    font-size: 1.8rem; /* ลดจาก 3rem */
+    text-shadow: 4px 4px 3px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+  }
+
+  /* 2. ลด Padding ของกล่องชมพู เพื่อเพิ่มพื้นที่เนื้อหา */
+  .pink-activity-wrapper {
+    padding: 20px 15px; /* ลดจาก 40px */
+    border-radius: 15px;
+  }
+
+  /* 3. ปรับตัวเลือก Quiz ให้เรียงเป็นแถวเดียว (สำคัญมาก) */
+  .options-grid {
+    grid-template-columns: 1fr; /* เปลี่ยนจาก 1fr 1fr เป็นแถวเดียว */
+    gap: 10px;
+  }
+
+  /* 4. ปรับขนาดตัวอักษรในคำถามและตัวเลือก */
+  .question-box p {
+    font-size: 1.1rem; /* ลดจาก 1.4rem */
+  }
+
+  .option-pill {
+    font-size: 1rem;
+    padding: 10px;
+  }
+
+  /* 5. ปรับปุ่มส่งคำตอบให้ไม่ใหญ่จนเกินจอ */
+  .submit-btn-pink {
+    width: 100%; /* ให้ปุ่มกว้างเต็มจอในมือถือ กดง่ายขึ้น */
+    padding: 12px 0;
+    font-size: 1.1rem;
+  }
+
+  /* 6. ปรับหน้า Done (ตอนทำเสร็จแล้ว) */
+  .done-box {
+    padding: 25px 15px;
+    margin: 20px auto;
+  }
+  
+  .done-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* สำหรับมือถือขนาดเล็กมาก (กว้างน้อยกว่า 480px) */
+@media (max-width: 480px) {
+  .quiz-header-row {
+    flex-direction: column; /* ให้คะแนนกับชื่อหัวข้อซ้อนกัน */
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .quiz-card-blue {
+    padding: 15px; /* ลดพื้นที่ว่างในกล่องฟ้า */
+  }
+}

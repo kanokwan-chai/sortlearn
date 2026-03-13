@@ -1,6 +1,3 @@
-/* =========================================
-   HERO SECTION (ใช้ของเดิมได้เลยเพราะคุณชอบแบบนี้)
-   ========================================= */
 .game-hero-cyan {
   width: 100%;
   height: 250px;
@@ -162,4 +159,69 @@
 .game-arcade-card:hover .arcade-start-btn {
   background-color: #e0f7fa; /* เปลี่ยนสีปุ่มนิดนึงตอน Hover */
   color: #0092cc;
+}
+/* ================= RESPONSIVE FOR GAME LIST ================= */
+
+@media (max-width: 768px) {
+  
+  /* 1. ส่วนหัว (Hero) - เปลี่ยนจากการชิดซ้ายมาอยู่ตรงกลาง */
+  .game-hero-cyan {
+    padding-left: 0 !important;   /* ยกเลิกการดันจากซ้าย 8% */
+    justify-content: center !important;
+    height: auto !important;
+    min-height: 200px !important;
+    padding: 40px 20px !important;
+  }
+
+  /* 2. ปลดล็อกความกว้างเนื้อหา (จาก 55% เป็นเต็มจอ) */
+  .hero-content-limit {
+    max-width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* 3. ย่อขนาดตัวหนังสืออาเขต */
+  .hero-sub-title {
+    font-size: 1.3rem !important; /* ลดจาก 3rem */
+  }
+
+  .hero-main-title {
+    font-size: 2.5rem !important; /* ลดจาก 6.5rem ให้ไม่ล้นจอ */
+    line-height: 1.2;
+  }
+
+  /* 4. จัดระเบียบ Grid ตู้เกม */
+  .game-list-container {
+    padding: 30px 15px !important;
+  }
+
+  .game-grid {
+    gap: 25px !important;         /* ลดระยะห่างระหว่างตู้เกม */
+    grid-template-columns: 1fr !important; /* เรียงแถวเดียวเน้นๆ */
+  }
+
+  /* 5. ปรับขนาดตู้เกม (Arcade Card) */
+  .game-arcade-card {
+    max-width: 340px !important;  /* ให้ตู้เกมกว้างเต็มตาในมือถือ */
+    padding: 12px !important;
+    border-width: 4px !important; /* ลดความหนาขอบขาวลงนิดนึง */
+  }
+
+  .arcade-screen img {
+    height: 180px !important;     /* ลดความสูงจอเกมลงนิดนึง */
+  }
+
+  .arcade-title {
+    font-size: 1.2rem !important; /* ลดขนาดชื่อเกม */
+  }
+}
+
+/* สำหรับมือถือจอเล็กเป็นพิเศษ */
+@media (max-width: 380px) {
+  .hero-main-title {
+    font-size: 2rem !important;
+  }
+  .arcade-start-btn {
+    padding: 8px 20px !important;
+    font-size: 0.9rem !important;
+  }
 }

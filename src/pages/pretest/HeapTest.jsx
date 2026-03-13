@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import MainLayout from "../../layouts/MainLayout";
-import "../../styles/test.css";
+import "../../styles/test.css"; 
 import { useNavigate } from "react-router-dom";
 import { quizImages } from "../../utils/imageMap";
 
@@ -12,24 +12,18 @@ export default function HeapTest() {
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);
+  const [userAnswers, setUserAnswers] = useState([]); // ✨ เก็บคำตอบเป็นตัวเลขเพื่อ Admin Dashboard
   const [loading, setLoading] = useState(true);
   const [showResult, setShowResult] = useState(false);
   const [isAlreadyDone, setIsAlreadyDone] = useState(false);
 
-  const QUESTION_API =
-    "https://script.google.com/macros/s/AKfycbwyxhS44YfJ743L1MIb57lN0CSpq5EUOZWMuUKSw7npDemfARhfeseneXrrVVxpLifC2w/exec";
-  const SCORE_API =
-    "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
+  const QUESTION_API = "https://script.google.com/macros/s/AKfycbwyxhS44YfJ743L1MIb57lN0CSpq5EUOZWMuUKSw7npDemfARhfeseneXrrVVxpLifC2w/exec"; 
+  const SCORE_API    = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
 
-  // ✅ ใช้ตัวเดียวกับหลังเรียน
   const getUserKey = () => {
     let user = {};
-    try {
-      user = JSON.parse(localStorage.getItem("user")) || {};
-    } catch {}
-
+    try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch {}
     if (user.email) return user.email;
-
     let guestId = localStorage.getItem("guest_id");
     if (!guestId) {
       guestId = crypto.randomUUID();
@@ -38,27 +32,54 @@ export default function HeapTest() {
     return `guest_${guestId}`;
   };
 
-  // ---------------- LOAD + CHECK ----------------
+  // ---------------- LOAD + CHECK (ซิงค์ข้อมูลกับชีตจริง) ----------------
   useEffect(() => {
     const userKey = getUserKey();
-    const progressKey = `progress_${userKey}_heap`;
+    const progressKey = `progress_${userKey}_heap`; // ✨ ตรวจสอบตัวแปร Key ของ Heap
     const history = JSON.parse(localStorage.getItem(progressKey)) || {};
 
-    if (history.pretest !== undefined && history.pretest !== null) {
-      setScore(history.pretest);
-      setIsAlreadyDone(true);
-      setShowResult(true);
-      setLoading(false);
-      return;
-    }
+    const verifyAccess = async () => {
+      if (history.pretest !== undefined && history.pretest !== null) {
+        try {
+          const response = await fetch(`${SCORE_API}?action=getScores`);
+          const allData = await response.json();
+          const user = JSON.parse(localStorage.getItem("user")) || {};
+          
+          // เช็กข้อมูลในหมวด PRETEST ของ Heap Sort
+          const record = allData.find(st => 
+            (st.firstname === user.firstname || st.firstname === userKey) && 
+            st.activityName === "Heap Sort Pretest"
+          );
 
-    fetch(`${QUESTION_API}?type=pretest_heap`)
-      .then((res) => res.json())
-      .then((data) => {
-        setQuestions(data || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+          if (record) {
+            setScore(history.pretest);
+            setIsAlreadyDone(true);
+            setShowResult(true);
+            setLoading(false);
+            return;
+          } else {
+            localStorage.removeItem(progressKey); // แอดมินลบสิทธิ์ -> ให้ทำใหม่ได้
+          }
+        } catch (e) {
+          setScore(history.pretest);
+          setIsAlreadyDone(true);
+          setShowResult(true);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // ดึงข้อสอบ Heap โดยเฉพาะ
+      fetch(`${QUESTION_API}?type=pretest_heap`)
+        .then(res => res.json())
+        .then(data => {
+          setQuestions(data || []);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    };
+
+    verifyAccess();
   }, []);
 
   // ---------------- FINISH ----------------
@@ -72,18 +93,16 @@ export default function HeapTest() {
   // ---------------- SAVE SCORE ----------------
   const submitScore = async () => {
     const userKey = getUserKey();
-
     let user = {};
-    try {
-      user = JSON.parse(localStorage.getItem("user")) || {};
-    } catch {}
+    try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch {}
 
     const payload = {
       activity: "PRETEST",
       firstname: user.firstname || userKey,
       lastname: user.lastname || FALLBACK_USER.lastname,
-      testName: "Heap Sort",
+      testName: "Heap Sort Pretest", // ✨ ชื่อกิจกรรมให้ตรงกับระบบ Filter
       score: score,
+      allAnswers: userAnswers.join(" | ") 
     };
 
     try {
@@ -92,24 +111,26 @@ export default function HeapTest() {
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload),
       });
-    } catch {}
+    } catch (err) { console.error("Save error:", err); }
 
     const progressKey = `progress_${userKey}_heap`;
     const currentData = JSON.parse(localStorage.getItem(progressKey)) || {};
-    localStorage.setItem(
-      progressKey,
-      JSON.stringify({ ...currentData, pretest: score })
-    );
+    localStorage.setItem(progressKey, JSON.stringify({ ...currentData, pretest: score }));
   };
 
   const handleAnswer = (choiceIndex) => {
     if (!questions[current]) return;
+
+    // ✨ บันทึกเลขข้อ (1, 2, 3...)
+    const choiceNumber = choiceIndex + 1;
+    setUserAnswers(prev => [...prev, choiceNumber]);
+
     const correct = parseInt(questions[current].answer);
     if (choiceIndex === correct) setScore((prev) => prev + 1);
     setCurrent((prev) => prev + 1);
   };
 
-  if (loading) return <MainLayout><div className="loading">กำลังโหลดข้อสอบ...</div></MainLayout>;
+  if (loading) return <MainLayout><div className="loading">กำลังตรวจสอบสิทธิ์...</div></MainLayout>;
 
   if (showResult) {
     return (
@@ -127,9 +148,9 @@ export default function HeapTest() {
               <div className="result-score-circle">
                 <span className="score-big" style={{ color: '#333333' }}>{score}</span>
                 <span className="score-divider" style={{ color: '#666666' }}>/</span>
-                <span className="score-total" style={{ color: '#666666' }}>{questions.length || 10}</span>
+                <span className="score-total" style={{ color: '#666666' }}>{questions.length}</span>
               </div>
-              <button className="result-btn-next" onClick={() => navigate(isAlreadyDone ? "/home" : "/heap-sort")}>
+            <button className="result-btn-next" onClick={() => navigate(isAlreadyDone ? "/home" : "/heap-sort")}>
                 {isAlreadyDone ? "กลับหน้าหลัก 🏠" : "เข้าสู่บทเรียน ▶"}
               </button>
           </div>
@@ -137,8 +158,6 @@ export default function HeapTest() {
       </MainLayout>
     );
   }
-
-  if (!questions[current]) return <MainLayout><div className="loading">กำลังประมวลผล...</div></MainLayout>;
 
   return (
     <MainLayout>
@@ -149,23 +168,18 @@ export default function HeapTest() {
         </div>
       </div>
       <div className="test-box-container" style={{display:'flex', justifyContent:'center'}}>
-          <div className="test-box">
-            <div className="test-number">{questions[current].no}</div>
-            <div className="test-question">{questions[current].question}</div>
+          <div className="test-box shadow-sm">
+            <div className="test-number">{questions[current]?.no}</div>
+            <div className="test-question">{questions[current]?.question}</div>
             
-            {/* 🟢 ส่วนแสดงรูปภาพดึงจากไฟล์ในเครื่อง */}
-            {questions[current].image && quizImages[questions[current].image] && (
+            {questions[current]?.image && quizImages[questions[current].image] && (
               <div className="test-image-box" style={{ textAlign: 'center', marginBottom: '15px' }}>
-                <img 
-                  src={quizImages[questions[current].image]} 
-                  alt="โจทย์ประกอบ" 
-                  style={{ maxWidth: '100%', borderRadius: '8px', border: '1px solid #ddd' }} 
-                />
+                <img src={quizImages[questions[current].image]} alt="โจทย์ประกอบ" style={{ maxWidth: '100%', borderRadius: '8px', border: '1px solid #ddd' }} />
               </div>
             )}
             
             <div className="choice-grid">
-              {questions[current].choices.map((choice, idx) => (
+              {questions[current]?.choices.map((choice, idx) => (
                 <button key={idx} className="choice-btn" onClick={() => handleAnswer(idx)}>{choice}</button>
               ))}
             </div>

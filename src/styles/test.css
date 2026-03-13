@@ -377,3 +377,210 @@ footer {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
+/* ================= RESPONSIVE FOR QUIZ & RESULT ================= */
+
+@media (max-width: 768px) {
+  
+  /* 1. ส่วนหัว (Hero) - ลดขนาดตัวหนังสือยักษ์ */
+  .test-hero {
+    height: auto;
+    min-height: 180px;
+    padding: 80px 15px 40px; /* เว้นที่ให้ Navbar และเนื้อหา */
+    margin-top: -60px;
+  }
+
+  .test-title {
+    font-size: 2.2rem;     /* ลดจาก 4.5rem */
+    letter-spacing: 1px;
+  }
+
+  .test-sub, .result-sub, .result-title {
+    font-size: 1.4rem;     /* ลดจาก 2rem+ */
+  }
+
+  /* 2. กล่องแบบทดสอบ - ลด Padding */
+  .test-box {
+    padding: 40px 20px;    /* ลดจาก 50px */
+    width: 95%;
+    gap: 25px;
+  }
+
+  /* 3. ตัวเลขข้อ - ปรับตำแหน่งให้ไม่บังกัน */
+  .test-number {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+    left: 20px;           /* ขยับมาชิดซ้ายขึ้น */
+    top: -25px;
+  }
+
+  /* 4. คำถาม - ปรับตัวอักษรให้อ่านง่ายพอดีจอ */
+  .test-question {
+    padding: 20px;
+    font-size: 1.1rem;
+  }
+
+  /* 5. ตัวเลือก (Choices) - เปลี่ยนจาก 2 คอลัมน์เป็น 1 คอลัมน์ (สำคัญ!) */
+  .choice-grid {
+    grid-template-columns: 1fr; /* เรียงแถวเดียวเพื่อให้ปุ่มกว้างพอสำหรับข้อความ */
+    gap: 15px;
+  }
+
+  .choice-btn {
+    padding: 15px;
+    font-size: 1rem;
+  }
+
+  /* 6. หน้าสรุปคะแนน (Result) */
+  .result-box {
+    width: 90%;           /* เปลี่ยนจาก 450px เป็น % เพื่อไม่ให้ล้นจอ */
+    padding: 30px 15px;
+  }
+
+  .result-score {
+    font-size: 3.5rem;
+  }
+
+  /* 7. การ์ดผลคะแนนแบบ Fancy */
+  .result-card-fancy {
+    padding: 30px 15px;
+    width: 95%;
+    box-shadow: 
+      0 0 0 6px #f0f9ff, 
+      0 0 0 10px #ade5f7, 
+      0 15px 40px rgba(0, 146, 204, 0.2);
+  }
+
+  .score-big {
+    font-size: 3.5rem !important; /* ลดขนาดตัวเลขคะแนน */
+  }
+
+  .score-divider, .score-total {
+    font-size: 2rem !important;
+  }
+
+  .result-btn-next {
+    width: 100%; /* ปุ่มกว้างเต็มพื้นที่ในมือถือ */
+  }
+}
+/* ================= แก้ไขหน้า Post-Test (Mobile) ================= */
+
+@media (max-width: 768px) {
+  
+  /* 1. หดหัวข้อให้เล็กลงพอดีจอ */
+  .test-title {
+    font-size: 2.8rem !important; /* ลดจาก 4.5rem */
+    line-height: 1.1 !important;
+  }
+
+  /* 2. จัดระยะ Hero ไม่ให้ทับ Navbar */
+  .test-hero {
+    margin-top: 0 !important;      /* เลิกดึงขึ้นไปทับข้างบน */
+    padding: 40px 15px !important;
+    height: auto !important;
+  }
+
+  /* 3. บังคับให้การ์ด (1, 2, 3...) เรียงเป็น "แถวเดียว" */
+  /* หมายเหตุ: ถ้าใช้ชื่อ class อื่น ให้เปลี่ยน .video-grid เป็นชื่อนั้นนะครับ */
+  .video-grid, .choice-grid, [class*="grid"] {
+    grid-template-columns: 1fr !important; /* จาก 3 คอลัมน์ เหลือ 1 */
+    gap: 20px !important;
+    padding: 10px !important;
+    justify-items: center;
+  }
+
+  /* 4. ปรับขนาดการ์ดให้กว้างพอดีจอ (ไม่ให้มันจิ๋ว) */
+  .game-style-card, [class*="card"] {
+    max-width: 320px !important; /* ขยายให้กว้างพอจะอ่านชื่อเต็มได้ */
+    width: 100% !important;
+    border-radius: 30px !important;
+  }
+
+  /* 5. ปรับตัวเลขในวงกลมให้เล็กลงนิดนึง */
+  .card-image-frame {
+    aspect-ratio: 16 / 9; /* ปรับสัดส่วนให้ดูทันสมัยขึ้นในมือถือ */
+  }
+}
+/* ใช้ความแรงระดับสูงสุดเพื่อบังคับเปลี่ยนหน้าจอเล็ก */
+@media screen and (max-width: 768px) {
+  
+  /* 1. บังคับตัว Hero ไม่ให้วิ่งไปทับ Navbar */
+  body .test-hero {
+    margin-top: 0 !important;
+    padding-top: 50px !important; /* เว้นระยะจาก Navbar ลงมา */
+    height: auto !important;
+    min-height: 140px !important;
+  }
+
+  /* 2. บังคับคำว่า Post-Test ให้เล็กลง (ใช้ body นำหน้าเพื่อให้ Selector แรงขึ้น) */
+  body .test-hero .test-title {
+    font-size: 1.8rem !important; /* ขนาดประมาณหัวข้อข่าวในมือถือ */
+    line-height: 1.2 !important;
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* 3. บังคับคำว่า "เรียน" ภาษาไทยให้เล็กลง */
+  body .test-hero .test-sub {
+    font-size: 1.1rem !important;
+    margin-top: 5px !important;
+    opacity: 1 !important;
+  }
+
+  /* 4. ป้องกันไม่ให้มีอะไรล้นออกด้านข้างจนหน้าจอโยก */
+  html, body {
+    overflow-x: hidden !important;
+    position: relative;
+  }
+}
+/* ✅ บังคับเปลี่ยนสีหัวข้อที่เคยเพี้ยนเป็นชมพู ให้กลับเป็นสีฟ้าธีมหลัก */
+.lesson-header-badge, 
+#ms-adventure-scoped .title-pink-fix { 
+  background: linear-gradient(90deg, #0098e2 0%, #00a3b1 100%) !important;
+  color: white !important;
+  border: 2px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 4px 15px rgba(0, 152, 226, 0.4) !important;
+  
+  /* เพิ่มเติม: ทำให้ตัวหนังสืออ่านง่ายขึ้น */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  padding: 12px 35px !important;
+  border-radius: 50px !important;
+}
+/* ✅ 1. สถานะปุ่มปกติ (สีสดใส) */
+.choice-btn {
+    background: white !important;
+    color: #333 !important;
+
+    opacity: 1;
+    filter: saturate(100%); /* สีปกติ */
+    transition: 0.3s all ease;
+}
+
+/* ✅ 2. สถานะเมื่อ "จืดลง" (เช่น เมื่อถูกเลือกแล้ว หรือปุ่มถูกปิดใช้งาน) */
+.choice-btn:disabled, 
+.choice-btn.faded {
+    background: #f5f5f5 !important;   /* เปลี่ยนพื้นหลังเป็นสีเทาอ่อน */
+    color: #999 !important;          /* สีตัวหนังสือจางลง */
+    border-color: #ccc !important;    /* ขอบสีจืดลง */
+    
+    opacity: 0.6 !important;         /* 🪄 ทำให้โปร่งแสง 60% */
+    filter: saturate(30%) !important; /* 🪄 ลดความสดของสีลง ให้ดูจืด */
+    
+    cursor: not-allowed !important;   /* เปลี่ยนไอคอนเมาส์เป็นรูปห้าม */
+    transform: none !important;       /* ห้ามขยับหรือเด้งเวลาเอาเมาส์วาง */
+    box-shadow: none !important;      /* เอาเงาออกเพื่อให้ดู "แบน" ลง */
+}
+.choice-btn:disabled, 
+.choice-btn.faded {
+    background: #f5f5f5 !important;   /* เปลี่ยนพื้นหลังเป็นสีเทาอ่อน */
+    color: #999 !important;          /* สีตัวหนังสือจางลง */
+    border-color: #ccc !important;    /* ขอบสีจืดลง */
+    
+    opacity: 0.6 !important;         /* 🪄 ทำให้โปร่งแสง 60% */
+    filter: saturate(30%) !important; /* 🪄 ลดความสดของสีลง ให้ดูจืด */
+    
+    cursor: not-allowed !important;   /* เปลี่ยนไอคอนเมาส์เป็นรูปห้าม */
+    transform: none !important;       /* ห้ามขยับหรือเด้งเวลาเอาเมาส์วาง */
+    box-shadow: none !important;      /* เอาเงาออกเพื่อให้ดู "แบน" ลง */
+}

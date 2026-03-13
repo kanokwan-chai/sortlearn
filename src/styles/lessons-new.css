@@ -87,3 +87,57 @@ body, html {
 .lesson-text-v2 {
   flex: 1;
 }
+/* ================= RESPONSIVE FOR LESSONS ================= */
+
+@media (max-width: 768px) {
+  
+  /* 1. ส่วนหัว (Hero) - เลิกล็อกความสูงและลด Padding มหาศาล */
+  .lesson-hero-v2 {
+    height: auto !important;
+    min-height: 160px !important;
+    padding: 40px 20px !important; /* ลดจาก 120px เหลือ 20px */
+    align-items: center !important; /* จัดกึ่งกลางในมือถือจะดูสวยกว่า */
+    text-align: center;
+  }
+
+  /* 2. บีบตัวหนังสือยักษ์ 7.5rem ให้เหลือขนาดมนุษย์ */
+  .lesson-hero-sub {
+    font-size: 1.2rem !important; /* ลดจาก 3rem */
+  }
+
+  .lesson-hero-title {
+    font-size: 2.8rem !important; /* ลดจาก 7.5rem เพื่อให้คำว่า Selection ไม่ล้นจอ */
+    margin: 5px 0 0 0 !important;
+    line-height: 1.1;
+  }
+
+  /* 3. ส่วนรายการ (List) - ขยายกว้างขึ้นในมือถือ */
+  .lesson-list-container {
+    width: 95% !important; /* ขยายจาก 85% เพื่อให้เห็นเนื้อหาชัดๆ */
+    margin: 30px auto !important;
+    gap: 15px !important; /* ลดระยะห่างระหว่างแถว */
+  }
+
+  /* 4. แถบเนื้อหาแต่ละแถว */
+  .lesson-row-v2 {
+    padding: 20px !important; /* ลดจาก 30px 40px */
+    font-size: 1.1rem !important; /* ลดจาก 1.7rem */
+    border-radius: 10px !important;
+  }
+
+  /* 5. ไอคอนลูกศร - เล็กลงนิดนึง */
+  .lesson-arrow-v2 {
+    width: 30px !important;
+    height: 30px !important;
+  }
+}
+
+/* สำหรับมือถือจอแคบพิเศษ */
+@media (max-width: 380px) {
+  .lesson-hero-title {
+    font-size: 2.2rem !important;
+  }
+  .lesson-row-v2 {
+    font-size: 1rem !important;
+  }
+}

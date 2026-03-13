@@ -1827,3 +1827,193 @@
     align-items: center;
     position: relative;
 }
+
+/* =======================================================
+   RESPONSIVE: MAGICAL FOREST & CHARACTER SELECTION
+   ======================================================= */
+
+@media screen and (max-width: 768px) {
+  
+  /* 1. ส่วนหัวแคปซูล - ลด Padding มหาศาลและขนาดตัวอักษร */
+  .home-header-capsule-wood {
+    height: auto !important;
+    padding: 15px 25px !important; /* ลดจาก 110px เหลือ 25px */
+    width: 90% !important;
+    border-radius: 30px !important;
+    margin-bottom: 40px !important;
+  }
+
+  .main-title-wood {
+    font-size: 1.6rem !important; /* ลดจาก 2.8rem */
+    letter-spacing: 2px !important;
+    gap: 10px !important;
+  }
+
+  .sub-title-wood {
+    font-size: 0.9rem !important;
+  }
+
+  /* 2. การ์ดตัวละคร - เปลี่ยนจากเรียงแนวนอนเป็นแนวตั้ง */
+  .guardian-grid-row-wood {
+    flex-direction: column !important; /* ✅ เรียงลงมาเป็นแถวเดียว */
+    align-items: center !important;
+    gap: 30px !important;
+    margin-top: 0 !important;
+  }
+
+  .guardian-card-wood {
+    width: 90% !important; /* กว้างเกือบเต็มจอ */
+    max-width: 300px;
+    padding: 25px 20px !important;
+    border-radius: 30px !important;
+  }
+
+  .description-text-wood {
+    height: auto !important; /* ยอมให้ความสูงยืดตามข้อความ */
+    margin-bottom: 20px !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* 3. คัมภีร์กติกา - แก้ไขความกว้างที่ล็อกไว้ */
+  .alchemy-rules-board, .alchemy-rules-board-compact {
+    width: 95% !important; /* ลดจาก 650px เป็นเต็มหน้าจอ */
+    padding: 25px 20px !important;
+    border-radius: 25px !important;
+  }
+
+  .rules-stage-name {
+    font-size: 1.4rem !important;
+  }
+
+  .stage-goal-highlight {
+    font-size: 1.2rem !important;
+  }
+
+  .rules-detail-box, .rules-detail-box-v3 {
+    padding: 15px !important;
+    width: 100% !important;
+  }
+
+  .rules-checklist li {
+    font-size: 0.9rem !important;
+    gap: 10px !important;
+  }
+
+  /* 4. หน้าสรุปผล (Victory Medal) */
+  .medal-body {
+    width: 95% !important; /* ลดจาก 400px */
+    padding: 40px 20px 30px !important;
+  }
+
+  .score-number-big {
+    font-size: 3rem !important;
+  }
+
+  .victory-text-glow, .victory-text-glow1 {
+    font-size: 1.5rem !important;
+    letter-spacing: 2px !important;
+  }
+}
+
+/* สำหรับมือถือจอเล็กจิ๋ว */
+@media (max-width: 380px) {
+  .main-title-wood {
+    font-size: 1.4rem !important;
+  }
+  .guardian-card-wood {
+    width: 95% !important;
+  }
+}
+/* =======================================================
+   ARENA MOBILE REPAIR: HEAP SORT / MAGICAL FOREST
+   ======================================================= */
+
+@media screen and (max-width: 768px) {
+  
+  /* 1. จัดเลเอาต์หลักให้เรียงจากบนลงล่าง */
+  .arena-main-layout, .arena-play-zone, .arena-container-v15 {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 15px !important;
+    padding: 10px !important;
+    height: auto !important;
+    min-height: 100vh;
+  }
+
+  /* 2. แก้ไข HUD แคปซูลด้านบนที่เบียดจนชื่อ King Sage ล้น */
+  .top-hud-capsule-v15 {
+    width: 95% !important;
+    padding: 8px 15px !important;
+    flex-wrap: wrap !important; /* ยอมให้ข้อมูลตกลงมาบรรทัดใหม่ถ้าพื้นที่ไม่พอ */
+    justify-content: center !important;
+    border-radius: 20px !important;
+    height: auto !important;
+    gap: 8px !important;
+  }
+  .hud-left-hero { width: 100%; justify-content: center; }
+
+  /* 3. กระดานหลัก (Alchemy Card): ปลดล็อกความกว้าง/สูง */
+  .alchemy-main-card-v15 {
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 450px !important;
+    padding: 20px 10px !important;
+    margin-top: 5px !important;
+    border-radius: 25px !important;
+  }
+
+  /* 4. หัวข้อด่านที่เคยใหญ่ยักษ์ (จากรูป) */
+  .alchemy-main-card-v15 h2, .stage-goal-text {
+    font-size: 1.2rem !important;
+    line-height: 1.3 !important;
+    text-align: center;
+    margin-bottom: 10px !important;
+  }
+
+  /* 5. โซนกรอกอาร์เรย์ (Array Shelf): บังคับให้ปัดซ้ายขวาได้ */
+  .array-shelf {
+    width: 100% !important;
+    overflow-x: auto !important;
+    padding: 15px 10px !important;
+    justify-content: flex-start !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .array-slot-input {
+    flex-shrink: 0 !important;
+    width: 45px !important;
+    height: 45px !important;
+    font-size: 1.2rem !important;
+  }
+
+  /* 6. ย้ายแผ่นศิลาภารกิจ (Sidebar) มาอยู่ด้านล่างกระดานหลัก */
+  .mission-sidebar-v15, .mission-tablet-v15 {
+    width: 100% !important;
+    max-width: 320px !important;
+    margin: 10px auto !important;
+    perspective: none !important; /* ปิดมิติ 3D เพื่อให้อ่านง่ายในมือถือ */
+  }
+  .tablet-magic-mini {
+    min-height: auto !important;
+    padding: 15px !important;
+    transform: none !important; /* ยกเลิกการเอียง (Rotate) */
+  }
+
+  /* 7. พื้นที่ต้นไม้ (Tree Area): ย่อสเกลลงเพื่อให้เห็นกิ่งก้านครบ */
+  .tree-area-v15 {
+    width: 100% !important;
+    max-width: 340px !important;
+    height: 320px !important;
+    transform: scale(0.85) !important; /* ย่อขนาดลง 15% */
+    margin: 0 auto !important;
+  }
+
+  /* 8. ปุ่ม "อัญเชิญมวลสาร" */
+  .action-btn-v15 {
+    margin-top: 15px !important;
+    width: 90% !important;
+    padding: 12px 0 !important;
+    font-size: 1.1rem !important;
+  }
+}

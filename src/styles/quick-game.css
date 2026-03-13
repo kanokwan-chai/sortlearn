@@ -2046,3 +2046,115 @@ button:hover {
   transform: scale(1.05);
   box-shadow: 0 0 20px rgba(255,150,0,0.8);
 }
+/* =======================================================
+   RESPONSIVE: QUICK SORT CRYSTAL MINE
+   ======================================================= */
+
+@media (max-width: 768px) {
+  
+  /* 1. ส่วนหัวและชื่อเกม - ย่อขนาดลง */
+  .quick-container h2, .mine-header, .mine-map-title {
+    font-size: 1.8rem !important; /* ลดจาก 42px / 48px */
+    letter-spacing: 1px !important;
+  }
+
+  /* 2. หน้าเลือกตัวละคร (Mine Card) - เรียงเป็นแนวตั้ง */
+  .mine-grid, .char-grid {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 25px !important;
+  }
+  .mine-card, .char-card {
+    width: 90% !important;
+    max-width: 300px;
+    padding: 20px !important;
+  }
+  .mine-avatar {
+    width: 120px !important;
+    height: 120px !important;
+  }
+
+  /* 3. แถบ HUD (แคปซูลด้านบน) - บีบให้เล็กลง */
+  .hud-capsule-landscape, .hud-capsule, .hud-glass {
+    width: 95% !important;
+    padding: 10px !important;
+    gap: 10px !important;
+    flex-wrap: wrap; /* ยอมให้ข้อมูลตกลงมาได้ */
+    justify-content: center !important;
+  }
+  .hud-stat, .hud-item {
+    font-size: 0.9rem !important;
+  }
+
+  /* 4. หัวใจสำคัญ: แถวคริสตัล (Array) */
+  /* ✅ ถ้าจอแคบมาก ให้เลื่อนนิ้วปัดซ้ายขวาได้เพื่อหา Pivot */
+  .game-main-area {
+    margin-top: 20px !important;
+    padding: 0 10px !important;
+  }
+  .crystal-row, .crystal-container, .crystal-grid {
+    gap: 8px !important;
+    width: 100%;
+    overflow-x: auto; /* ✅ ป้องกันของล้นจอ */
+    padding: 40px 10px !important;
+    -webkit-overflow-scrolling: touch;
+    justify-content: flex-start !important; /* ให้เริ่มจากซ้ายแล้วปัดขวา */
+  }
+
+  /* ย่อขนาดกล่องผลึก */
+  .crystal-box-v4, .crystal-box, .crystal {
+    width: 45px !important; /* ลดจาก 80px */
+    height: 60px !important;
+    font-size: 1.2rem !important;
+    border-width: 2px !important;
+  }
+  .crystal-item-v4, .crystal-unit {
+    width: 50px !important;
+  }
+
+  /* 5. ตัวชี้ L, R และป้าย Pivot */
+  .pivot-label-v4, .pivot-badge, .ptr.p {
+    font-size: 0.6rem !important;
+    padding: 2px 6px !important;
+    top: -25px !important;
+  }
+  .ptr-v4, .pointer-label, .ptr {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+    bottom: -30px !important;
+  }
+
+  /* 6. แผงควบคุมด้านล่าง (Controls) - จัดเป็น 2x2 */
+  .controls-panel-landscape, .controls-glass-panel, .controls-glass {
+    grid-template-columns: repeat(2, 1fr) !important; /* เปลี่ยนจาก 4 เป็น 2 */
+    gap: 12px !important;
+    padding: 15px !important;
+    transform: translateY(0) !important; /* ยกเลิกการลอยติดลบในมือถือ */
+    margin-top: 20px !important;
+    width: 100% !important;
+  }
+  .btn-ctrl-v2, .btn-neon {
+    padding: 12px 5px !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* 7. หน้าสรุปผล (Result Card) */
+  .result-card-v7, .result-card-v8, .final-mine-card, .gameover-card {
+    padding: 30px 20px !important;
+    width: 95% !important;
+  }
+  .score-number-v7, .score-number-v8, .final-mine-score {
+    font-size: 3rem !important;
+  }
+}
+
+/* สำหรับมือถือจอเล็กมาก (เช่น iPhone SE) */
+@media (max-width: 380px) {
+  .crystal-box-v4 {
+    width: 40px !important;
+    height: 55px !important;
+  }
+  .btn-ctrl-v2 {
+    font-size: 0.75rem !important;
+  }
+}

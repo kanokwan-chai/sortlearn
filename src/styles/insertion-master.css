@@ -442,3 +442,75 @@
     padding: 10px 30px !important; /* ลดขนาดปุ่ม SHIFT / INSERT */
     font-size: 1.1rem !important;
 }
+/* =======================================================
+   INSERTION MASTER: MOBILE FINAL OPTIMIZATION
+   ======================================================= */
+
+@media (max-width: 768px) {
+    /* 1. จัดการตัวครอบหลัก ให้เริ่มจากด้านบนเพื่อให้พื้นที่เหลือด้านล่าง */
+    .casino-wrapper {
+        padding-top: 20px !important;
+        justify-content: flex-start !important;
+    }
+
+    /* 2. แผนที่ด่าน (Map): บังคับให้ปัดซ้าย-ขวาได้ถ้าด่านยาวเกินไป */
+    .map-container {
+        width: 100% !important;
+        overflow-x: auto !important; /* ✅ ป้องกันด่านหาย/แหว่ง */
+        padding: 20px 10px !important;
+        justify-content: flex-start !important;
+        -webkit-overflow-scrolling: touch;
+        gap: 15px !important;
+        margin: 20px 0 !important;
+    }
+
+    .map-node {
+        flex-shrink: 0 !important; /* ✅ กันวงกลมด่านโดนบีบเป็นวงรี */
+        width: 65px !important;
+        height: 65px !important;
+        font-size: 1.5rem !important;
+    }
+
+    /* 3. โต๊ะเกมและไพ่ (Poker Table) */
+    .table-area {
+        min-height: 220px !important;
+        padding: 15px 10px !important;
+        border-radius: 40px !important; /* มนน้อยลงในมือถือเพื่อเพิ่มพื้นที่ */
+    }
+
+    .card-row {
+        gap: 8px !important; /* บีบไพ่ให้ชิดกันขึ้น */
+        width: 100% !important;
+        overflow-x: auto !important; /* ✅ ถ้าไพ่เยอะ (ด่าน 3) ให้ปัดข้างดูได้ */
+        padding-bottom: 10px;
+        align-items: center !important;
+    }
+
+    .poker-card {
+        width: 65px !important;  /* ย่อลงอีกนิดเพื่อให้เห็นไพ่ครบหลายใบ */
+        height: 95px !important;
+        font-size: 1.6rem !important;
+        flex-shrink: 0 !important; /* ✅ ห้ามไพ่โดนบีบแบน */
+    }
+
+    /* 4. ปุ่มควบคุม (Control Bar) */
+    .control-bar {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important; /* ✅ แบ่ง 2 ฝั่งซ้ายขวา */
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .casino-btn {
+        padding: 12px 10px !important;
+        font-size: 1rem !important;
+        width: 100% !important;
+        border-radius: 15px !important;
+    }
+}
+
+/* สำหรับมือถือที่จอแคบเป็นพิเศษ (เช่น iPhone SE) */
+@media (max-width: 380px) {
+    .casino-title { font-size: 1.5rem !important; }
+    .poker-card { width: 55px !important; height: 80px !important; font-size: 1.4rem !important; }
+}

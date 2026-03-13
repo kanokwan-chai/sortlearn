@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/navbar.css";
 
 export default function Navbar({ user, onLogout }) {
+
+  const [isOpen, setIsOpen] = useState(false);
+
   // รายการเมนูย่อย
   const algoMenu = [
     { label: "Selection Sort", key: "selection" },
@@ -13,6 +16,8 @@ export default function Navbar({ user, onLogout }) {
     { label: "Merge Sort", key: "merge" },
   ];
  
+const toggleMenu = () => setIsOpen(!isOpen);
+
   return (
     <nav className="nav">
       {/* 1. LOGO */}
@@ -22,9 +27,16 @@ export default function Navbar({ user, onLogout }) {
         </Link>
       </div>
 
-      {/* 2. MENU (ตรงกลาง) */}
-      <ul className="nav-menu">
-        <li><Link to="/home">หน้าหลัก</Link></li>
+      {/* 2. HAMBURGER BUTTON (แสดงเฉพาะในมือถือ) */}
+      <div className={`hamburger ${isOpen ? "active" : ""}`} onClick={toggleMenu}>
+        <span className="bar"></span>
+        <span className="bar"></span>
+        <span className="bar"></span>
+      </div>
+
+      {/* 3. MENU LIST */}
+      <ul className={`nav-menu ${isOpen ? "open" : ""}`}>
+        <li><Link to="/home" onClick={toggleMenu}>หน้าหลัก</Link></li>
 
         {/* --- แบบทดสอบก่อนเรียน --- */}
         <li className="nav-item-dropdown">
@@ -101,10 +113,22 @@ export default function Navbar({ user, onLogout }) {
             ))}
           </ul>
         </li>
+        {/* ✨ เพิ่มตรงนี้: เมนู Admin (แสดงเฉพาะแอดมินตัวจริง) */}
+        {user?.email === "your-email@mail.com" && (
+          <li>
+            <Link to="/admin" onClick={toggleMenu} style={{ color: '#ffca28', fontWeight: '900' }}>
+              📊 แผงควบคุมแอดมิน
+            </Link>
+          </li>
+        )}
       </ul>
 
-      {/* 3. USER (ขวาสุด) */}
-      <div className="nav-right">
+      {/* 4. USER (แสดงเฉพาะในจอคอม) */}
+      <div className="nav-right desktop-only">
+        {/* ✨ เพิ่มตรงนี้: ปุ่มทางลัด Admin */}
+        {user?.email === "kanokwanmail2547@gmail.com" && (
+          <Link to="/admin" className="admin-shortcut-btn">Admin</Link>
+        )}
         <span className="nav-user">ผู้ใช้ : {user?.firstname || "-"}</span>
         <button className="logout-btn" onClick={onLogout}>logout</button>
       </div>

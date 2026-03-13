@@ -1998,3 +1998,315 @@
   }
 
 }
+@media (max-width: 768px) {
+  /* 1. จัดการตัว Highway (ทางเดิน) ให้เลื่อนซ้าย-ขวาได้ */
+  #ms-adventure-scoped .level-highway-pro {
+    overflow-x: auto !important;     /* บังคับให้ใช้นิ้วปัดซ้าย-ขวาได้ */
+    display: block !important;       /* เปลี่ยนจาก Flex เป็น Block เพื่อให้ Scroll ทำงาน */
+    padding: 100px 0 60px !important; /* เว้นที่ให้ตัวละครลอยด้านบน */
+    width: 100% !important;
+    -webkit-overflow-scrolling: touch; /* ให้การปัดใน iPhone นุ่มนวลขึ้น */
+  }
+
+  /* 2. บังคับแถวของด่านให้ยาวออกไป ไม่ให้โดนบีบ */
+  #ms-adventure-scoped .nodes-flex-row {
+    display: flex !important;
+    width: max-content !important;    /* สำคัญ! บังคับให้แถวยาวเท่ากับจำนวนด่านที่มี */
+    gap: 60px !important;            /* ระยะห่างระหว่างด่าน */
+    padding: 0 80px !important;      /* เพิ่มพื้นที่หัว-ท้าย เพื่อไม่ให้ด่านชิดขอบจอเกินไป */
+    justify-content: flex-start !important;
+  }
+
+  /* 3. กันไม่ให้กล่องด่านถูกบีบจนเบี้ยว */
+  #ms-adventure-scoped .mission-point-wrapper {
+    flex-shrink: 0 !important;       /* ห้ามบีบกล่องด่านเด็ดขาด */
+    width: 200px !important;         /* กำหนดความกว้างที่พอดี */
+  }
+
+  /* 4. ปรับขนาดปุ่มด่านให้เล็กลงนิดนึงในมือถือ */
+  #ms-adventure-scoped .giant-circle-btn {
+    width: 80px !important;
+    height: 80px !important;
+    font-size: 1.8rem !important;
+  }
+}
+/* =======================================================
+   RESPONSIVE PATCH: MERGE SORT ADVENTURE
+   ======================================================= */
+
+@media screen and (max-width: 768px) {
+  
+  /* 1. แก้ไขชื่อเกมที่เคยใหญ่เกินไป */
+  #ms-adventure-scoped .title {
+    font-size: 1.8rem !important;
+    padding: 8px 20px !important;
+    margin: 20px auto !important;
+    letter-spacing: 1px !important;
+  }
+
+  /* 2. หน้าเลือกตัวละคร: เรียงเป็นแนวตั้ง */
+  #ms-adventure-scoped .char-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 20px !important;
+  }
+  #ms-adventure-scoped .char-tablet {
+    width: 90% !important;
+    max-width: 280px;
+    height: auto !important;
+    margin-top: 0 !important;
+  }
+
+  /* 3. หน้าเลือกด่าน (MISSION CONTROL): แก้ปัญหาด่านหาย */
+  #ms-adventure-scoped .level-highway-pro {
+    width: 100% !important;
+    overflow-x: auto !important; /* ✅ เปิดให้ปัดซ้าย-ขวา */
+    padding: 100px 0 50px !important;
+    display: block !important;
+    -webkit-overflow-scrolling: touch; /* ปัดลื่นๆ ใน iOS */
+  }
+
+  #ms-adventure-scoped .nodes-flex-row {
+    display: flex !important;
+    width: max-content !important; /* ✅ บังคับความกว้างให้ยาวเท่าจำนวนด่าน */
+    min-width: 700px !important;    /* กันเหนียวให้ด่าน 1 และ 3 มีพื้นที่โชว์ */
+    gap: 50px !important;
+    padding: 0 60px !important;
+  }
+
+  #ms-adventure-scoped .mission-point-wrapper {
+    flex: 0 0 180px !important;     /* ห้ามบีบขนาดด่าน */
+  }
+
+  /* 4. หน้าเล่นเกม (Gameplay): HUD และ Battle Arena */
+  #ms-adventure-scoped .game-hud-v2 {
+    flex-direction: column !important; /* เรียงสถานะเป็นแนวตั้งในมือถือ */
+    gap: 10px !important;
+    padding: 10px 15px !important;
+    width: 95% !important;
+  }
+
+  #ms-adventure-scoped .battle-crystal-frame {
+    padding: 15px !important;
+    width: 98% !important;
+  }
+
+  #ms-adventure-scoped .comparison-row {
+    gap: 20px !important; /* ลดระยะห่าง VS */
+  }
+
+  #ms-adventure-scoped .crystal-node-pro {
+    width: 80px !important; /* ย่อขนาดกล่องตัวเลข */
+    height: 80px !important;
+    font-size: 1.8rem !important;
+  }
+
+  /* 5. ปุ่มควบคุม: จัดเป็น 2 แถว เพื่อให้กดง่าย */
+  #ms-adventure-scoped .control-action-panel {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  #ms-adventure-scoped .btn-gem, 
+  #ms-adventure-scoped .btn-compare-gem-main {
+    width: 100% !important;
+    padding: 12px 5px !important;
+    font-size: 0.9rem !important;
+    margin: 0 !important;
+  }
+  
+  #ms-adventure-scoped .btn-compare-gem-main {
+    grid-column: span 2; /* ให้ปุ่มเปรียบเทียบกว้างเต็ม 2 คอลัมน์ */
+  }
+
+  /* 6. ต้นไม้ Merge (Tree): ป้องกันกิ่งก้านล้นจอ */
+  #ms-adventure-scoped .tree-exploration-v2 {
+    overflow-x: auto !important;
+    width: 100% !important;
+    padding-bottom: 20px;
+  }
+}
+/* =======================================================
+   ULTIMATE MOBILE FIX (FORCE OVERRIDE)
+   ======================================================= */
+
+@media screen and (max-width: 768px) {
+  
+  /* 1. แก้หน้าแผนที่ด่าน (รูป image_f57c5f) - บังคับให้ปัดซ้ายขวาได้ */
+  #ms-adventure-scoped .level-highway-pro, 
+  #ms-adventure-scoped .map-path-container {
+    display: block !important;
+    overflow-x: auto !important;
+    width: 100vw !important;
+    padding: 100px 0 60px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #ms-adventure-scoped .nodes-flex-row {
+    display: flex !important;
+    width: max-content !important; /* บังคับให้ยาวทะลุจอ */
+    min-width: 850px !important;    /* กันเหนียวให้ด่าน 1, 2, 3 มีที่อยู่ */
+    gap: 40px !important;
+    padding: 0 50px !important;
+  }
+
+  #ms-adventure-scoped .mission-point-wrapper {
+    flex: 0 0 220px !important;    /* ห้ามบีบกล่องด่านเด็ดขาด */
+  }
+
+  /* 2. แก้ชื่อ Post-Test ยักษ์ที่ทับกัน (รูป image_f5f8f7) */
+  .pretest-hero .pretest-title, 
+  .test-hero .test-title,
+  #ms-adventure-scoped .title {
+    font-size: 2rem !important;    /* ลดจาก 7.5rem เหลือขนาดพอดีจอ */
+    line-height: 1.2 !important;
+    margin-top: 10px !important;
+    white-space: normal !important;
+  }
+
+  /* 3. แก้ Sidebar และ Dropdown แหว่ง (รูป image_f6073d) */
+  .nav-menu .dropdown-list {
+    position: static !important;   /* เลิกลอย (ถอน absolute ออก) */
+    transform: none !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    display: none;                 /* ซ่อนไว้ก่อน จะโชว์เมื่อคลิก/Hover */
+    background: rgba(0, 0, 0, 0.05) !important;
+  }
+
+  .nav-item-dropdown:hover .dropdown-list {
+    display: block !important;     /* เมื่อ Hover ให้กางออกมาแบบแทรกแถว */
+  }
+
+  /* 4. เคลียร์ระยะห่างเมนู (รูป image_f60781) */
+  .nav-menu {
+    padding: 80px 20px !important;
+    gap: 5px !important;
+    justify-content: flex-start !important;
+  }
+
+  /* 5. ป้องกันหน้าจอโยกเยก */
+  html, body {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+}
+@media screen and (max-width: 768px) {
+  
+  /* 1. เปลี่ยนแผนที่จากนอนเป็น "ตั้ง" เพื่อให้เห็นครบทุกด่าน */
+  #ms-adventure-scoped .mission-map-pro {
+    padding: 40px 10px !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+
+  #ms-adventure-scoped .level-highway-pro {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 20px 0 !important;
+    overflow-x: visible !important; /* เลิกใช้ Scroll แนวนอนที่ทำให้ของหาย */
+  }
+
+  #ms-adventure-scoped .nodes-flex-row {
+    flex-direction: column !important; /* 🚨 บังคับเรียงแนวตั้ง */
+    align-items: center !important;
+    gap: 120px !important;             /* เว้นระยะห่างให้ตัวละครไม่ทับกัน */
+    width: 100% !important;
+    min-width: unset !important;
+    padding: 60px 0 !important;
+  }
+
+  #ms-adventure-scoped .highway-line-pro {
+    width: 6px !important;             /* เปลี่ยนเส้นทางเป็นแนวตั้ง */
+    height: 80% !important;
+    top: 10% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
+  #ms-adventure-scoped .mission-point-wrapper {
+    flex: none !important;
+    width: 100% !important;
+    position: relative;
+  }
+
+  /* 2. จัดการตัวละคร (YOU) ไม่ให้ทับวงกลมด่าน */
+  #ms-adventure-scoped .avatar-pointer {
+    bottom: auto !important;
+    top: -65px !important;             /* ดันตัวละครขึ้นไปข้างบน */
+    z-index: 10;
+  }
+
+  /* 3. แก้ไข Post-Test ชื่อยักษ์ (รูป image_f5f8f7) */
+  .pretest-hero .pretest-title, 
+  .test-hero .test-title,
+  #ms-adventure-scoped .title {
+    font-size: 1.6rem !important;      /* บีบให้เล็กลงพอดีจอ */
+    white-space: nowrap !important;    /* ห้ามตัดบรรทัดจนทับข้อความอื่น */
+    margin: 10px 0 !important;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
+  }
+
+  /* 4. จัดการป้ายข้อมูลด่านให้ไม่ซ้อนกัน */
+  #ms-adventure-scoped .node-info-pill {
+    margin-top: 15px !important;
+    width: 180px !important;
+    position: relative;
+    z-index: 5;
+  }
+}
+@media screen and (max-width: 768px) {
+
+  /* 1. แก้เกมแหว่ง (รูป image_f57897): ทำให้ต้นไม้ Merge "ปัดซ้าย-ขวา" ได้ */
+  .tree-exploration-v2 {
+    width: 100vw !important;        /* กว้างเท่าหน้าจอ */
+    overflow-x: auto !important;     /* ✅ เปิดระบบปัดซ้าย-ขวา */
+    padding: 40px 20px !important;   /* เว้นพื้นที่ให้กิ่งก้านไม่ชิดขอบ */
+    display: block !important;
+    -webkit-overflow-scrolling: touch; 
+  }
+
+  /* บังคับให้ต้นไม้ข้างในไม่หดตัวจนเบี้ยว */
+  .tree-node-wrapper {
+    min-width: max-content !important; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* 2. แก้หัวข้อ Post-Test ทับกัน (รูป image_f5f8f7) */
+  /* บังคับให้ Title มีระยะห่างที่ถูกต้องและไม่ใหญ่เกินไป */
+  .pretest-hero, .test-hero, .lesson-detail-hero {
+    margin-top: 0 !important;      /* เลิกทับ Navbar */
+    padding: 60px 15px 20px !important;
+    height: auto !important;
+    min-height: 140px !important;
+  }
+
+  .pretest-title, .test-title, .hero-title, .hero-main-title {
+    font-size: 1.8rem !important;  /* ย่อขนาดลงอีกนิดเพื่อความปลอดภัย */
+    line-height: 1.1 !important;
+    margin: 5px 0 !important;
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* 3. จัดการระยะห่างภาษาไทย (Subtitle) ไม่ให้เบียดภาษาอังกฤษ */
+  .pretest-subtitle, .hero-sub, .lesson-hero-sub {
+    font-size: 1rem !important;
+    margin-bottom: 5px !important;
+    opacity: 0.9;
+  }
+
+  /* 4. กล่องตัวเลขในเกม (Node Box) ย่อขนาดลงเพื่อให้เห็นครบขึ้น */
+  .node-box {
+    padding: 8px 12px !important;
+    font-size: 0.9rem !important;
+    min-width: 40px !important;
+  }
+}

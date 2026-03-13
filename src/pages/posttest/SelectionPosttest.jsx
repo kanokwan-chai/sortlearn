@@ -12,6 +12,7 @@ export default function SelectionPosttest() {
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);
+  const [userAnswers, setUserAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showResult, setShowResult] = useState(false);
   const [isAlreadyDone, setIsAlreadyDone] = useState(false);
@@ -69,9 +70,8 @@ export default function SelectionPosttest() {
   }, [current, loading, questions, isAlreadyDone]);
 
   // ---------------- SAVE SCORE ----------------
-  const submitScore = async () => {
+const submitScore = async () => {
     const userKey = getUserKey();
-
     let user = {};
     try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch {}
 
@@ -80,7 +80,9 @@ export default function SelectionPosttest() {
       firstname: user.firstname || userKey,
       lastname: user.lastname || FALLBACK_USER.lastname,
       testName: "Selection Sort Posttest",
-      score: score
+      score: score,
+      // ✨ ส่งคำตอบทั้งหมดไปด้วย (รวมเป็นข้อความยาวๆ คั่นด้วยเครื่องหมาย | หรือ ,)
+      allAnswers: userAnswers.join(" | ") 
     };
 
     try {
@@ -100,12 +102,19 @@ export default function SelectionPosttest() {
     );
   };
 
-  const handleAnswer = (choiceIndex) => {
-    const q = questions[current];
-    if (!q) return;
-    if (parseInt(q.answer) === choiceIndex) setScore(prev => prev + 1);
-    setCurrent(prev => prev + 1);
-  };
+      // ใน SelectionPosttest.jsx หาฟังก์ชัน handleAnswer
+      const handleAnswer = (choiceIndex) => {
+        const q = questions[current];
+        if (!q) return;
+
+        // ✨ แก้ตรงนี้: เก็บ choiceIndex + 1 (จะได้เลข 1, 2, 3, 4)
+        const choiceNumber = choiceIndex + 1;
+        setUserAnswers(prev => [...prev, choiceNumber]);
+
+        if (parseInt(q.answer) === choiceIndex) setScore(prev => prev + 1);
+        setCurrent(prev => prev + 1);
+      };
+    
   
   if (loading) return <MainLayout><div className="loading">กำลังตรวจสอบสิทธิ์...</div></MainLayout>;
 

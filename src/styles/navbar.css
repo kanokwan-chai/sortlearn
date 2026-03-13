@@ -164,3 +164,258 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(0, 146, 204, 0.3);
 }
+@media (max-width: 768px) {
+  /* 1. บังคับให้ทุกอย่างวางเรียงต่อกันเป็นแนวตั้ง และยกเลิกการล็อกความสูง */
+  .nav {
+    flex-direction: column !important; 
+    height: auto !important;          /* สำคัญมาก! ห้ามล็อก 80px */
+    padding: 15px !important;
+    gap: 15px !important;
+    align-items: center !important;   /* จัดโลโก้และเมนูไว้ตรงกลางจอ */
+  }
+
+  /* 2. จัดการโลโก้ให้เด่นอยู่บรรทัดบนสุด */
+  .nav-logo {
+    margin-right: 0 !important;
+    text-align: center;
+    font-size: 1.4rem !important;
+  }
+
+  /* 3. จัดการรายการเมนูให้เรียงกันสวยๆ ไม่ซ้อนทับ */
+  .nav-menu {
+    flex-direction: row;     /* ให้เมนูเรียงแนวนอนเหมือนเดิมแต่ยอมให้ตกลงมาได้ */
+    flex-wrap: wrap;         /* ถ้าที่หมด ให้ลงบรรทัดใหม่ */
+    justify-content: center; /* จัดเมนูให้อยู่กลางจอ */
+    gap: 10px 20px !important; /* ระยะห่าง บน-ล่าง 10px / ซ้าย-ขวา 20px */
+    width: 100%;
+  }
+
+  /* 4. ปรับขนาดตัวอักษรเมนูให้เล็กลงนิดนึงจะได้ไม่ล้น */
+  .nav-menu li a, 
+  .dropdown-trigger {
+    font-size: 0.95rem !important;
+  }
+
+  /* 5. ส่วน User และปุ่ม Logout (ถ้ามี) */
+  .nav-right {
+    margin-top: 5px;
+    width: 100%;
+    justify-content: center;
+    border-top: 1px solid #eee; /* ขีดเส้นคั่นบางๆ ให้ดูเป็นระเบียบ */
+    padding-top: 15px;
+  }
+}
+@media (max-width: 768px) {
+  /* 1. จัดวาง Navbar หลัก */
+  .nav {
+    justify-content: space-between;
+    height: 70px;
+    padding: 0 20px;
+  }
+
+  /* 2. สร้างปุ่ม Hamburger (3 ขีด) */
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    z-index: 1001; /* ให้อยู่เหนือทุกอย่าง */
+  }
+  .hamburger span {
+    width: 25px;
+    height: 3px;
+    background: #0092cc;
+    border-radius: 5px;
+  }
+
+  /* 3. เสกเมนูให้กลายเป็น Sidebar ด้านข้าง */
+  .nav-menu {
+    position: fixed;
+    top: 0;
+    right: -100%; /* ซ่อนไว้ทางขวาสุดของจอ */
+    width: 280px;  /* ความกว้างของแถบด้านข้าง */
+    height: 100vh;
+    background: white;
+    flex-direction: column; /* เรียงเป็นแนวตั้ง */
+    align-items: flex-start !important;
+    padding: 100px 30px !important;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* เอฟเฟกต์สไลด์นุ่มๆ */
+    z-index: 1000;
+    gap: 25px !important;
+  }
+
+  /* 4. เมื่อกดปุ่ม แล้วเมนูจะสไลด์เข้ามา */
+  .nav-menu.open {
+    right: 0; 
+  }
+
+  /* 5. ปรับตัวเลือกใน Dropdown ให้ดูง่ายในแถบข้าง */
+  .dropdown-list {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    display: block; /* โชว์เมนูย่อยไปเลยในแถบข้าง */
+    box-shadow: none;
+    padding-left: 20px;
+    border-left: 2px solid #e2e8f0;
+    width: 100%;
+  }
+  
+  /* 6. ซ่อนส่วนขวา (Logout/User) ไปไว้ในแถบข้างด้วยกัน */
+  .nav-right {
+    display: none; /* หรือจะย้ายไปใส่ใน .nav-menu ก็ได้ครับ */
+  }
+}
+/* สำหรับจอคอมพิวเตอร์ (ซ่อนปุ่ม Hamburger และปุ่มมือถือ) */
+.hamburger, .mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* 1. แสดงปุ่ม 3 ขีด */
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    z-index: 1001;
+  }
+  .hamburger .bar {
+    width: 25px;
+    height: 3px;
+    background-color: #0092cc;
+    border-radius: 5px;
+    transition: 0.3s;
+  }
+
+  /* 2. เปลี่ยน Menu ให้เป็น Sidebar ด้านข้าง */
+  .nav-menu {
+    position: fixed;
+    top: 0;
+    right: -100%; /* ซ่อนไว้ขวาสุด */
+    width: 280px;
+    height: 100vh;
+    background: white;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 100px 20px;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    transition: 0.4s ease-in-out;
+    z-index: 1000;
+  }
+
+  /* เมื่อกดปุ่ม แล้วเมนูสไลด์เข้ามา */
+  .nav-menu.open {
+    right: 0;
+  }
+
+  /* 3. ปรับ Dropdown ให้แทรกตัวลงมา ไม่ลอยทับใคร */
+  .nav-item-dropdown {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dropdown-list {
+    position: static; /* เลิกลอย */
+    opacity: 1;
+    visibility: visible;
+    display: none; /* ซ่อนไว้ก่อน */
+    transform: none;
+    box-shadow: none;
+    width: 100%;
+    padding-left: 20px;
+    background: #f8f9fa;
+  }
+  .nav-item-dropdown:hover .dropdown-list {
+    display: block; /* โชว์เมื่อ Hover (หรือจะแก้เป็นคลิกก็ได้) */
+  }
+
+  /* 4. จัดการปุ่ม Logout */
+  .desktop-only { display: none; }
+  .mobile-only { display: block; width: 100%; margin-top: 20px; }
+}
+@media (max-width: 768px) {
+  /* 1. ลดพื้นที่ว่างด้านบนของแถบเมนู */
+  .nav-menu {
+    padding: 60px 20px 20px !important; /* ลดจาก 100px เหลือ 60px */
+    gap: 5px !important;               /* ลดระยะห่างระหว่างกลุ่มเมนู */
+    justify-content: flex-start !important;
+  }
+
+  /* 2. บีบความสูงของแต่ละเมนูให้เหลือแค่เท่าที่จำเป็น */
+  .nav-menu li {
+    height: auto !important;           /* ยกเลิกความสูง 100% หรือ 80px */
+    margin: 0 !important;
+    width: 100%;
+  }
+
+  /* 3. ปรับระยะห่างของตัวหนังสือข้างใน */
+  .nav-menu li a, 
+  .dropdown-trigger {
+    padding: 12px 0 !important;        /* ปรับความหนาของช่องเมนูให้พอดีนิ้วกด */
+    height: auto !important;           /* บังคับความสูงเป็น auto */
+    display: flex !important;
+    align-items: center;
+    line-height: 1 !important;
+  }
+
+  /* 4. เคลียร์ระยะห่างของตัว Dropdown */
+  .nav-item-dropdown {
+    height: auto !important;
+    margin-bottom: 0 !important;       /* เอา Margin ออก */
+  }
+
+  /* 5. ปรับไอคอนลูกศรไม่ให้ดันบรรทัด */
+  .dropdown-trigger small {
+    margin-top: 0 !important;
+    margin-left: 8px;
+  }
+}
+@media (max-width: 768px) {
+  /* แก้ไขกล่องเมนูย่อยให้สมดุล */
+  .dropdown-list {
+    position: static !important;   /* 1. เลิกลอย (ถอนคำสั่ง absolute) */
+    transform: none !important;    /* 2. ยกเลิกการขยับซ้ายขวาที่เคยตั้งไว้ */
+    left: 0 !important;            /* 3. รีเซ็ตตำแหน่งชิดซ้าย */
+    width: 100% !important;        /* 4. กว้างเต็มแถบ Sidebar */
+    min-width: unset !important;   /* 5. ยกเลิกความกว้างขั้นต่ำของจอคอม */
+    
+    background-color: #f7fafc !important; /* เปลี่ยนสีพื้นหลังนิดนึงให้ดูรู้ว่าเป็นเมนูย่อย */
+    padding: 10px 0 10px 20px !important; /* ดันเข้าไปทางขวาหน่อยให้ดูเป็นขั้นบันได */
+    box-shadow: none !important;   /* เอาเงาออกเพื่อให้ดูเป็นเนื้อเดียวกับ Sidebar */
+    border: none !important;
+    display: none;                 /* ซ่อนไว้ก่อน (จะโชว์เมื่อ hover/click) */
+  }
+
+  /* เมื่อเอาเมาส์จิ้มหัวข้อ ให้เมนูย่อยกางลงมาข้างล่างตรงๆ */
+  .nav-item-dropdown:hover .dropdown-list {
+    display: block !important;
+  }
+
+  /* ปรับตัวหนังสือข้างในให้เลิกแหว่ง */
+  .dropdown-list li a {
+    padding: 10px 15px !important;
+    font-size: 1rem !important;
+    text-align: left !important;
+  }
+}
+/* ปุ่มทางลัด Admin ในจอคอม */
+.admin-shortcut-btn {
+  background: #ffca28;
+  color: #3e2723 !important;
+  padding: 5px 15px;
+  border-radius: 50px;
+  font-weight: bold;
+  text-decoration: none;
+  margin-right: 15px;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 10px rgba(255, 202, 40, 0.3);
+  transition: 0.3s;
+}
+
+.admin-shortcut-btn:hover {
+  transform: scale(1.05);
+  background: #ffd700;
+  box-shadow: 0 6px 15px rgba(255, 202, 40, 0.5);
+}

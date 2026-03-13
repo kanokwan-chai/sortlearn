@@ -4,22 +4,23 @@ import "../../styles/test.css";
 import { useNavigate } from "react-router-dom";
 import { quizImages } from "../../utils/imageMap";
 
+const FALLBACK_USER = { firstname: "Kanokwan", lastname: "TestSystem" };
+
 export default function QuickPosttest() {
   const navigate = useNavigate();
 
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);
+  const [userAnswers, setUserAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showResult, setShowResult] = useState(false);
   const [isAlreadyDone, setIsAlreadyDone] = useState(false);
 
-  const QUESTION_API =
-    "https://script.google.com/macros/s/AKfycbwyxhS44YfJ743L1MIb57lN0CSpq5EUOZWMuUKSw7npDemfARhfeseneXrrVVxpLifC2w/exec";
-  const SCORE_API =
-    "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
+  const QUESTION_API = "https://script.google.com/macros/s/AKfycbwyxhS44YfJ743L1MIb57lN0CSpq5EUOZWMuUKSw7npDemfARhfeseneXrrVVxpLifC2w/exec"; 
+  const SCORE_API    = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
 
-  // ✅ ฟังก์ชันนี้คือหัวใจ (ห้ามใช้ Date.now)
+  // ✅ ฟังก์ชันเดียว ใช้ทั้งไฟล์ (ห้ามสร้าง userKey เอง)
   const getUserKey = () => {
     let user = {};
     try {
@@ -36,7 +37,7 @@ export default function QuickPosttest() {
     return `guest_${guestId}`;
   };
 
-  // ---------------- LOAD + CHECK HISTORY ----------------
+  // ---------------- LOAD + CHECK ----------------
   useEffect(() => {
     const userKey = getUserKey();
     const progressKey = `progress_${userKey}_quick`;
@@ -51,16 +52,16 @@ export default function QuickPosttest() {
       return;
     }
 
-    fetch(`${QUESTION_API}?type=pretest_quick`)
-      .then((res) => res.json())
-      .then((data) => {
+    fetch(`${QUESTION_API}?type=pretest_quick`) 
+      .then(res => res.json())
+      .then(data => {
         setQuestions(data || []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
-  // ---------------- FINISH QUIZ ----------------
+  // ---------------- FINISH ----------------
   useEffect(() => {
     if (!isAlreadyDone && !loading && questions.length > 0 && current >= questions.length) {
       submitScore();
@@ -69,20 +70,19 @@ export default function QuickPosttest() {
   }, [current, loading, questions, isAlreadyDone]);
 
   // ---------------- SAVE SCORE ----------------
-  const submitScore = async () => {
+const submitScore = async () => {
     const userKey = getUserKey();
-
     let user = {};
-    try {
-      user = JSON.parse(localStorage.getItem("user")) || {};
-    } catch {}
+    try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch {}
 
     const payload = {
       activity: "POSTTEST",
       firstname: user.firstname || userKey,
-      lastname: user.lastname,
+      lastname: user.lastname || FALLBACK_USER.lastname,
       testName: "Quick Sort Posttest",
       score: score,
+      // ✨ ส่งคำตอบทั้งหมดไปด้วย (รวมเป็นข้อความยาวๆ คั่นด้วยเครื่องหมาย | หรือ ,)
+      allAnswers: userAnswers.join(" | ") 
     };
 
     try {
@@ -102,13 +102,18 @@ export default function QuickPosttest() {
     );
   };
 
-  const handleAnswer = (choiceIndex) => {
-    const currentQ = questions[current];
-    if (!currentQ) return;
-    const correct = parseInt(currentQ.answer);
-    if (choiceIndex === correct) setScore((prev) => prev + 1);
-    setCurrent((prev) => prev + 1);
-  };
+      const handleAnswer = (choiceIndex) => {
+        const q = questions[current];
+        if (!q) return;
+
+        // ✨ แก้ตรงนี้: เก็บ choiceIndex + 1 (จะได้เลข 1, 2, 3, 4)
+        const choiceNumber = choiceIndex + 1;
+        setUserAnswers(prev => [...prev, choiceNumber]);
+
+        if (parseInt(q.answer) === choiceIndex) setScore(prev => prev + 1);
+        setCurrent(prev => prev + 1);
+      };
+    
   
   if (loading) return <MainLayout><div className="loading">กำลังตรวจสอบสิทธิ์...</div></MainLayout>;
 

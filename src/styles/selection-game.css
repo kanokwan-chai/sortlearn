@@ -720,3 +720,96 @@
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
 }
+/* =======================================================
+   RESPONSIVE: MAGIC LIBRARY GAME
+   ======================================================= */
+
+@media (max-width: 768px) {
+  
+  /* 1. ส่วนหัวและชื่อเกม - ย่อขนาดให้พอดีจอ */
+  .game-title.main, .game-title-white {
+    font-size: 1.8rem !important; /* ลดจาก 3.5 - 3.8rem */
+    letter-spacing: 1px !important;
+  }
+  .game-title.sub {
+    font-size: 1rem !important;
+    letter-spacing: 2px !important;
+  }
+
+  /* 2. หน้าเลือกตัวละคร - เปลี่ยนจากเรียงแนวนอนเป็นแนวตั้ง/ซ้อน */
+  .char-grid, .char-grid-horizontal {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 20px !important;
+  }
+  .char-card, .magic-book-card-v4 {
+    width: 90% !important; /* ให้กว้างเกือบเต็มจอแต่ไม่ชิดขอบ */
+    height: auto !important;
+    max-width: 300px;
+  }
+
+  /* 3. แผนที่ด่าน (Map Screen) - บังคับให้เลื่อนซ้ายขวาได้ถ้าล้น */
+  .map-panel {
+    padding: 20px 10px !important;
+  }
+  .map-path-container {
+    overflow-x: auto; /* ✅ สำคัญ: ถ้าด่านเยอะเกินไป ให้เลื่อนนิ้วปัดซ้ายขวาได้ */
+    justify-content: flex-start !important;
+    padding: 60px 20px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .map-node {
+    width: 65px !important; /* ย่อขนาดปุ่มด่าน */
+    height: 65px !important;
+    font-size: 1.5rem !important;
+    flex-shrink: 0; /* กันปุ่มถูกบีบจนเบี้ยว */
+  }
+
+  /* 4. ตู้หนังสือ (Bookshelf) - แก้ไขจุดที่ล้นที่สุด */
+  .bookshelf-wood {
+    min-width: 100% !important; /* เลิกล็อก 550px */
+    width: 100%;
+    gap: 10px !important; /* ลดช่องว่างระหว่างเล่ม */
+    padding: 0 10px 20px 10px !important;
+    overflow-x: auto; /* ✅ ถ้าหนังสือเยอะเกินจอ ให้ปัดซ้ายขวาเพื่อเลือกเล่มได้ */
+    height: 220px !important;
+  }
+  .book-item {
+    width: 50px !important; /* ย่อความกว้างสันหนังสือ */
+    height: 160px !important;
+  }
+  .book-val {
+    font-size: 1.2rem !important;
+  }
+
+  /* 5. ปุ่มควบคุม (Buttons) - บังคับซ้อนเป็นแนวตั้ง */
+  .btn-group-container {
+    flex-direction: column !important; /* เปลี่ยนจากแนวนอนเป็นแนวตั้ง */
+    gap: 12px !important;
+    width: 90% !important;
+  }
+  .btn-library-action, .btn-ocean-action {
+    width: 100% !important; /* ปุ่มกว้างเต็มจอ กดง่ายด้วยนิ้วโป้ง */
+    max-width: none !important;
+    min-width: unset !important;
+  }
+
+  /* 6. หน้าต่างสรุปผลและ Modal */
+  .win-card, .library-modal-box {
+    width: 95% !important;
+    padding: 25px 15px !important;
+  }
+  .score-big {
+    font-size: 3rem !important;
+  }
+}
+
+/* สำหรับมือถือจอเล็กมาก */
+@media (max-width: 380px) {
+  .timer-text {
+    font-size: 1.5rem !important;
+  }
+  .book-item {
+    width: 42px !important; /* ย่อสุดๆ สำหรับจอจิ๋ว */
+  }
+}

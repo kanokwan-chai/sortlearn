@@ -143,3 +143,66 @@
 .game-style-card:hover .play-circle {
   transform: scale(1.1);
 }
+/* ================= RESPONSIVE FOR VIDEO LIST ================= */
+
+@media (max-width: 768px) {
+  
+  /* 1. จัดระเบียบ Hero - ให้ความสำคัญกับพื้นที่แนวตั้ง */
+  .video-list-hero {
+    height: auto !important;
+    min-height: 180px !important;
+    padding: 50px 20px 30px !important; /* เคลียร์ Padding 120px ทิ้ง */
+    align-items: center !important;     /* จัดกึ่งกลางเพื่อความสมดุล */
+    text-align: center;
+  }
+
+  .hero-sub-title {
+    font-size: 1.3rem !important;      /* ลดจาก 3rem ให้ดูละมุนขึ้น */
+    margin-bottom: 5px !important;
+  }
+
+  .hero-main-title {
+    font-size: 2.8rem !important;      /* ลดจาก 7.5rem เพื่อไม่ให้ตัว V ทะลุจอ */
+    letter-spacing: 1px !important;
+    line-height: 1.1;
+  }
+
+  /* 2. ซ่อนสามเหลี่ยม (Flag) - เพื่อคืนพื้นที่ให้ตัวหนังสือ */
+  .hero-flag-right {
+    display: none !important;
+  }
+
+  /* 3. จัดการ Grid การ์ดวิดีโอ */
+  .video-list-container {
+    padding: 30px 15px !important;    /* ลด Padding รอบข้าง */
+  }
+
+  .video-grid {
+    gap: 30px !important;             /* ลดจาก 50px เพื่อไม่ให้เวิ้งว้างเกินไปในมือถือ */
+    grid-template-columns: 1fr !important; /* บังคับแถวเดียวเพื่อให้การ์ดกว้างพอดีสายตา */
+  }
+
+  /* 4. ปรับแต่งการ์ด (Card) ให้เข้ากับหน้าจอสัมผัส */
+  .game-style-card {
+    max-width: 100% !important;        /* ให้การ์ดขยายเต็มพื้นที่ที่มี */
+    padding: 15px !important;
+    border-radius: 30px !important;    /* ลดความมนลงเล็กน้อยให้ดูไม่บวมเกินไป */
+  }
+
+  .play-circle {
+    width: 60px !important;            /* ลดขนาดปุ่ม Play ลงนิดนึง */
+    height: 60px !important;
+  }
+
+  .play-icon {
+    width: 25px !important;
+    height: 25px !important;
+  }
+}
+
+/* สำหรับมือถือจอแคบมาก (เช่น iPhone SE) */
+@media (max-width: 380px) {
+  .hero-main-title {
+    font-size: 2.2rem !important;
+  }
+}

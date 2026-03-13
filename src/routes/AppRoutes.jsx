@@ -8,6 +8,7 @@ import PostTest from "../pages/Posttest";
 import Video from "../pages/Video";
 import GameList from "../pages/GameList";
 import NotFound from "../pages/NotFound"; // ✅ ตรวจสอบไฟล์นี้ว่ามี export default หรือไม่
+import AdminDashboard from "../pages/AdminDashboard"; 
 
 import SelectionSort from "../pages/SelectionSort";
 import InsertionSort from "../pages/InsertionSort";
@@ -58,7 +59,8 @@ export default function AppRoutes() {
       <Route path="/pretest" element={<PreTest />} />
       <Route path="/posttest" element={<PostTest />} />
       <Route path="/videos" element={<Video />} />
-      <Route path="/games" element={<GameList />} />
+      <Route path="/games" element={<GameList />} /> 
+      <Route path="/admin" element={<AdminDashboard />} />
 
       {/* บทเรียน */}
       <Route path="/selection-sort" element={<SelectionSort />} />

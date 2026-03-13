@@ -637,3 +637,108 @@ to { opacity: 1; transform: translateY(0); }
     50% { opacity: 1; }
     100% { top: 90%; opacity: 0; }
 }
+/* =======================================================
+   RESPONSIVE: BUBBLE SORT OCEAN EXPEDITION
+   ======================================================= */
+
+@media (max-width: 768px) {
+  
+  /* 1. ชื่อหัวข้อด่าน - ย่อจาก 4rem ให้พอดีจอ */
+  .expedition-title {
+    font-size: 1.8rem !important;
+    margin: 0 10px !important;
+  }
+  .header-icon {
+    font-size: 1.5rem !important;
+  }
+
+  /* 2. หน้าเลือกตัวละคร (Character Grid) - เรียงแนวตั้ง */
+  .char-grid {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 20px !important;
+  }
+  .char-card {
+    width: 90% !important;
+    max-width: 280px !important;
+    padding: 20px !important;
+  }
+
+  /* 3. แผนที่ไข่มุก (Map) - แก้ปัญหาด่านหาย */
+  .map-content-container {
+    padding: 30px 15px !important;
+    border-radius: 30px !important;
+  }
+  
+  /* ✅ เปิดระบบปัดซ้าย-ขวา เพื่อดูด่าน 1, 2, 3 */
+  .map-navigation-area {
+    overflow-x: auto !important;
+    display: block !important;
+    padding: 100px 0 40px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nodes-wrapper {
+    width: max-content !important; /* บังคับให้ยาวทะลุจอออกไป */
+    min-width: 600px !important;
+    gap: 40px !important;
+    padding: 0 40px !important;
+    justify-content: flex-start !important;
+  }
+
+  .node-button-wrapper {
+    width: 80px !important; /* ย่อขนาดไข่มุก */
+    height: 80px !important;
+  }
+
+  .node-pearl {
+    font-size: 1.5rem !important;
+    border-width: 4px !important;
+  }
+
+  /* 4. สนามเล่นเกม (Bubble Stage) */
+  .bubbles-row {
+    gap: 15px !important;
+    flex-wrap: wrap !important; /* ✅ ถ้าฟองสบู่เยอะเกิน ให้ตกลงมาแถวใหม่ได้ */
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
+  .bubble-item {
+    width: 65px !important; /* ย่อขนาดฟองสบู่ */
+    height: 65px !important;
+    font-size: 1.4rem !important;
+  }
+
+  /* 5. แถบสถานะ HUD */
+  .hud-bar, .mission-banner {
+    flex-direction: column !important;
+    padding: 15px !important;
+    border-radius: 20px !important;
+    gap: 10px !important;
+    text-align: center;
+  }
+
+  /* 6. ปุ่มควบคุม (Buttons) - บีบให้เล็กลงแต่กดยังง่าย */
+  .game-footer {
+    gap: 15px !important;
+    width: 95% !important;
+  }
+
+  .btn-action {
+    padding: 12px 30px !important;
+    font-size: 1.1rem !important;
+    flex: 1; /* ให้ปุ่มแบ่งครึ่งหน้าจอเท่าๆ กัน */
+  }
+}
+
+/* สำหรับมือถือจอเล็กมาก */
+@media (max-width: 380px) {
+  .bubble-item {
+    width: 55px !important;
+    height: 55px !important;
+  }
+  .btn-action {
+    font-size: 0.95rem !important;
+  }
+}
