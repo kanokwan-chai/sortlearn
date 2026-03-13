@@ -429,7 +429,7 @@
 /* 2. แก้ไขส่วนปุ่มห้องแล็บ (เอาความหนาพิเศษออก) */
 .nav-lab-btn {
   background-color: #f0f9ff;
-  color: #414141 !important;
+  color: #0284c7 !important;
   border-radius: 10px;
   border: 1px solid #bae6fd;
   padding: 8px 15px !important;
