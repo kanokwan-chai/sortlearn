@@ -25,7 +25,7 @@ export default function Navbar({ user, onLogout }) {
         </Link>
       </div>
 
-      {/* 2. HAMBURGER BUTTON */}
+      {/* 2. HAMBURGER BUTTON (Mobile) */}
       <div className={`hamburger ${isOpen ? "active" : ""}`} onClick={toggleMenu}>
         <span className="bar"></span>
         <span className="bar"></span>
@@ -52,6 +52,12 @@ export default function Navbar({ user, onLogout }) {
               <li key={item.key}><Link to={`/${item.key}-sort`} onClick={toggleMenu}>{item.label}</Link></li>
             ))}
           </ul>
+        </li>
+
+        <li>
+          <Link to="/comparison" onClick={toggleMenu} className="nav-lab-btn">
+            ห้องแล็บอัลกอริทึม
+          </Link>
         </li>
 
         <li className="nav-item-dropdown">
@@ -81,7 +87,7 @@ export default function Navbar({ user, onLogout }) {
           </ul>
         </li>
 
-        {/* ✨ ส่วนสำหรับมือถือ: แสดงชื่อผู้ใช้, ปุ่ม Admin และปุ่ม Logout */}
+        {/* ส่วนข้อมูลผู้ใช้สำหรับมือถือ */}
         {user && (
           <li className="nav-user-mobile">
             <div className="mobile-info">
@@ -91,20 +97,20 @@ export default function Navbar({ user, onLogout }) {
                   📊 Admin Dashboard
                 </Link>
               )}
-              <button onClick={onLogout} className="logout-btn" style={{width: '100%', background: '#ef4444'}}>logout</button>
+              <button onClick={onLogout} className="logout-btn-mob">logout</button>
             </div>
           </li>
         )}
       </ul>
 
-      {/* 4. USER RIGHT (โชว์มุมขวาบน เฉพาะหน้าจอคอม) */}
+      {/* 4. USER RIGHT (Desktop Only) */}
       <div className="nav-right desktop-only">
-      {user?.email === "kanokwanmail2547@gmail.com" && (
-        <Link to="/admin" className="admin-shortcut-btn">Admin</Link>
-      )}
-      <span className="nav-user">ผู้ใช้ : {user?.firstname}</span>
-      <button className="logout-btn" onClick={onLogout}>logout</button>
-    </div>
+        {user?.email === "kanokwanmail2547@gmail.com" && (
+          <Link to="/admin" className="admin-shortcut-btn">Admin</Link>
+        )}
+        <span className="nav-user">ผู้ใช้ : {user?.firstname}</span>
+        <button className="logout-btn" onClick={onLogout}>logout</button>
+      </div>
     </nav>
   );
 }

@@ -9,6 +9,7 @@ import Video from "../pages/Video";
 import GameList from "../pages/GameList";
 import NotFound from "../pages/NotFound"; // ✅ ตรวจสอบไฟล์นี้ว่ามี export default หรือไม่
 import AdminDashboard from "../pages/AdminDashboard"; 
+import ComparisonPage from "../pages/ComparisonPage";
 
 import SelectionSort from "../pages/SelectionSort";
 import InsertionSort from "../pages/InsertionSort";
@@ -61,6 +62,7 @@ export default function AppRoutes() {
       <Route path="/videos" element={<Video />} />
       <Route path="/games" element={<GameList />} /> 
       <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/comparison" element={<ComparisonPage />} />
 
       {/* บทเรียน */}
       <Route path="/selection-sort" element={<SelectionSort />} />

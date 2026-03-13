@@ -3,6 +3,13 @@ import { useNavigate } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import "../styles/admin-dashboard.css";
 
+// 📊 1. Imports
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+
+// 📊 2. Register ChartJS
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
 const SCORE_API = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec"; 
 
 export default function AdminDashboard() {
@@ -33,22 +40,43 @@ export default function AdminDashboard() {
     finally { setLoading(false); }
   };
 
-  // ✨ Reset อัลกอริทึมย่อยทุกครั้งที่เปลี่ยน Tab หลัก
   useEffect(() => {
     setActiveAlgo("ALL_ALGO");
   }, [activeTab]);
 
-  // 🔍 ระบบกรองข้อมูล (ชื่อ + ประเภทกิจกรรม + ชื่ออัลกอริทึม/เกม)
   const filteredData = students.filter((item) => {
     const matchesSearch = `${item.firstname} ${item.lastname}`.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTab = activeTab === "ALL" || item.type === activeTab;
-    
-    // ✨ ดึงชื่อกิจกรรมหรือชื่อเกมมาเช็กคำสำคัญ (เช่น Selection, Bubble)
     const fullName = (item.activityName || item.gameName || "").toLowerCase();
     const matchesAlgo = activeAlgo === "ALL_ALGO" || fullName.includes(activeAlgo.toLowerCase());
-
     return matchesSearch && matchesTab && matchesAlgo;
   });
+
+  // 📊 3. ฟังก์ชันคำนวณคะแนนเฉลี่ยสำหรับกราฟ
+  const getAvgForChart = (type, algo) => {
+    const filtered = students.filter(s => s.type === type && (s.activityName || "").toLowerCase().includes(algo.toLowerCase()));
+    if (filtered.length === 0) return 0;
+    return (filtered.reduce((acc, curr) => acc + Number(curr.score), 0) / filtered.length).toFixed(2);
+  };
+
+  const algos = ["Selection", "Bubble", "Insertion", "Merge", "Quick", "Heap"];
+  const chartData = {
+    labels: algos,
+    datasets: [
+      {
+        label: 'ก่อนเรียน (Pre-test)',
+        data: algos.map(a => getAvgForChart('PRETEST', a)),
+        backgroundColor: 'rgba(186, 230, 253, 0.8)',
+        borderRadius: 6,
+      },
+      {
+        label: 'หลังเรียน (Post-test)',
+        data: algos.map(a => getAvgForChart('POSTTEST', a)),
+        backgroundColor: 'rgba(30, 64, 175, 0.9)',
+        borderRadius: 6,
+      }
+    ]
+  };
 
   const handleExport = () => {
     const header = "วันที่,ชื่อ,นามสกุล,กิจกรรม,คะแนน,รายละเอียดคำตอบ\n";
@@ -66,7 +94,7 @@ export default function AdminDashboard() {
     document.body.removeChild(link);
   };
 
-  return (
+return (
     <MainLayout>
       <div className="admin-container fade-in">
         <header className="admin-header">
@@ -86,10 +114,10 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* 2️⃣ Sub-Tabs ย่อย (เพิ่มเงื่อนไขให้โชว์ที่ GAMES ด้วย ✨) */}
+        {/* 2️⃣ Sub-Tabs ย่อย */}
         {(activeTab === "PRETEST" || activeTab === "POSTTEST" || activeTab === "VIDEO_QA" || activeTab === "GAMES") && (
           <div className="admin-sub-tabs fade-in">
-            {["ALL_ALGO", "Selection", "Bubble", "Insertion", "Merge", "Quick", "HEAP"].map((algo) => (
+            {["ALL_ALGO", "Selection", "Bubble", "Insertion", "Merge", "Quick", "Heap"].map((algo) => (
               <button 
                 key={algo}
                 className={`sub-tab-btn ${activeAlgo === algo ? "active" : ""}`}
@@ -101,6 +129,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* 🔍 ส่วนค้นหาและ Export */}
         <div className="admin-controls glass">
           <div className="search-box">
             <span className="icon">🔍</span>
@@ -116,27 +145,44 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        <div className="admin-stats">
-          <div className="stat-card glass">
-            <small>รายการที่พบ</small>
-            <h2>{filteredData.length}</h2>
+        {/* 📉 1. กราฟวิเคราะห์: โชว์เฉพาะหน้า "ทั้งหมด (ALL)" เท่านั้น ✨ */}
+        {activeTab === "ALL" && !loading && students.length > 0 && (
+          <div className="admin-chart-wrapper glass fade-in" style={{ padding: '20px', marginBottom: '30px' }}>
+            <h3 style={{ marginBottom: '20px', color: '#1e3a8a', textAlign: 'center' }}>📈 ภาพรวมพัฒนาการเรียนรู้</h3>
+            <div style={{ height: '300px' }}>
+              <Bar 
+                data={chartData} 
+                options={{ responsive: true, maintainAspectRatio: false }} 
+              />
+            </div>
           </div>
-          <div className="stat-card glass">
-            <small>คะแนนเฉลี่ย ({activeAlgo === "ALL_ALGO" ? activeTab : activeAlgo})</small>
-            <h2>
-              {filteredData.length > 0 
-                ? (filteredData.reduce((acc, curr) => acc + Number(curr.score), 0) / filteredData.length).toFixed(2)
-                : 0}
-            </h2>
+        )}
+
+        {/* 📊 2. ส่วนสรุปตัวเลข (Stats): แก้ไขให้ "ซ่อน" ในหน้า ALL ✨ */}
+        {activeTab !== "ALL" && (
+          <div className="admin-stats fade-in">
+            <div className="stat-card glass">
+              <small>รายการที่พบ</small>
+              <h2>{filteredData.length}</h2>
+            </div>
+            <div className="stat-card glass">
+              <small>คะแนนเฉลี่ย ({activeAlgo === "ALL_ALGO" ? activeTab : activeAlgo})</small>
+              <h2>
+                {filteredData.length > 0 
+                  ? (filteredData.reduce((acc, curr) => acc + Number(curr.score), 0) / filteredData.length).toFixed(2)
+                  : 0}
+              </h2>
+            </div>
           </div>
-        </div>
+        )}
 
         {loading ? (
           <div className="loader-box"><div className="spinner"></div><p>กำลังจัดเรียงข้อมูล...</p></div>
         ) : (
           <div className="admin-table-wrapper glass">
+            {/* ... ส่วนของ Table เหมือนเดิม ... */}
             <table className="admin-table">
-              <thead>
+               <thead>
                 <tr>
                   <th>ชื่อ-นามสกุล</th>
                   <th>กิจกรรม</th>

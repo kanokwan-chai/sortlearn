@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react"; // ✅ เพิ่ม useState และ useEffect
+import { Link, useNavigate } from "react-router-dom"; // ✅ เพิ่ม useNavigate
 import MainLayout from "../layouts/MainLayout";
-import { Link } from "react-router-dom";
-import LessonProgress from "../components/LessonProgress"; // ✅ Import ตัวใหม่เข้ามา
+import LessonProgress from "../components/LessonProgress"; 
 
 import "../styles/home.css";
 
@@ -17,37 +17,46 @@ import quickImg from "../assets/lessons/quick.png";
 import mergeImg from "../assets/lessons/merge.png";
 
 export default function Home() {
-  
-  // ฟังก์ชันเช็คว่าผ่านครบหรือยัง (เอาไว้ซ่อนปุ่ม)
+  // 1️⃣ ประกาศตัวแปรที่ Error ไปก่อนหน้านี้
+  const navigate = useNavigate(); 
+  const [isFinishedAll, setIsFinishedAll] = useState(false);
+
+  // ฟังก์ชันเช็ค User Key
   const getUserKey = () => {
-  let user = {};
-  try {
-    user = JSON.parse(localStorage.getItem("user")) || {};
-  } catch {}
+    let user = {};
+    try {
+      user = JSON.parse(localStorage.getItem("user")) || {};
+    } catch {}
+    if (user.email) return user.email;
+    let guestId = localStorage.getItem("guest_id");
+    if (!guestId) {
+      guestId = crypto.randomUUID();
+      localStorage.setItem("guest_id", guestId);
+    }
+    return `guest_${guestId}`;
+  };
 
-  if (user.email) return user.email;
+  // ฟังก์ชันเช็คว่าแต่ละบทเรียนผ่านหรือยัง
+  const isLessonDone = (lessonKey) => {
+    const userKey = getUserKey();
+    const key = `progress_${userKey}_${lessonKey}`;
+    const data = JSON.parse(localStorage.getItem(key)) || {};
 
-  let guestId = localStorage.getItem("guest_id");
-  if (!guestId) {
-    guestId = crypto.randomUUID();
-    localStorage.setItem("guest_id", guestId);
-  }
-  return `guest_${guestId}`;
-};
+    return (
+      data.pretest != null &&
+      data.posttest != null &&
+      data.video === true &&
+      data.game === true
+    );
+  };
+  
 
-const isLessonDone = (lessonKey) => {
-  const userKey = getUserKey();
-  const key = `progress_${userKey}_${lessonKey}`;
-  const data = JSON.parse(localStorage.getItem(key)) || {};
-
-  return (
-    data.pretest != null &&
-    data.posttest != null &&
-    data.video === true &&
-    data.game === true
-  );
-};
-
+  // 2️⃣ ตรวจสอบความคืบหน้าทั้งหมด (เรียนครบ 6 อันหรือยัง)
+  useEffect(() => {
+    const algos = ['selection', 'insertion', 'bubble', 'heap', 'quick', 'merge'];
+    const complete = algos.every(algo => isLessonDone(algo));
+    setIsFinishedAll(complete);
+  }, []);
 
   return (
     <MainLayout>
@@ -70,8 +79,7 @@ const isLessonDone = (lessonKey) => {
       <h1 className="lesson-header">หัวข้อการเรียนรู้</h1>
 
       <div className="lesson-grid">
-
-        {/* 1. SELECTION SORT */}
+        {/* การ์ดบทเรียนต่างๆ (ใส่ LessonProgress และเช็คปุ่มเหมือนเดิม) */}
         <div className="lesson-card">
           <img src={selectionImg} className="lesson-img" alt="Selection Sort" />
           <h3 className="lesson-title">SELECTION SORT</h3>
@@ -81,7 +89,6 @@ const isLessonDone = (lessonKey) => {
           )}
         </div>
 
-        {/* 2. INSERTION SORT */}
         <div className="lesson-card">
           <img src={insertionImg} className="lesson-img" alt="Insertion Sort" />
           <h3 className="lesson-title">INSERTION SORT</h3>
@@ -91,18 +98,15 @@ const isLessonDone = (lessonKey) => {
           )}
         </div>
 
-        {/* 3. BUBBLE SORT */}
         <div className="lesson-card">
           <img src={bubbleImg} className="lesson-img" alt="Bubble Sort" />
           <h3 className="lesson-title">BUBBLE SORT</h3>
           <LessonProgress lessonKey="bubble" />
-
           {!isLessonDone("bubble") && (
             <Link to="/bubble-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
           )}
         </div>
 
-        {/* 4. HEAP SORT */}
         <div className="lesson-card">
           <img src={heapImg} className="lesson-img" alt="Heap Sort" />
           <h3 className="lesson-title">HEAP SORT</h3>
@@ -112,7 +116,6 @@ const isLessonDone = (lessonKey) => {
           )}
         </div>
 
-        {/* 5. QUICK SORT */}
         <div className="lesson-card">
           <img src={quickImg} className="lesson-img" alt="Quick Sort" />
           <h3 className="lesson-title">QUICK SORT</h3>
@@ -122,7 +125,6 @@ const isLessonDone = (lessonKey) => {
           )}
         </div>
 
-        {/* 6. MERGE SORT */}
         <div className="lesson-card">
           <img src={mergeImg} className="lesson-img" alt="Merge Sort" />
           <h3 className="lesson-title">MERGE SORT</h3>
@@ -131,7 +133,6 @@ const isLessonDone = (lessonKey) => {
             <Link to="/merge-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
           )}
         </div>
-
       </div>
     </MainLayout>
   );

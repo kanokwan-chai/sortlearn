@@ -1,0 +1,443 @@
+/* Container หลัก */
+.battle-container {
+  padding: 40px 5%;
+  background-color: #f8fafc;
+  min-height: 100vh;
+  font-family: 'Inter', 'Sarabun', sans-serif;
+  color: #1e293b;
+}
+
+/* ส่วนหัวข้อ */
+.battle-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.battle-header h1 {
+  color: #1e3a8a;
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+}
+
+.battle-header p {
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+/* ส่วนควบคุม (Select & Buttons) */
+.battle-controls {
+  background: white;
+  padding: 30px;
+  border-radius: 24px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 40px;
+  text-align: center;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.select-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 25px;
+  margin-bottom: 25px;
+}
+
+.select-row select {
+  padding: 12px 20px;
+  border-radius: 14px;
+  border: 2px solid #f1f5f9;
+  font-size: 1.1rem;
+  color: #1e3a8a;
+  font-weight: 600;
+  background-color: #f8fafc;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.select-row select:focus {
+  border-color: #3b82f6;
+  outline: none;
+  background-color: white;
+}
+
+.vs {
+  font-weight: 900;
+  color: #cbd5e1;
+  font-size: 1.8rem;
+  font-style: italic;
+}
+
+/* ปุ่มกด */
+.btn-group {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn-start {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  padding: 14px 45px;
+  border-radius: 50px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1.1rem;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+  transition: all 0.3s ease;
+}
+
+.btn-start:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
+}
+
+.btn-reset {
+  background: white;
+  color: #64748b;
+  border: 2px solid #e2e8f0;
+  padding: 12px 30px;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-reset:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.btn-start:disabled, .btn-reset:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* การ์ดสนามประชัน */
+.battle-field {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.battle-card {
+  background: white;
+  padding: 35px;
+  border-radius: 30px;
+  border: 2px solid #f1f5f9;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.battle-card.is-winner {
+  border-color: #fbbf24;
+  background: #fffdf5;
+  transform: scale(1.02);
+  box-shadow: 0 20px 40px rgba(251, 191, 36, 0.1);
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.card-top h3 {
+  font-size: 1.5rem;
+  color: #1e293b;
+}
+
+.card-top small {
+  display: block;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  font-weight: normal;
+}
+
+.winner-tag {
+  background: #fbbf24;
+  color: #92400e;
+  padding: 6px 16px;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 0.75rem;
+  animation: bounce 0.5s infinite alternate;
+}
+
+/* สถิติ Comparisons / Swaps */
+.card-stats {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 25px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 20px;
+}
+
+.stat span {
+  font-size: 0.85rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.stat strong {
+  font-size: 1.8rem;
+  color: #1e3a8a;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Visualizer (แท่งกราฟขยับได้) */
+.visualizer {
+  height: 250px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 6px 6px 2px 2px;
+  transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
+}
+
+/* บทสรุปด้านล่าง */
+.verdict-box {
+  margin-top: 50px;
+  background: #1e3a8a;
+  color: white;
+  padding: 40px;
+  border-radius: 28px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(30, 58, 138, 0.2);
+}
+
+.verdict-box h3 {
+  color: #fbbf24;
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+}
+
+.verdict-box p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.tips {
+  font-size: 0.95rem;
+  opacity: 0.7;
+  margin-top: 25px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 20px;
+}
+
+/* Animations */
+@keyframes bounce {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .battle-field { grid-template-columns: 1fr; }
+  .vs { transform: rotate(90deg); margin: 10px 0; }
+}
+/* ปุ่มสุ่มข้อมูลใหม่ (สีขาวสะอาดตา) */
+.btn-reset {
+  background: #ffffff;
+  color: #64748b; /* สีเทาเข้ม Slate */
+  border: 1.5px solid #e2e8f0;
+  padding: 10px 25px;
+  border-radius: 8px; /* ปรับให้โค้งมนนิดเดียว ดูทันสมัยกว่าทรงแคปซูล */
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.btn-reset:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+/* ปุ่มเริ่มประชัน (สีน้ำเงินสุขุม) */
+.btn-start {
+  background: #1e3a8a; /* Navy Blue */
+  color: #ffffff;
+  border: none;
+  padding: 12px 35px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* เงาบางๆ ให้ดูมีมิติ */
+}
+
+.btn-start:hover:not(:disabled) {
+  background: #1e40af;
+  transform: translateY(-1px); /* ขยับขึ้นนิดเดียวพอให้รู้ว่ากดได้ */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-start:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-start:disabled, .btn-reset:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #f1f5f9;
+  cursor: not-allowed;
+  transform: none;
+}
+/* --- CSS เพิ่มเติมเพื่อรองรับมือถือ --- */
+@media (max-width: 850px) {
+  .battle-header h1 {
+    font-size: 1.8rem; /* ย่อชื่อหัวข้อลง */
+  }
+
+  .select-row {
+    flex-direction: column; /* เปลี่ยนจากเรียงแถวเป็นแนวตั้ง */
+    gap: 10px;
+  }
+
+  .vs {
+    margin: 5px 0;
+    transform: rotate(90deg); /* หมุนคำว่า VS ให้เป็นแนวตั้ง */
+  }
+
+  .battle-field {
+    grid-template-columns: 1fr; /* เปลี่ยนจาก 2 ฝั่ง เป็นฝั่งเดียวซ้อนกัน */
+  }
+
+  .battle-card {
+    padding: 20px;
+  }
+
+  .stat strong {
+    font-size: 1.2rem; /* ย่อขนาดตัวเลขสถิติ */
+  }
+
+  .visualizer {
+    height: 180px; /* ลดความสูงกราฟลงนิดหน่อย */
+    gap: 3px;
+  }
+}
+/* การ์ดบทสรุปแบบกะทัดรัด */
+.verdict-card {
+  max-width: 700px; /* จำกัดความกว้างไม่ให้ใหญ่เกินไป */
+  margin: 30px auto; /* จัดวางกึ่งกลาง */
+  background: #ffffff;
+  border-left: 6px solid #fbbf24; /* แถบสีทองโชว์ผู้ชนะ */
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 20px 25px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  border-top: 1px solid #f1f5f9;
+  border-right: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.verdict-icon {
+  font-size: 2.5rem;
+  margin-right: 20px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.verdict-content h4 {
+  margin: 0 0 5px 0;
+  color: #1e3a8a;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.verdict-content p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.verdict-content strong {
+  color: #1e293b;
+}
+
+.verdict-content span {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  margin-left: 4px;
+}
+
+.verdict-content small {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* ปรับให้รองรับมือถือ */
+@media (max-width: 600px) {
+  .verdict-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 25px;
+  }
+  .verdict-icon {
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+}
+/* 1. ตั้งค่าความหนามาตรฐานให้ทุกเมนู */
+.nav-menu li a, 
+.dropdown-trigger, 
+.nav-lab-btn {
+  font-weight: 600 !important; /* ปรับเป็น 600 หรือ 700 ตามความชอบ แต่ต้องเท่ากัน */
+  font-family: 'Inter', 'Sarabun', sans-serif;
+  transition: all 0.2s ease;
+}
+
+/* 2. แก้ไขส่วนปุ่มห้องแล็บ (เอาความหนาพิเศษออก) */
+.nav-lab-btn {
+  background-color: #f0f9ff;
+  color: #414141 !important;
+  border-radius: 10px;
+  border: 1px solid #bae6fd;
+  padding: 8px 15px !important;
+  /* ลบ font-weight: 800 ออกเพื่อให้ไปใช้ค่า 600 ด้านบนแทน */
+}
+
+/* 3. เช็กส่วนของหน้าหลัก (Active Link) */
+/* บางครั้งตัวที่เป็นหน้าปัจจุบันอาจจะหนากว่า ให้ตั้งค่าให้เท่ากันด้วยครับ */
+.nav-menu li a.active {
+  font-weight: 600 !important; 
+}

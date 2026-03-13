@@ -446,3 +446,87 @@
     border-radius: 12px;
   }
 }
+/* จัดการให้เมนูไม่เบียดกันในหน้าจอคอม */
+.nav-menu {
+  gap: 10px !important; /* ลดระยะห่างระหว่างเมนู */
+}
+
+@media (min-width: 1024px) {
+  .nav-menu li a {
+    font-size: 0.82rem !important; /* ลดขนาดตัวอักษรลงเล็กน้อยเพื่อให้พอดี 7 เมนู */
+    padding: 8px 5px !important;
+  }
+}
+
+/* ตกแต่งปุ่มประชันความเร็วให้เด่นและสวยงาม */
+.nav-lab-btn {
+  background-color: #f0f9ff;
+  color: #0284c7 !important;
+  font-weight: 800 !important;
+  border-radius: 10px;
+  border: 1px solid #bae6fd;
+  padding: 8px 15px !important;
+  transition: all 0.3s ease;
+}
+
+.nav-lab-btn:hover {
+  background-color: #e0f2fe;
+  color: #0369a1 !important;
+  transform: translateY(-1px);
+}
+
+/* ปรับปรุงปุ่ม Logout ในมือถือ */
+.logout-btn-mob {
+  width: 100%;
+  padding: 12px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  margin-top: 10px;
+  cursor: pointer;
+}
+/* เปลี่ยนจากปุ่มไฮไลท์ ให้เป็นเมนูธรรมดา */
+.nav-lab-btn {
+  background: transparent !important; /* เอาสีพื้นหลังออก */
+  border: none !important;           /* เอาเส้นขอบออก */
+  color: #1e293b !important;         /* ใช้สีเทาเข้มเหมือนเมนูหน้าหลัก */
+  font-weight: 500 !important;       /* ความหนาปกติ */
+  padding: 8px 12px !important;
+}
+
+.nav-lab-btn:hover {
+  color: #0ea5e9 !important;         /* เปลี่ยนเป็นสีฟ้าเฉพาะตอนเอาเมาส์ไปชี้ */
+  background: transparent !important;
+}
+/* --- 1. บังคับให้สีและ font ทุกเมนูเท่ากันเป๊ะ --- */
+.nav-menu li a, 
+.dropdown-trigger, 
+.nav-lab-btn {
+  color: #334155 !important; /* สีเทาเข้ม Slate (ถ้าอยากได้ดำสนิทใช้ #1e293b) */
+  font-weight: 600 !important;
+  text-decoration: none;
+  font-size: 0.9rem; /* ปรับขนาดให้เท่ากันด้วยครับ */
+  transition: color 0.2s ease;
+}
+
+/* --- 2. ลบดีไซน์ปุ่มของห้องแล็บออก (ถ้ากนกวรรณอยากให้เป็นแค่ตัวหนังสือ) --- */
+.nav-lab-btn {
+  background: transparent !important;
+  border: none !important;
+  padding: 5px 10px !important; /* ปรับ padding ให้เท่ากับตัวอื่น */
+}
+
+/* --- 3. ตั้งค่าสีตอนเอาเมาส์ไปชี้ (Hover) ให้เหมือนกันทุกตัว --- */
+.nav-menu li a:hover, 
+.dropdown-trigger:hover, 
+.nav-lab-btn:hover {
+  color: #0ea5e9 !important; /* เปลี่ยนเป็นสีฟ้าเวลาชี้เหมือนกันหมด */
+}
+
+/* --- 4. ปรับสีลูกศรเล็กๆ (small ▼) ให้จางลงเท่ากัน --- */
+.dropdown-trigger small {
+  color: #94a3b8;
+  margin-left: 5px;
+}
