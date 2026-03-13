@@ -235,26 +235,32 @@
   flex-wrap: wrap;
 }
 
+/* --- ปุ่มเมนูย่อย (Sub-tab) ฉบับธีมฟ้าน้ำเงิน --- */
 .sub-tab-btn {
-  background: white;
-  border: 1px solid #e2e8f0;
-  padding: 6px 15px;
-  border-radius: 20px;
+  background: #ffffff !important; /* พื้นหลังปกติเป็นสีขาว */
+  color: #1e40af !important;      /* ตัวหนังสือสีน้ำเงินเข้ม */
+  border: 1.5px solid #bae6fd !important; /* ขอบฟ้าอ่อน */
+  padding: 8px 20px;
+  border-radius: 25px;
   cursor: pointer;
-  font-size: 0.85rem;
   font-family: 'Kanit', sans-serif;
-  color: #64748b;
-  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
-.sub-tab-btn:hover {
-  border-color: #0ea5e9;
-  color: #0ea5e9;
+/* --- เมื่อเอาเมาส์ไปชี้ (Hover) --- */
+.sub-tab-btn:hover:not(.active) {
+  background: #f0f9ff !important; /* ฟ้าอ่อนมาก */
+  border-color: #0ea5e9 !important;
+  color: #0284c7 !important;
 }
 
+/* --- เมื่อปุ่มถูกเลือก (Active) --- */
 .sub-tab-btn.active {
-  background: #e0f2fe;
-  border-color: #0ea5e9;
-  color: #0ea5e9;
-  font-weight: bold;
+  background: linear-gradient(135deg, #0ea5e9, #1e40af) !important; /* ไล่เฉดฟ้าไปน้ำเงิน */
+  color: #ffffff !important; /* ตัวหนังสือสีขาว */
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25); /* เงาสีน้ำเงินจางๆ */
+  font-weight: 600;
 }

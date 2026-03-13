@@ -71,7 +71,6 @@ export default function AdminDashboard() {
       <div className="admin-container fade-in">
         <header className="admin-header">
           <h1>📊 Admin Dashboard</h1>
-          <p>จัดการข้อมูลแยกตามประเภทกิจกรรมและบทเรียน</p>
         </header>
 
         {/* 1️⃣ Tabs หลัก */}

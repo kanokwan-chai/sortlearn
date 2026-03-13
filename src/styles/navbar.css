@@ -419,3 +419,30 @@
   background: #ffd700;
   box-shadow: 0 6px 15px rgba(255, 202, 40, 0.5);
 }
+/* --- 1. บังคับซ่อนส่วนมือถือทันทีเมื่ออยู่บนจอคอม --- */
+.nav-user-mobile {
+  display: none !important; /* ห้ามโชว์บนจอคอมเด็ดขาด */
+}
+
+/* --- 2. ส่วนของ Desktop (มุมขวาบน) --- */
+.desktop-only {
+  display: flex !important; /* โชว์เฉพาะบนคอม */
+  align-items: center;
+  gap: 15px;
+}
+
+/* --- 3. เมื่อหน้าจอเล็กลง (Mobile/Tablet) --- */
+@media screen and (max-width: 1024px) {
+  .desktop-only {
+    display: none !important; /* ซ่อนส่วนมุมขวาบนทิ้ง */
+  }
+
+  .nav-user-mobile {
+    display: block !important; /* ให้มาโชว์ในเมนู Hamburger แทน */
+    padding: 20px;
+    border-top: 1px solid #f1f5f9;
+    background: #f8fafc;
+    margin: 10px;
+    border-radius: 12px;
+  }
+}
