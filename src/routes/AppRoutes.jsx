@@ -11,6 +11,9 @@ import NotFound from "../pages/NotFound"; // ✅ ตรวจสอบไฟล�
 import AdminDashboard from "../pages/AdminDashboard"; 
 import ComparisonPage from "../pages/ComparisonPage";
 
+import ProtectedRoute from "./ProtectedRoute";
+import AdminRoute from "./AdminRoute";
+
 import SelectionSort from "../pages/SelectionSort";
 import InsertionSort from "../pages/InsertionSort";
 import BubbleSort from "../pages/BubbleSort";
@@ -54,59 +57,71 @@ import MergePosttest from "../pages/posttest/MergePosttest";
 export default function AppRoutes() {
   return (
     <Routes>
+
+      {/* 🔓 PUBLIC */}
       <Route path="/" element={<Login />} />
-      <Route path="/home" element={<Home />} />
-      <Route path="/lessons" element={<Lessons />} />
-      <Route path="/pretest" element={<PreTest />} />
-      <Route path="/posttest" element={<PostTest />} />
-      <Route path="/videos" element={<Video />} />
-      <Route path="/games" element={<GameList />} /> 
-      <Route path="/admin" element={<AdminDashboard />} />
-      <Route path="/comparison" element={<ComparisonPage />} />
 
-      {/* บทเรียน */}
-      <Route path="/selection-sort" element={<SelectionSort />} />
-      <Route path="/insertion-sort" element={<InsertionSort />} />
-      <Route path="/bubble-sort" element={<BubbleSort />} />
-      <Route path="/heap-sort" element={<HeapSort />} />
-      <Route path="/quick-sort" element={<QuickSort />} />
-      <Route path="/merge-sort" element={<MergeSort />} />
+      {/* 🔒 USER (ต้อง login ก่อนทั้งหมด) */}
+      <Route element={<ProtectedRoute />}>
 
-      {/* แบบทดสอบก่อนเรียน */}
-      <Route path="/pretest/selection" element={<SelectionTest />} />
-      <Route path="/pretest/insertion" element={<InsertionTest />} />
-      <Route path="/pretest/bubble" element={<BubbleTest />} />
-      <Route path="/pretest/heap" element={<HeapTest />} />
-      <Route path="/pretest/quick" element={<QuickTest />} />
-      <Route path="/pretest/merge" element={<MergeTest />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/lessons" element={<Lessons />} />
+        <Route path="/pretest" element={<PreTest />} />
+        <Route path="/posttest" element={<PostTest />} />
+        <Route path="/videos" element={<Video />} />
+        <Route path="/games" element={<GameList />} />
+        <Route path="/comparison" element={<ComparisonPage />} />
 
-      {/* วิดีโอสาธิตการทำงานของอัลกอริทึม */}
-      <Route path="/video/selection-sort" element={<VideoSelection />} />
-      <Route path="/video/insertion-sort" element={<VideoInsertion />} />
-      <Route path="/video/bubble-sort" element={<VideoBubble />} />
-      <Route path="/video/heap-sort" element={<VideoHeap />} /> 
-      <Route path="/video/quick-sort" element={<VideoQuick />} />
-      <Route path="/video/merge-sort" element={<VideoMerge />} />
+        {/* บทเรียน */}
+        <Route path="/selection-sort" element={<SelectionSort />} />
+        <Route path="/insertion-sort" element={<InsertionSort />} />
+        <Route path="/bubble-sort" element={<BubbleSort />} />
+        <Route path="/heap-sort" element={<HeapSort />} />
+        <Route path="/quick-sort" element={<QuickSort />} />
+        <Route path="/merge-sort" element={<MergeSort />} />
 
-      {/* โซนเกม */}
-      <Route path="/games/selection-sort" element={<SelectionGame />} />
-      <Route path="/games/insertion-sort" element={<InsertionGame />} /> 
-      <Route path="/games/bubble-sort" element={<BubbleSortGame />} /> 
-      <Route path="/games/heap-sort" element={<HeapSortGame />} />
-      <Route path="/games/quick-sort" element={<QuickSortGame />} />
-      <Route path="/games/merge-sort" element={<MergeSortGame />} />
+        {/* Pretest */}
+        <Route path="/pretest/selection" element={<SelectionTest />} />
+        <Route path="/pretest/insertion" element={<InsertionTest />} />
+        <Route path="/pretest/bubble" element={<BubbleTest />} />
+        <Route path="/pretest/heap" element={<HeapTest />} />
+        <Route path="/pretest/quick" element={<QuickTest />} />
+        <Route path="/pretest/merge" element={<MergeTest />} />
 
+        {/* Video */}
+        <Route path="/video/selection-sort" element={<VideoSelection />} />
+        <Route path="/video/insertion-sort" element={<VideoInsertion />} />
+        <Route path="/video/bubble-sort" element={<VideoBubble />} />
+        <Route path="/video/heap-sort" element={<VideoHeap />} />
+        <Route path="/video/quick-sort" element={<VideoQuick />} />
+        <Route path="/video/merge-sort" element={<VideoMerge />} />
 
-      {/* แบบทดสอบหลังเรียน */}
-      <Route path="/posttest/selection" element={<SelectionPosttest />} />
-      <Route path="/posttest/insertion" element={<InsertionPosttest />} />
-      <Route path="/posttest/bubble" element={<BubblePosttest />} />
-      <Route path="/posttest/heap" element={<HeapPosttest />} />
-      <Route path="/posttest/quick" element={<QuickPosttest />} />
-      <Route path="/posttest/merge" element={<MergePosttest />} />
+        {/* Games */}
+        <Route path="/games/selection-sort" element={<SelectionGame />} />
+        <Route path="/games/insertion-sort" element={<InsertionGame />} />
+        <Route path="/games/bubble-sort" element={<BubbleSortGame />} />
+        <Route path="/games/heap-sort" element={<HeapSortGame />} />
+        <Route path="/games/quick-sort" element={<QuickSortGame />} />
+        <Route path="/games/merge-sort" element={<MergeSortGame />} />
 
-      {/* หน้า 404 */}
+        {/* Posttest */}
+        <Route path="/posttest/selection" element={<SelectionPosttest />} />
+        <Route path="/posttest/insertion" element={<InsertionPosttest />} />
+        <Route path="/posttest/bubble" element={<BubblePosttest />} />
+        <Route path="/posttest/heap" element={<HeapPosttest />} />
+        <Route path="/posttest/quick" element={<QuickPosttest />} />
+        <Route path="/posttest/merge" element={<MergePosttest />} />
+
+      </Route>
+
+      {/* 🔐 ADMIN ONLY */}
+      <Route element={<AdminRoute />}>
+        <Route path="/admin" element={<AdminDashboard />} />
+      </Route>
+
+      {/* ❌ 404 */}
       <Route path="*" element={<NotFound />} />
+
     </Routes>
   );
 }

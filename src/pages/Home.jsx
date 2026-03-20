@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react"; // ✅ เพิ่ม useState และ useEffect
-import { Link, useNavigate } from "react-router-dom"; // ✅ เพิ่ม useNavigate
+import React, { useState, useEffect } from "react"; 
+import { Link, useNavigate } from "react-router-dom"; 
 import MainLayout from "../layouts/MainLayout";
 import LessonProgress from "../components/LessonProgress"; 
 

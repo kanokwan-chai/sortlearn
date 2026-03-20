@@ -380,28 +380,28 @@ const handleDecision = (userWantsSwap) => {
         })}
       </div>
 
-      {/* ปุ่ม EXIT สีแดง */}
-      <button 
-        className="btn-back" 
-        onClick={() => navigate("/games")} 
-        style={{ 
-          marginTop: '40px', 
-          background: 'linear-gradient(90deg, #ff8a80, #ff5252)', 
-          color: '#fff', 
-          padding: '14px 60px', 
-          borderRadius: '35px', 
-          border: 'none', 
-          fontWeight: '900', 
-          fontSize: '1.2rem',
-          cursor: 'pointer',
-          boxShadow: '0 10px 20px rgba(255, 82, 82, 0.3)'
-        }}
-      >
-        EXIT GAME
-      </button>
-    </div>
-  </div>
-)}
+          {/* ปุ่ม EXIT สีแดง */}
+          <button 
+            className="btn-back" 
+            onClick={() => navigate("/games")} 
+            style={{ 
+              marginTop: '40px', 
+              background: 'linear-gradient(90deg, #ff8a80, #ff5252)', 
+              color: '#fff', 
+              padding: '14px 60px', 
+              borderRadius: '35px', 
+              border: 'none', 
+              fontWeight: '900', 
+              fontSize: '1.2rem',
+              cursor: 'pointer',
+              boxShadow: '0 10px 20px rgba(255, 82, 82, 0.3)'
+            }}
+          >
+            EXIT GAME
+          </button>
+        </div>
+      </div>
+    )}
 
         {/* --- 3. PLAYING --- */}
         {gameState === "PLAYING" && (
@@ -447,91 +447,91 @@ const handleDecision = (userWantsSwap) => {
             </div>
         )}
 
-        {/* --- 4. RESULT: ปรับให้เล็กลงและดูแพงขึ้น --- */}
-{(gameState === "WIN" || gameState === "ALREADY_DONE") && (
-  <div className="overlay-screen fade-in" style={{ 
-    flex: 1, 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center',
-    padding: '20px'
-  }}>
-    <div className="glass-ui" style={{ 
-      padding: '30px 40px', // ✅ ลดจาก 50px เหลือ 30px
-      maxWidth: '400px',    // ✅ บีบความกว้างลงจาก 480px ให้ดูกระชับ
-      width: '100%', 
-      textAlign: 'center', 
-      background: 'rgba(255, 255, 255, 0.2)', 
-      backdropFilter: 'blur(20px)', 
-      borderRadius: '45px', 
-      border: '2px solid rgba(255, 255, 255, 0.4)',
-      boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)'
-    }}>
-      {/* ไอคอนถ้วยรางวัล */}
-      <span style={{ fontSize: '3.5rem', display: 'block', marginBottom: '10px' }}>🏆</span>
-      
-      <h1 style={{ 
-        fontSize: '2.4rem', // ✅ ลดจาก 3.2rem เพื่อไม่ให้ล้น
-        color: '#fff', 
-        fontWeight: '900',
-        marginBottom: '5px',
-        textShadow: '0 0 15px rgba(255, 235, 59, 0.5)' 
-      }}>
-        ภารกิจสำเร็จ!
-      </h1>
+                {/* --- 4. RESULT: ปรับให้เล็กลงและดูแพงขึ้น --- */}
+        {(gameState === "WIN" || gameState === "ALREADY_DONE") && (
+          <div className="overlay-screen fade-in" style={{ 
+            flex: 1, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            padding: '20px'
+          }}>
+            <div className="glass-ui" style={{ 
+              padding: '30px 40px', // ✅ ลดจาก 50px เหลือ 30px
+              maxWidth: '400px',    // ✅ บีบความกว้างลงจาก 480px ให้ดูกระชับ
+              width: '100%', 
+              textAlign: 'center', 
+              background: 'rgba(255, 255, 255, 0.2)', 
+              backdropFilter: 'blur(20px)', 
+              borderRadius: '45px', 
+              border: '2px solid rgba(255, 255, 255, 0.4)',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)'
+            }}>
+              {/* ไอคอนถ้วยรางวัล */}
+              <span style={{ fontSize: '3.5rem', display: 'block', marginBottom: '10px' }}>🏆</span>
+              
+              <h1 style={{ 
+                fontSize: '2.4rem', // ✅ ลดจาก 3.2rem เพื่อไม่ให้ล้น
+                color: '#fff', 
+                fontWeight: '900',
+                marginBottom: '5px',
+                textShadow: '0 0 15px rgba(255, 235, 59, 0.5)' 
+              }}>
+                ภารกิจสำเร็จ!
+              </h1>
 
-      {/* วงกลมโชว์ตัวละคร (ปรับขนาดเล็กลง) */}
-      <div style={{ 
-        width: '120px', // ✅ ลดจาก 150px
-        height: '120px', // ✅ ลดจาก 150px
-        margin: '20px auto', 
-        borderRadius: '50%', 
-        background: '#fff', 
-        border: '5px solid #ffca28', // เปลี่ยนเป็นสีทองให้เข้ากับถ้วย
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        boxShadow: '0 0 20px rgba(255, 202, 40, 0.4)'
-      }}>
-          {selectedChar && <img src={selectedChar.img} alt="Char" style={{ width: '80%', objectFit: 'contain' }} />}
-      </div>
+              {/* วงกลมโชว์ตัวละคร (ปรับขนาดเล็กลง) */}
+              <div style={{ 
+                width: '120px', // ✅ ลดจาก 150px
+                height: '120px', // ✅ ลดจาก 150px
+                margin: '20px auto', 
+                borderRadius: '50%', 
+                background: '#fff', 
+                border: '5px solid #ffca28', // เปลี่ยนเป็นสีทองให้เข้ากับถ้วย
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                boxShadow: '0 0 20px rgba(255, 202, 40, 0.4)'
+              }}>
+                  {selectedChar && <img src={selectedChar.img} alt="Char" style={{ width: '80%', objectFit: 'contain' }} />}
+              </div>
 
-      {/* ตัวเลขคะแนน (ปรับให้พอดี) */}
-      <div style={{ 
-        fontSize: '4rem', // ✅ ลดจาก 5.5rem เพื่อความสมดุล
-        fontWeight: '900', 
-        color: '#fff',
-        marginBottom: '5px',
-        letterSpacing: '2px'
-      }}>
-        {score.toLocaleString()}
-      </div>
-      <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '25px', fontSize: '1rem' }}>คะแนนรวมที่ทำได้</p>
+              {/* ตัวเลขคะแนน (ปรับให้พอดี) */}
+              <div style={{ 
+                fontSize: '4rem', // ✅ ลดจาก 5.5rem เพื่อความสมดุล
+                fontWeight: '900', 
+                color: '#fff',
+                marginBottom: '5px',
+                letterSpacing: '2px'
+              }}>
+                {score.toLocaleString()}
+              </div>
+              <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '25px', fontSize: '1rem' }}>คะแนนรวมที่ทำได้</p>
 
-      {/* ปุ่มกลับหน้าหลัก */}
-      <button 
-        className="btn-res" 
-        onClick={() => navigate("/home")} 
-        style={{ 
-          background: 'linear-gradient(90deg, #00d2ff, #3a7bd5)', 
-          color: '#fff', 
-          padding: '12px 50px', // ✅ ลดจาก 18px 70px ให้ดูคลีนขึ้น
-          borderRadius: '30px', 
-          border: 'none', 
-          fontWeight: '900',
-          fontSize: '1.1rem',
-          cursor: 'pointer',
-          boxShadow: '0 10px 20px rgba(58, 123, 213, 0.3)',
-          transition: '0.3s'
-        }}
-        onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-        onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
-      >
-        กลับหน้าหลัก 🏠
-      </button>
-    </div>
-  </div>
-)}
+              {/* ปุ่มกลับหน้าหลัก */}
+              <button 
+                className="btn-res" 
+                onClick={() => navigate("/home")} 
+                style={{ 
+                  background: 'linear-gradient(90deg, #00d2ff, #3a7bd5)', 
+                  color: '#fff', 
+                  padding: '12px 50px', // ✅ ลดจาก 18px 70px ให้ดูคลีนขึ้น
+                  borderRadius: '30px', 
+                  border: 'none', 
+                  fontWeight: '900',
+                  fontSize: '1.1rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 10px 20px rgba(58, 123, 213, 0.3)',
+                  transition: '0.3s'
+                }}
+                onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+                onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+              >
+                กลับหน้าหลัก 🏠
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* --- 5. GAMEOVER --- */}
         {gameState === "GAMEOVER" && (

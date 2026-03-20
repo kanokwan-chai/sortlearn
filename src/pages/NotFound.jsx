@@ -111,7 +111,15 @@ export default function NotFound() {
           ขออภัย ไม่พบหน้าที่คุณต้องการ <br/>
           หน้าที่คุณพยายามเข้าถึงอาจกำลังพัฒนาหรือไม่มีอยู่จริง
         </p>
-        <button className="btn-home-gradient" onClick={() => navigate("/home")}>
+        <button className="btn-home-gradient" onClick={() => {
+          const user = localStorage.getItem("user");
+
+          if (user) {
+            navigate("/home");   // login แล้ว → ไป home
+          } else {
+            navigate("/");       // ยังไม่ login → ไป login
+          }
+        }}>
           กลับสู่หน้าหลัก (Home)
         </button>
       </div>

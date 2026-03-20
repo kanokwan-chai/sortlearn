@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
+import { getAuth } from "../../utils/auth";
 
 // --- ASSETS ---
 import bgMining from "../../assets/bg-quick.png";
@@ -110,25 +111,33 @@ const saveProgress = useCallback((data) => {
   localStorage.setItem(key, JSON.stringify(merged));
 }, []);
 
-  // ✅ ส่งคะแนนรวมด่านสุดท้ายลง Google Sheets
-  const submitScoreToSheet = async (finalScore) => {
-    const user = JSON.parse(localStorage.getItem("user")) || {};
-    const payload = { 
-      activity: "GAMES", 
-      firstname: user.firstname || "Guest", 
-      lastname: user.lastname || "-", 
-      gameName: "Quick Sort Mine", 
-      score: finalScore 
-    };
-    try { 
-      await fetch(SCORE_API, { 
-        method: "POST", 
-        mode: "no-cors", 
-        body: JSON.stringify(payload), 
-        headers: { "Content-Type": "text/plain" } 
-      }); 
-    } catch (e) { console.error("Submit Error:", e); }
+const submitScoreToSheet = async (finalScore) => {
+  const user = JSON.parse(localStorage.getItem("user")) || {};
+
+  const { email, token } = getAuth(); // ✅ เพิ่มตรงนี้
+
+  const payload = { 
+    activity: "GAMES", 
+    firstname: user.firstname || "Guest", 
+    lastname: user.lastname || "-", 
+    gameName: "Quick Sort Mine", 
+    score: finalScore 
   };
+
+  try { 
+    await fetch(SCORE_API, { 
+      method: "POST",
+      mode: "no-cors",
+      body: JSON.stringify({
+        ...payload,
+        email,
+        token
+      })
+    });
+  } catch (e) { 
+    console.error("Submit Error:", e); 
+  }
+};
 
   const playSfx = (name) => {
   const sfx = sounds.current[name];
@@ -454,25 +463,26 @@ const handleLevelComplete = () => {
 
   // ---------- ด่านสุดท้าย ----------
 if (level.id === LEVELS.length) {
+
   playSfx("win");
+
   const updated = {
     ...old,
     score: finalTotal,
     level: LEVELS.length,
-    game: true,      // ⭐ ตัวสำคัญ
+    game: true,
     submitted: true
   };
 
   localStorage.setItem(key, JSON.stringify(updated));
 
-  if (!old.submitted) {
-    submitScoreToSheet(finalTotal);
-  }
+  submitScoreToSheet(finalTotal); // 🔥 ตัวจริง
 
   setTotalScore(finalTotal);
   setUnlockedLevel(LEVELS.length);
-  setScreen("level");   // กลับหน้า map แบบจบแล้ว
-  playSfx("win");   // 🔥 เสียงผ่านด่าน
+
+  setScreen("level"); // ยังใช้ได้ปกติ
+
   return;
 }
 
