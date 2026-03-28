@@ -18,24 +18,23 @@
   position: absolute;
   bottom: -20px;                     /* ทำให้เท้าติดฐานพอดี */
   transform: translateY(20px);   /* ดันขึ้นเล็กน้อย */
-  height: 480px;
+  height: 380px;
   z-index: 50;
 }
 
 .hero-girl {
-  left: -70px;
+  left: -120px;
 }
 
 .hero-boy {
-  right: -70px;
+  right: -120px;
 }
 
 /* ---------------- TEXT ---------------- */
 
 .hero-center {
-  position: relative;
-  text-align: center;
-  z-index: 5;
+  max-width: 600px;
+  padding: 0 20px;
 }
 
 .hero-sub {
@@ -101,6 +100,45 @@
   box-shadow:
     0 14px 35px rgba(0,0,0,0.25),
     0 0 35px rgba(255,255,255,1) inset;
+}
+/* ---------------- MOBILE (default) ---------------- */
+.hero-girl, .hero-boy {
+  height: 320px;
+}
+
+.hero-girl {
+  left: -40px;
+}
+
+.hero-boy {
+  right: -40px;
+}
+
+
+/* ---------------- DESKTOP ---------------- */
+@media (min-width: 1024px) {
+
+  .hero-girl, .hero-boy {
+    height: 480px; /* กลับไปใหญ่เหมือนเดิม */
+    bottom: -20px;
+    transform: translateY(20px);
+  }
+
+  .hero-girl {
+    left: -100px;  /* ดันออกให้ล้ำ */
+  }
+
+  .hero-boy {
+    right: -100px;
+  }
+
+  .hero-title {
+    font-size: 5rem; /* ใหญ่เต็มเหมือนเดิม */
+  }
+
+  .hero-center {
+    max-width: 800px;
+  }
 }
 .lesson-grid {
   width: 90%;
@@ -401,4 +439,68 @@ width: 100%;         /* ให้กินพื้นที่เต็มจ�
   .lesson-header {
     font-size: 1.6rem !important;
   }
+}
+.orientation-banner {
+  position: fixed;
+  top: 100px; /* 👈 เพิ่มจาก 80 → กันโดน navbar */
+  left: 50%;
+  transform: translateX(-50%);
+  
+  background: #fff3cd;
+  color: #856404;
+  padding: 12px 20px;
+  border-radius: 12px;
+
+  display: flex;              /* 👈 สำคัญ */
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+
+  min-width: 280px;
+  max-width: 90%;
+
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+  z-index: 9999;              /* 👈 กันโดนทับ */
+}
+
+.orientation-box {
+  background: white;
+  padding: 30px 40px;
+  border-radius: 16px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.orientation-box span {
+  display: block;
+  margin-top: 10px;
+  font-size: 16px;
+  color: #666;
+}
+.orientation-banner span {
+  margin-left: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.orientation-close {
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  color: #856404;
+
+  background: rgba(0,0,0,0.1);
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s;
+}
+
+.orientation-close:hover {
+  background: rgba(0,0,0,0.2);
 }

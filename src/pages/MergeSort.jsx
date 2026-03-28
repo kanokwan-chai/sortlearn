@@ -4,7 +4,139 @@ import "../styles/lesson-detail.css";
 import bg2 from "../assets/bg-pattern.png"; 
 
 export default function MergeSort() {
+  const mergeCode = [
+  {
+    line: 1,
+    text: (
+      <>
+        <span className="keyword">Algorithm</span> Merge(A, left, mid, right)
+      </>
+    ),
+    level: 0,
+  },
+  { line: 2, text: <><span className="keyword">Begin</span></>, level: 0 },
 
+  { line: 3, text: <>i ← left</>, level: 1 },
+  { line: 4, text: <>j ← mid + 1</>, level: 1 },
+
+  {
+    line: 5,
+    text: (
+      <>
+        <span className="keyword">While</span> i ≤ mid <span className="keyword">and</span> j ≤ right <span className="keyword">do</span>
+      </>
+    ),
+    level: 1,
+  },
+
+  {
+    line: 6,
+    text: (
+      <>
+        <span className="keyword">If</span> A[i] ≤ A[j] <span className="keyword">Then</span>
+      </>
+    ),
+    level: 2,
+  },
+  { line: 7, text: <>put A[i] into sorted array</>, level: 3 },
+  { line: 8, text: <>i ← i + 1</>, level: 3 },
+
+  { line: 9, text: <><span className="keyword">Else</span></>, level: 2 },
+  { line: 10, text: <>put A[j] into sorted array</>, level: 3 },
+  { line: 11, text: <>j ← j + 1</>, level: 3 },
+
+  { line: 12, text: <><span className="keyword">End if</span></>, level: 2 },
+  { line: 13, text: <><span className="keyword">End while</span></>, level: 1 },
+
+  {
+    line: 14,
+    text: (
+      <>
+        put remaining elements into sorted array
+      </>
+    ),
+    level: 1,
+  },
+
+  { line: 15, text: <><span className="keyword">End</span></>, level: 0 },
+];
+const mergeSortCode = [
+  {
+    line: 1,
+    text: (
+      <>
+        <span className="keyword">Algorithm</span> MergeSort(A, left, right)
+      </>
+    ),
+    level: 0,
+  },
+  { line: 2, text: <><span className="keyword">Begin</span></>, level: 0 },
+
+  {
+    line: 3,
+    text: (
+      <>
+        <span className="keyword">If</span> left &lt; right <span className="keyword">Then</span>
+      </>
+    ),
+    level: 1,
+  },
+
+  { line: 4, text: <>mid ← (left + right) div 2</>, level: 2 },
+
+  {
+    line: 5,
+    text: (
+      <>
+        <span className="function">MergeSort</span>(A, left, mid)
+      </>
+    ),
+    level: 2,
+  },
+
+  {
+    line: 6,
+    text: (
+      <>
+        <span className="function">MergeSort</span>(A, mid + 1, right)
+      </>
+    ),
+    level: 2,
+  },
+
+  {
+    line: 7,
+    text: (
+      <>
+        <span className="function">Merge</span>(A, left, mid, right)
+      </>
+    ),
+    level: 2,
+  },
+
+  { line: 8, text: <><span className="keyword">End if</span></>, level: 1 },
+  { line: 9, text: <><span className="keyword">End</span></>, level: 0 },
+];
+const CodeBlock = ({ title, code }) => (
+  <section className="fade-in-up">
+    <h3 className="section-header">💻 {title}</h3>
+
+    <div className="pseudo-code-box">
+      {code.map((line) => (
+        <div key={line.line} className="code-line">
+          <span className="line-num">{line.line}</span>
+
+          <span
+            className="code-text"
+            style={{ paddingLeft: `${line.level * 20}px` }}
+          >
+            {line.text}
+          </span>
+        </div>
+      ))}
+    </div>
+  </section>
+);
   return (
     <MainLayout>
 
@@ -47,55 +179,8 @@ export default function MergeSort() {
         </section>
 
         {/* ================= PSEUDO CODE MERGESORT ================= */}
-        <section className="fade-in-up">
-          <h3 className="section-header">💻 Pseudo Code : MergeSort</h3>
-
-          <div className="pseudo-code-box">
-            <div className="code-line">Algorithm MergeSort(A, left, right)</div>
-            <div className="code-line">Begin</div>
-            <div className="code-line">&nbsp;&nbsp;If left &lt; right Then</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;mid ← (left + right) / 2</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;MergeSort(A, left, mid)</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;MergeSort(A, mid + 1, right)</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;Merge(A, left, mid, right)</div>
-            <div className="code-line">&nbsp;&nbsp;End if</div>
-            <div className="code-line">End Algorithm</div>
-          </div>
-
-          <div className="concept-card" style={{marginTop:"20px"}}>
-            <strong>หน้าที่:</strong> แบ่งข้อมูลออกเป็นสองส่วนจนเหลือสมาชิกตัวเดียว 
-            แล้วเรียกฟังก์ชัน Merge เพื่อผสานกลับ
-          </div>
-        </section>
-
-
-        {/* ================= PSEUDO CODE MERGE ================= */}
-        <section className="fade-in-up">
-          <h3 className="section-header">💻 Pseudo Code : Merge</h3>
-
-          <div className="pseudo-code-box">
-            <div className="code-line">Algorithm Merge(A, left, mid, right)</div>
-            <div className="code-line">Begin</div>
-            <div className="code-line">&nbsp;&nbsp;i ← left</div>
-            <div className="code-line">&nbsp;&nbsp;j ← mid + 1</div>
-            <div className="code-line">&nbsp;&nbsp;While i ≤ mid AND j ≤ right Do</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;If A[i] ≤ A[j] Then</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Put A[i] into sorted position</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i ← i + 1</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;Else</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Put A[j] into sorted position</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;j ← j + 1</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;End If</div>
-            <div className="code-line">&nbsp;&nbsp;End While</div>
-            <div className="code-line">&nbsp;&nbsp;Put remaining elements into sorted position</div>
-            <div className="code-line">End Algorithm</div>
-          </div>
-
-          <div className="concept-card" style={{marginTop:"20px"}}>
-            <strong>หน้าที่:</strong> เปรียบเทียบข้อมูลฝั่งซ้ายและขวา 
-            แล้วผสานให้เรียงลำดับถูกต้อง
-          </div>
-        </section>
+        <CodeBlock title="Pseudo Code : Merge" code={mergeCode} />
+        <CodeBlock title="Pseudo Code : Merge Sort" code={mergeSortCode} />
 
 
 {/* ================= ตัวอย่าง ================= */}
@@ -182,7 +267,7 @@ export default function MergeSort() {
 
   <div className="formula-card">
     <p>Merge Sort ใช้แนวคิด Divide and Conquer โดยแบ่งข้อมูลออกเป็นส่วนย่อยและผสานกลับ</p>
-    <h2 className="math-big">T(n) = n log₂ n</h2>
+    <h2 className="math-big">O(n) = n log₂ n</h2>
     <p>
       ประสิทธิภาพเชิงเวลาในทุกกรณีคือ 
       <strong className="highlight-o"> O(n log n)</strong>

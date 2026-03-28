@@ -6,6 +6,30 @@ import bg2 from "../assets/bg-pattern.png";
 export default function InsertionSortLesson() {
   // ประกาศตัวแปร n เพื่อป้องกัน Error [eslint] 'n' is not defined ในสูตรคำนวณ
   const n = "n"; 
+  const code = [
+  { line: 1, text: <><span className="keyword">Algorithm</span> Insertion_Sort(A)</>, level: 0 },
+  { line: 2, text: <><span className="keyword">Begin</span></>, level: 0 },
+
+  { line: 3, text: <>n ← length(A)</>, level: 1 },
+
+  { line: 4, text: <><span className="keyword">For</span> i ← 1 to n - 1 <span className="keyword">do</span> <span className="comment">// เริ่มพิจารณาตัวที่สอง</span></>, level: 1 },
+
+  { line: 5, text: <>key ← A[i] <span className="comment">// เก็บค่าที่จะนำไปแทรก</span></>, level: 2 },
+  { line: 6, text: <>j ← i - 1 <span className="comment">// ตำแหน่งก่อนหน้า</span></>, level: 2 },
+
+  { line: 7, text: <><span className="keyword">While</span> j ≥ 0 <span className="keyword">and</span> A[j] &gt; key <span className="keyword">do</span></>, level: 2 },
+
+  { line: 8, text: <>A[j+1] ← A[j] <span className="comment">// เลื่อนข้อมูลไปทางขวา</span></>, level: 3 },
+  { line: 9, text: <>j ← j - 1</>, level: 3 },
+
+  { line: 10, text: <><span className="keyword">End while</span></>, level: 2 },
+
+  { line: 11, text: <>A[j+1] ← key <span className="comment">// แทรกข้อมูลลงในตำแหน่งที่ถูกต้อง</span></>, level: 2 },
+
+  { line: 12, text: <><span className="keyword">End for</span></>, level: 1 },
+
+  { line: 13, text: <><span className="keyword">End</span></>, level: 0 },
+  ];
 
   return (
     <MainLayout>
@@ -68,49 +92,23 @@ export default function InsertionSortLesson() {
         </section>
 
         
-        {/* 3. PSEUDO CODE - อ้างอิงจากใบเนื้อหา หน้า 1/8 และ 4/8 */}
+        {/* 3. PSEUDO CODE  */}
         <section className="fade-in-up">
           <h3 className="section-header">💻 รหัสเทียม (Pseudo Code)</h3>
+
           <div className="pseudo-code-box">
-             <div className="code-line">
-               <span className="line-num">1</span> <span className="keyword">Algorithm</span> Insertion_Sort(A)
-             </div>
-             <div className="code-line">
-               <span className="line-num">2</span> <span className="keyword">Begin</span>
-             </div>
-             <div className="code-line">
-               <span className="line-num">3</span> &nbsp;&nbsp; n ← length(A)
-             </div>
-             <div className="code-line">
-               <span className="line-num">4</span> &nbsp;&nbsp; <span className="keyword">For</span> i ← 1 to n - 1 <span className="keyword">do</span> <span className="comment">// เริ่มพิจารณาตัวที่สอง</span>
-             </div>
-             <div className="code-line">
-               <span className="line-num">5</span> &nbsp;&nbsp;&nbsp;&nbsp; key ← A[i] <span className="comment">// เก็บค่าที่จะนำไปแทรก</span>
-             </div>
-             <div className="code-line">
-               <span className="line-num">6</span> &nbsp;&nbsp;&nbsp;&nbsp; j ← i - 1 <span className="comment">// ตำแหน่งก่อนหน้า</span>
-             </div>
-             <div className="code-line">
-               <span className="line-num">7</span> &nbsp;&nbsp;&nbsp;&nbsp; <span className="keyword">While</span> j ≥ 0 <span className="keyword">and</span> A[j] &gt; key <span className="keyword">do</span>
-             </div>
-             <div className="code-line">
-               <span className="line-num">8</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A[j+1] ← A[j] <span className="comment">// เลื่อนข้อมูลไปทางขวา</span>
-             </div>
-             <div className="code-line">
-               <span className="line-num">9</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; j ← j - 1
-             </div>
-             <div className="code-line">
-               <span className="line-num">10</span> &nbsp;&nbsp;&nbsp;&nbsp; <span className="keyword">End while</span>
-             </div>
-             <div className="code-line">
-               <span className="line-num">11</span> &nbsp;&nbsp;&nbsp;&nbsp; A[j+1] ← key <span className="comment">// แทรกข้อมูลลงในตำแหน่งที่ถูกต้อง</span>
-             </div>
-             <div className="code-line">
-               <span className="line-num">12</span> &nbsp;&nbsp; <span className="keyword">End for</span>
-             </div>
-             <div className="code-line">
-               <span className="line-num">13</span> <span className="keyword">End Algorithm</span>
-             </div>
+            {code.map((line) => (
+              <div key={line.line} className="code-line">
+                <span className="line-num">{line.line}</span>
+
+                <span
+                  className="code-text"
+                  style={{ "--level": line.level }}
+                >
+                  {line.text}
+                </span>
+              </div>
+            ))}
           </div>
         </section>
 

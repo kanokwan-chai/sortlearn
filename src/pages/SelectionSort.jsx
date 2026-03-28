@@ -7,6 +7,25 @@ export default function SelectionSortLesson() {
   // กำหนด n เป็นค่าคงที่เพื่อใช้แสดงผลในสูตร
   const n = "n"; 
 
+  const code = [
+  { line: 1, text: <><span className="keyword">Algorithm</span> Selection_Sort(A)</>, level: 0 },
+  { line: 2, text: <><span className="keyword">Begin</span></>, level: 0 },
+
+  { line: 3, text: <><span className="keyword">For</span> i ← 0 to n-2 <span className="keyword">do</span> <span className="comment">// วนรอบกำหนดตำแหน่งแรก</span></>, level: 1 },
+  { line: 4, text: <>min ← i</>, level: 2 },
+
+  { line: 5, text: <><span className="keyword">For</span> j ← i+1 to n-1 <span className="keyword">do</span> <span className="comment">// ค้นหาค่าน้อยที่สุด</span></>, level: 2 },
+  { line: 6, text: <><span className="keyword">If</span> A[j] &lt; A[min] <span className="keyword">Then</span></>, level: 3 },
+  { line: 7, text: <>min ← j</>, level: 4 },
+  { line: 8, text: <><span className="keyword">End if</span></>, level: 3 },
+  { line: 9, text: <><span className="keyword">End for</span></>, level: 2 },
+
+  { line: 10, text: <><span className="keyword">swap</span> A[i] and A[min] <span className="comment">// สลับข้อมูลให้ถูกต้อง</span></>, level: 2 },
+  { line: 11, text: <><span className="keyword">End for</span></>, level: 1 },
+
+  { line: 12, text: <><span className="keyword">End</span></>, level: 0 },
+  ];
+
   return (
     <MainLayout>
       {/* ---------------- HERO SECTION ---------------- */}
@@ -69,43 +88,23 @@ export default function SelectionSortLesson() {
           </div>
         </section>
 
-                {/* 3. Pseudo Code Box - แก้ไขให้เหมือนรูปภาพที่คุณแนบมา (ไม่มีตัว $) */}
+        {/* 3. Pseudo Code Box - แก้ไขให้เหมือนรูปภาพที่คุณแนบมา (ไม่มีตัว $) */}
         <section className="fade-in-up">
           <h3 className="section-header">💻 รหัสเทียม (Pseudo Code)</h3>
+
           <div className="pseudo-code-box">
-             <div className="code-line">
-               <span className="line-num">1</span> <span className="keyword">Algorithm</span> Selection_Sort(A) 
-             </div>
-             <div className="code-line">
-               <span className="line-num">2</span> <span className="keyword">Begin</span> 
-             </div>
-             <div className="code-line">
-               <span className="line-num">3</span> &nbsp;&nbsp;<span className="keyword">For</span> i ← 0 to {n}-2 do <span className="comment">// วนรอบกำหนดตำแหน่งแรก</span> 
-             </div>
-             <div className="code-line">
-               <span className="line-num">4</span> &nbsp;&nbsp;&nbsp;&nbsp; min ← i 
-             </div>
-             <div className="code-line">
-               <span className="line-num">5</span> &nbsp;&nbsp;&nbsp;&nbsp; <span className="keyword">For</span> j ← i+1 to {n}-1 do <span className="comment">// ค้นหาค่าน้อยที่สุด</span> 
-             </div>
-             <div className="code-line">
-               <span className="line-num">6</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span className="keyword">If</span> A[j] &lt; A[min] <span className="keyword">Then</span> min ← j
-             </div>
-             <div className="code-line">
-               <span className="line-num">7</span> &nbsp;&nbsp;&nbsp;&nbsp; <span className="keyword">End if</span> 
-             </div>
-             <div className="code-line">
-               <span className="line-num">8</span> &nbsp;&nbsp;<span className="keyword">End for</span> 
-             </div>
-             <div className="code-line">
-               <span className="line-num">9</span> &nbsp;&nbsp;&nbsp;&nbsp; <span className="keyword">swap</span> A[i] and A[min] <span className="comment">// สลับข้อมูลให้ถูกต้อง</span>
-             </div>
-             <div className="code-line">
-               <span className="line-num">10</span> <span className="keyword">End for</span> 
-             </div>
-             <div className="code-line">
-               <span className="line-num">11</span> <span className="keyword">End Algorithm</span> 
-             </div>
+            {code.map((line) => (
+              <div className="code-line">
+                <span className="line-num">{line.line}</span>
+
+                <span
+                  className="code-text"
+                  style={{ "--level": line.level }}
+                >
+                  {line.text}
+                </span>
+              </div>
+            ))}
           </div>
         </section>
 

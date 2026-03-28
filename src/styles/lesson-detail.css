@@ -1081,3 +1081,35 @@ user-select: none;
 .concept-card p:last-child {
   margin-bottom: 0;
 }
+.pseudo-code-box {
+  font-family: monospace;
+}
+
+.code-line {
+  display: flex;
+  gap: 12px;
+  line-height: 1.8;
+}
+
+.line-num {
+  width: 32px;
+  text-align: right;
+  color: #888;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.code-text {
+  padding-left: calc(var(--level) * 20px);  /* ✅ ย้ายมาอยู่ตรงนี้ */
+  white-space: nowrap;
+}
+
+.keyword {
+  color: #c678dd;
+  font-weight: 500;
+}
+
+.comment {
+  color: #6a9955;
+}
+

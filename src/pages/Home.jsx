@@ -17,9 +17,27 @@ import quickImg from "../assets/lessons/quick.png";
 import mergeImg from "../assets/lessons/merge.png";
 
 export default function Home() {
-  // 1️⃣ ประกาศตัวแปรที่ Error ไปก่อนหน้านี้
+
   const navigate = useNavigate(); 
   const [isFinishedAll, setIsFinishedAll] = useState(false);
+
+  // ✅ เพิ่มตรงนี้
+  const [isPortrait, setIsPortrait] = useState(false);
+
+  // ✅ เช็ค orientation (มือถือ + แนวตั้ง)
+  useEffect(() => {
+    const checkOrientation = () => {
+      const isMobile = window.innerWidth <= 768;
+      const isPortraitMode = window.innerHeight > window.innerWidth;
+
+      setIsPortrait(isMobile && isPortraitMode);
+    };
+
+    checkOrientation();
+
+    window.addEventListener("resize", checkOrientation);
+    return () => window.removeEventListener("resize", checkOrientation);
+  }, []);
 
   // ฟังก์ชันเช็ค User Key
   const getUserKey = () => {
@@ -49,91 +67,102 @@ export default function Home() {
       data.game === true
     );
   };
-  
 
-  // 2️⃣ ตรวจสอบความคืบหน้าทั้งหมด (เรียนครบ 6 อันหรือยัง)
+  // ตรวจสอบความคืบหน้าทั้งหมด
   useEffect(() => {
     const algos = ['selection', 'insertion', 'bubble', 'heap', 'quick', 'merge'];
     const complete = algos.every(algo => isLessonDone(algo));
     setIsFinishedAll(complete);
   }, []);
 
+  const [showWarning, setShowWarning] = useState(true);
+
   return (
-    <MainLayout>
-      {/* ---------------- HERO SECTION ---------------- */}
-      <section className="hero" style={{ backgroundImage: `url(${pattern})` }}>
-        <img src={girl} className="hero-girl" alt="girl" />
-        <div className="hero-center">
-            <p className="hero-sub">สื่อการเรียนรู้ออนไลน์</p>
-            <h1 className="hero-title">SortLearn Online</h1>
-            <br/>
-            <Link to="/pretest" className="hero-btn">
-              แบบทดสอบก่อนเรียน
-            </Link>
-        </div>
-        <img src={boy} className="hero-boy" alt="boy" />
-      </section>
-      <div className="hero-wave"></div>
+    <>
 
-      {/* ---------------- CONTENT SECTION ---------------- */}
-      <h1 className="lesson-header">หัวข้อการเรียนรู้</h1>
-
-      <div className="lesson-grid">
-        {/* การ์ดบทเรียนต่างๆ (ใส่ LessonProgress และเช็คปุ่มเหมือนเดิม) */}
-        <div className="lesson-card">
-          <img src={selectionImg} className="lesson-img" alt="Selection Sort" />
-          <h3 className="lesson-title">SELECTION SORT</h3>
-          <LessonProgress lessonKey="selection" />
-          {!isLessonDone("selection") && (
-            <Link to="/selection-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
-          )}
+      {isPortrait && showWarning && (
+        <div className="orientation-banner">
+          📱 แนะนำให้ใช้งานในแนวนอน
+          <span onClick={() => setShowWarning(false)}>✖</span>
         </div>
+      )}
 
-        <div className="lesson-card">
-          <img src={insertionImg} className="lesson-img" alt="Insertion Sort" />
-          <h3 className="lesson-title">INSERTION SORT</h3>
-          <LessonProgress lessonKey="insertion" />
-          {!isLessonDone("insertion") && (
-            <Link to="/insertion-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
-          )}
-        </div>
+      <MainLayout>
+        {/* ---------------- HERO SECTION ---------------- */}
+        <section className="hero" style={{ backgroundImage: `url(${pattern})` }}>
+          <img src={girl} className="hero-girl" alt="girl" />
+          <div className="hero-center">
+              <p className="hero-sub">สื่อการเรียนรู้ออนไลน์</p>
+              <h1 className="hero-title">SortLearn Online</h1>
+              <br/>
+              <Link to="/pretest" className="hero-btn">
+                แบบทดสอบก่อนเรียน
+              </Link>
+          </div>
+          <img src={boy} className="hero-boy" alt="boy" />
+        </section>
 
-        <div className="lesson-card">
-          <img src={bubbleImg} className="lesson-img" alt="Bubble Sort" />
-          <h3 className="lesson-title">BUBBLE SORT</h3>
-          <LessonProgress lessonKey="bubble" />
-          {!isLessonDone("bubble") && (
-            <Link to="/bubble-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
-          )}
-        </div>
+        <div className="hero-wave"></div>
 
-        <div className="lesson-card">
-          <img src={heapImg} className="lesson-img" alt="Heap Sort" />
-          <h3 className="lesson-title">HEAP SORT</h3>
-          <LessonProgress lessonKey="heap" />
-          {!isLessonDone("heap") && (
-            <Link to="/heap-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
-          )}
-        </div>
+        {/* ---------------- CONTENT SECTION ---------------- */}
+        <h1 className="lesson-header">หัวข้อการเรียนรู้</h1>
 
-        <div className="lesson-card">
-          <img src={quickImg} className="lesson-img" alt="Quick Sort" />
-          <h3 className="lesson-title">QUICK SORT</h3>
-          <LessonProgress lessonKey="quick" />
-          {!isLessonDone("quick") && (
-            <Link to="/quick-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
-          )}
-        </div>
+        <div className="lesson-grid">
+          <div className="lesson-card">
+            <img src={selectionImg} className="lesson-img" alt="Selection Sort" />
+            <h3 className="lesson-title">SELECTION SORT</h3>
+            <LessonProgress lessonKey="selection" />
+            {!isLessonDone("selection") && (
+              <Link to="/selection-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
+            )}
+          </div>
 
-        <div className="lesson-card">
-          <img src={mergeImg} className="lesson-img" alt="Merge Sort" />
-          <h3 className="lesson-title">MERGE SORT</h3>
-          <LessonProgress lessonKey="merge" />
-          {!isLessonDone("merge") && (
-            <Link to="/merge-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
-          )}
+          <div className="lesson-card">
+            <img src={insertionImg} className="lesson-img" alt="Insertion Sort" />
+            <h3 className="lesson-title">INSERTION SORT</h3>
+            <LessonProgress lessonKey="insertion" />
+            {!isLessonDone("insertion") && (
+              <Link to="/insertion-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
+            )}
+          </div>
+
+          <div className="lesson-card">
+            <img src={bubbleImg} className="lesson-img" alt="Bubble Sort" />
+            <h3 className="lesson-title">BUBBLE SORT</h3>
+            <LessonProgress lessonKey="bubble" />
+            {!isLessonDone("bubble") && (
+              <Link to="/bubble-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
+            )}
+          </div>
+
+          <div className="lesson-card">
+            <img src={heapImg} className="lesson-img" alt="Heap Sort" />
+            <h3 className="lesson-title">HEAP SORT</h3>
+            <LessonProgress lessonKey="heap" />
+            {!isLessonDone("heap") && (
+              <Link to="/heap-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
+            )}
+          </div>
+
+          <div className="lesson-card">
+            <img src={quickImg} className="lesson-img" alt="Quick Sort" />
+            <h3 className="lesson-title">QUICK SORT</h3>
+            <LessonProgress lessonKey="quick" />
+            {!isLessonDone("quick") && (
+              <Link to="/quick-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
+            )}
+          </div>
+
+          <div className="lesson-card">
+            <img src={mergeImg} className="lesson-img" alt="Merge Sort" />
+            <h3 className="lesson-title">MERGE SORT</h3>
+            <LessonProgress lessonKey="merge" />
+            {!isLessonDone("merge") && (
+              <Link to="/merge-sort" className="lesson-btn">เข้าบทเรียน ▶</Link>
+            )}
+          </div>
         </div>
-      </div>
-    </MainLayout>
+      </MainLayout>
+    </>
   );
 }

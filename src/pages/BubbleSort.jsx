@@ -6,6 +6,69 @@ import bg2 from "../assets/bg-pattern.png";
 export default function BubbleSort() {
   // กำหนด n เป็นค่าคงที่เพื่อใช้แสดงผลในสูตร
   const n = "n"; 
+  const code = [
+  {
+    line: 1,
+    text: (
+      <>
+        <span className="keyword">Algorithm</span> Bubble_Sort(A)
+        <span className="comment"> // A คือชุดข้อมูลที่ต้องการจัดเรียง</span>
+      </>
+    ),
+    level: 0,
+  },
+  { line: 2, text: <><span className="keyword">Begin</span></>, level: 0 },
+
+  {
+    line: 3,
+    text: (
+      <>
+        <span className="keyword">For</span> i ← 0 to {n}-2 <span className="keyword">do</span>
+        <span className="comment"> // วนรอบเพื่อควบคุมจำนวนรอบของการจัดเรียง</span>
+      </>
+    ),
+    level: 1,
+  },
+
+  {
+    line: 4,
+    text: (
+      <>
+        <span className="keyword">For</span> j ← 0 to {n}-2-i <span className="keyword">do</span>
+        <span className="comment"> // วนรอบเปรียบเทียบข้อมูลที่อยู่ติดกัน</span>
+      </>
+    ),
+    level: 2,
+  },
+
+  {
+    line: 5,
+    text: (
+      <>
+        <span className="keyword">If</span> A[j] &gt; A[j+1] <span className="keyword">Then</span>
+        <span className="comment"> // เปรียบเทียบค่าที่อยู่ติดกัน</span>
+      </>
+    ),
+    level: 3,
+  },
+
+  {
+    line: 6,
+    text: (
+      <>
+        <span className="keyword">swap</span> A[j] and A[j+1]
+        <span className="comment"> // สลับค่าถ้าด้านหน้ามากกว่าด้านหลัง</span>
+      </>
+    ),
+    level: 4,
+  },
+
+  { line: 7, text: <><span className="keyword">End if</span></>, level: 3 },
+  { line: 8, text: <><span className="keyword">End for</span></>, level: 2 },
+  { line: 9, text: <><span className="keyword">End for</span></>, level: 1 },
+
+  { line: 10, text: <><span className="keyword">End</span></>, level: 0 },
+  ];
 
   return (
     <MainLayout>
@@ -71,37 +134,20 @@ export default function BubbleSort() {
         {/* 3. Pseudo Code Box - อ้างอิงจากหน้าที่ 1/5 */}
         <section className="fade-in-up">
           <h3 className="section-header">💻 รหัสเทียม (Pseudo Code)</h3>
+
           <div className="pseudo-code-box">
-             <div className="code-line">
-               <span className="line-num">1</span> <span className="keyword">Algorithm</span> Bubble_Sort(A) <span className="comment">// A คือชุดข้อมูลที่ต้องการจัดเรียง</span>
-             </div>
-             <div className="code-line">
-               <span className="line-num">2</span> <span className="keyword">Begin</span> 
-             </div>
-             <div className="code-line">
-               <span className="line-num">3</span> &nbsp;&nbsp;<span className="keyword">For</span> i ← 0 to {n}-2 do <span className="comment">// วนรอบเพื่อควบคุมจำนวนรอบของการจัดเรียง</span> 
-             </div>
-             <div className="code-line">
-               <span className="line-num">4</span> &nbsp;&nbsp;&nbsp;&nbsp; <span className="keyword">For</span> j ← 0 to {n}-2-i do <span className="comment">// วนรอบเปรียบเทียบข้อมูลที่อยู่ติดกัน</span> 
-             </div>
-             <div className="code-line">
-               <span className="line-num">5</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span className="keyword">If</span> A[j] &gt; A[j+1] <span className="keyword">Then</span> <span className="comment">// เปรียบเทียบค่าที่อยู่ติดกัน</span>
-             </div>
-             <div className="code-line">
-               <span className="line-num">6</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span className="keyword">swap</span> A[j] and A[j+1] <span className="comment">// สลับค่าถ้าด้านหน้ามากกว่าด้านหลัง</span>
-             </div>
-             <div className="code-line">
-               <span className="line-num">7</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span className="keyword">End if</span> 
-             </div>
-             <div className="code-line">
-               <span className="line-num">8</span> &nbsp;&nbsp;&nbsp;&nbsp; <span className="keyword">End for</span> 
-             </div>
-             <div className="code-line">
-               <span className="line-num">9</span> &nbsp;&nbsp;<span className="keyword">End for</span> 
-             </div>
-             <div className="code-line">
-               <span className="line-num">10</span> <span className="keyword">End Algorithm</span> 
-             </div>
+            {code.map((line) => (
+              <div key={line.line} className="code-line">
+                <span className="line-num">{line.line}</span>
+
+                <span
+                  className="code-text"
+                  style={{ "--level": line.level }}
+                >
+                  {line.text}
+                </span>
+              </div>
+            ))}
           </div>
         </section>
 

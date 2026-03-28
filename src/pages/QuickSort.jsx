@@ -4,6 +4,172 @@ import "../styles/lesson-detail.css";
 import bg2 from "../assets/bg-pattern.png"; 
 
 export default function QuickSort() {
+  const quickSortHoareCode = [
+  {
+    line: 1,
+    text: (
+      <>
+        <span className="keyword">Algorithm</span> QuickSort(A, low, high)
+      </>
+    ),
+    level: 0,
+  },
+  { line: 2, text: <><span className="keyword">Begin</span></>, level: 0 },
+
+  {
+    line: 3,
+    text: (
+      <>
+        <span className="keyword">If</span> low &lt; high <span className="keyword">Then</span>
+      </>
+    ),
+    level: 1,
+  },
+
+  {
+    line: 4,
+    text: (
+      <>
+        p ← <span className="function">Partition</span>(A, low, high)
+      </>
+    ),
+    level: 2,
+  },
+
+  {
+    line: 5,
+    text: (
+      <>
+        <span className="function">QuickSort</span>(A, low, p)
+      </>
+    ),
+    level: 2,
+  },
+
+  {
+    line: 6,
+    text: (
+      <>
+        <span className="function">QuickSort</span>(A, p + 1, high)
+      </>
+    ),
+    level: 2,
+  },
+
+  { line: 7, text: <><span className="keyword">End if</span></>, level: 1 },
+  { line: 8, text: <><span className="keyword">End</span></>, level: 0 },
+];
+const partitionHoareCode = [
+  {
+    line: 1,
+    text: (
+      <>
+        <span className="keyword">Algorithm</span> Partition(A, low, high)
+      </>
+    ),
+    level: 0,
+  },
+  { line: 2, text: <><span className="keyword">Begin</span></>, level: 0 },
+
+  { line: 3, text: <>pivot ← A[low]</>, level: 1 },
+  { line: 4, text: <>i ← low - 1</>, level: 1 },
+  { line: 5, text: <>j ← high + 1</>, level: 1 },
+
+  {
+    line: 6,
+    text: (
+      <>
+        <span className="keyword">While</span> True <span className="keyword">do</span>
+      </>
+    ),
+    level: 1,
+  },
+
+  {
+    line: 7,
+    text: (
+      <>
+        <span className="keyword">Repeat</span>
+      </>
+    ),
+    level: 2,
+  },
+  { line: 8, text: <>i ← i + 1</>, level: 3 },
+  {
+    line: 9,
+    text: (
+      <>
+        <span className="keyword">Until</span> A[i] ≥ pivot
+      </>
+    ),
+    level: 2,
+  },
+
+  {
+    line: 10,
+    text: (
+      <>
+        <span className="keyword">Repeat</span>
+      </>
+    ),
+    level: 2,
+  },
+  { line: 11, text: <>j ← j - 1</>, level: 3 },
+  {
+    line: 12,
+    text: (
+      <>
+        <span className="keyword">Until</span> A[j] ≤ pivot
+      </>
+    ),
+    level: 2,
+  },
+
+  {
+    line: 13,
+    text: (
+      <>
+        <span className="keyword">If</span> i ≥ j <span className="keyword">Then</span>
+      </>
+    ),
+    level: 2,
+  },
+  { line: 14, text: <><span className="keyword">return</span> j</>, level: 3 },
+  { line: 15, text: <><span className="keyword">End if</span></>, level: 2 },
+
+  {
+    line: 16,
+    text: (
+      <>
+        <span className="keyword">swap</span> A[i], A[j]
+      </>
+    ),
+    level: 2,
+  },
+
+  { line: 17, text: <><span className="keyword">End while</span></>, level: 1 },
+  { line: 18, text: <><span className="keyword">End</span></>, level: 0 },
+];
+const CodeBlock = ({ title, code }) => (
+  <section className="fade-in-up">
+    <h3 className="section-header">💻 {title}</h3>
+
+    <div className="pseudo-code-box">
+      {code.map((line) => (
+        <div key={line.line} className="code-line">
+          <span className="line-num">{line.line}</span>
+
+          <span
+            className="code-text"
+            style={{ "--level": line.level }}
+          >
+            {line.text}
+          </span>
+        </div>
+      ))}
+    </div>
+  </section>
+);
 
   return (
     <MainLayout>
@@ -73,29 +239,8 @@ export default function QuickSort() {
         </section>
 
         {/* ================= PSEUDO CODE ================= */}
-        <section className="fade-in-up">
-          <h3 className="section-header">💻 Pseudo Code</h3>
-
-          <div className="pseudo-code-box">
-            <div className="code-line">Algorithm QuickSort(arr, l, r)</div>
-            <div className="code-line">Begin</div>
-            <div className="code-line">&nbsp;&nbsp;If l &lt; r Then</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;pivot ← arr[r]</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;i ← l - 1</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;For j ← l To r - 1 Do</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If arr[j] &lt; pivot Then</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i ← i + 1</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Swap arr[i] and arr[j]</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;End If</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;End For</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;Swap arr[i + 1] and arr[r]</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;p ← i + 1</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;QuickSort(arr, l, p - 1)</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;QuickSort(arr, p + 1, r)</div>
-            <div className="code-line">&nbsp;&nbsp;End If</div>
-            <div className="code-line">End Algorithm</div>
-          </div>
-        </section>
+          <CodeBlock title="Pseudo Code : QuickSort " code={quickSortHoareCode} />
+          <CodeBlock title="Pseudo Code : Partition " code={partitionHoareCode} />
 
         {/* ================= ตัวอย่าง ================= */}
         <section className="fade-in-up">
@@ -291,7 +436,7 @@ export default function QuickSort() {
     <p>
       ประสิทธิภาพของ Quick Sort ขึ้นอยู่กับการเลือก Pivot และการแบ่งข้อมูลในแต่ละครั้ง
     </p>
-    <h2 className="math-big">T(n) = n log n (Average)</h2>
+    <h2 className="math-big">O(n) = n log n (Average)</h2>
     <p>
       ในกรณีที่แบ่งข้อมูลได้สมดุล จะมีประสิทธิภาพใกล้เคียง <strong className="highlight-o">O(n log n)</strong>
     </p>

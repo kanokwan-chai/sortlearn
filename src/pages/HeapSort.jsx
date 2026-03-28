@@ -6,6 +6,142 @@ import bg2 from "../assets/bg-pattern.png";
 export default function HeapSort() {
 
   const n = "n";
+  // ================= DATA =================
+const heapifyCode = [
+  {
+    line: 1,
+    text: (
+      <>
+        <span className="keyword">Algorithm</span> Heapify(A, n, i)
+      </>
+    ),
+    level: 0,
+  },
+  { line: 2, text: <><span className="keyword">Begin</span></>, level: 0 },
+
+  { line: 3, text: <>largest ← i</>, level: 1 },
+  { line: 4, text: <>left ← 2*i + 1</>, level: 1 },
+  { line: 5, text: <>right ← 2*i + 2</>, level: 1 },
+
+  {
+    line: 6,
+    text: (
+      <>
+        <span className="keyword">If</span> left &lt; n <span className="keyword">and</span> A[left] &gt; A[largest] <span className="keyword">Then</span>
+      </>
+    ),
+    level: 1,
+  },
+  { line: 7, text: <>largest ← left</>, level: 2 },
+  { line: 8, text: <><span className="keyword">End if</span></>, level: 1 },
+
+  {
+    line: 9,
+    text: (
+      <>
+        <span className="keyword">If</span> right &lt; n <span className="keyword">and</span> A[right] &gt; A[largest] <span className="keyword">Then</span>
+      </>
+    ),
+    level: 1,
+  },
+  { line: 10, text: <>largest ← right</>, level: 2 },
+  { line: 11, text: <><span className="keyword">End if</span></>, level: 1 },
+
+  {
+    line: 12,
+    text: (
+      <>
+        <span className="keyword">If</span> largest ≠ i <span className="keyword">Then</span>
+      </>
+    ),
+    level: 1,
+  },
+  {
+    line: 13,
+    text: (
+      <>
+        <span className="keyword">swap</span> A[i] and A[largest]
+      </>
+    ),
+    level: 2,
+  },
+  { line: 14, text: <>Heapify(A, n, largest)</>, level: 2 },
+  { line: 15, text: <><span className="keyword">End if</span></>, level: 1 },
+
+  { line: 16, text: <><span className="keyword">End</span></>, level: 0 },
+];
+
+const heapSortCode = [
+  {
+    line: 1,
+    text: (
+      <>
+        <span className="keyword">Algorithm</span> Heap_Sort(A)
+      </>
+    ),
+    level: 0,
+  },
+  { line: 2, text: <><span className="keyword">Begin</span></>, level: 0 },
+
+  { line: 3, text: <>n ← length(A)</>, level: 1 },
+
+  {
+    line: 4,
+    text: (
+      <>
+        <span className="keyword">For</span> i ← (n div 2) - 1 to 0 <span className="keyword">do</span>
+      </>
+    ),
+    level: 1,
+  },
+  { line: 5, text: <>Heapify(A, n, i)</>, level: 2 },
+  { line: 6, text: <><span className="keyword">End for</span></>, level: 1 },
+
+  {
+    line: 7,
+    text: (
+      <>
+        <span className="keyword">For</span> i ← n - 1 to 1 <span className="keyword">do</span>
+      </>
+    ),
+    level: 1,
+  },
+  {
+    line: 8,
+    text: (
+      <>
+        <span className="keyword">swap</span> A[0] and A[i]
+      </>
+    ),
+    level: 2,
+  },
+  { line: 9, text: <>Heapify(A, i, 0)</>, level: 2 },
+  { line: 10, text: <><span className="keyword">End for</span></>, level: 1 },
+
+  { line: 11, text: <><span className="keyword">End</span></>, level: 0 },
+];
+
+// ================= COMPONENT =================
+const CodeBlock = ({ title, code }) => (
+  <section className="fade-in-up">
+    <h3 className="section-header">💻 {title}</h3>
+
+    <div className="pseudo-code-box">
+      {code.map((line) => (
+        <div key={line.line} className="code-line">
+          <span className="line-num">{line.line}</span>
+
+          <span
+            className="code-text"
+            style={{ "--level": line.level }}
+          >
+            {line.text}
+          </span>
+        </div>
+      ))}
+    </div>
+  </section>
+);
 
   return (
     <MainLayout>
@@ -114,169 +250,103 @@ export default function HeapSort() {
           </div>
         </section>
 
-{/* 5. ตัวอย่างการจัดเรียง */}
-<section className="fade-in-up">
-  <h3 className="section-header">🧮 ตัวอย่างการจัดเรียง (Heap Sort)</h3>
+        {/* 5. ตัวอย่างการจัดเรียง */}
+        <section className="fade-in-up">
+          <h3 className="section-header">🧮 ตัวอย่างการจัดเรียง (Heap Sort)</h3>
 
-  <div className="concept-card">
+          <div className="concept-card">
 
-    <p><strong>ข้อมูลเริ่มต้น (Array):</strong> 20, 15, 9, 10, 12, 4, 2</p>
+            <p><strong>ข้อมูลเริ่มต้น (Array):</strong> 20, 15, 9, 10, 12, 4, 2</p>
 
-    <p style={{marginTop:"15px"}}>
-      1️⃣ แปลง Array ให้เป็น <strong>Max Heap</strong>
-    </p>
+            <p style={{marginTop:"15px"}}>
+              1️⃣ แปลง Array ให้เป็น <strong>Max Heap</strong>
+            </p>
 
-    <pre style={{textAlign:"center"}}>
-{`
-        20
-      /    \\
-    15      9
-   /  \\    / \\
- 10   12   4   2
-`}
-    </pre>
+            <pre style={{textAlign:"center"}}>
+        {`
+                20
+              /    \\
+            15      9
+          /  \\    / \\
+        10   12   4   2
+        `}
+            </pre>
 
-    <p>
-      ✔ ค่าใหญ่สุดจะอยู่ที่ Root
-    </p>
+            <p>
+              ✔ ค่าใหญ่สุดจะอยู่ที่ Root
+            </p>
 
-    <p style={{marginTop:"15px"}}>
-      2️⃣ เริ่ม Heap Sort (สลับ Root กับตัวท้าย)
-    </p>
+            <p style={{marginTop:"15px"}}>
+              2️⃣ เริ่ม Heap Sort (สลับ Root กับตัวท้าย)
+            </p>
 
-    <pre style={{textAlign:"center"}}>
-{`
-        2
-      /    \\
-    15      9
-   /  \\    /
- 10   12   4
+            <pre style={{textAlign:"center"}}>
+        {`
+                2
+              /    \\
+            15      9
+          /  \\    /
+        10   12   4
 
-Sorted: [20]
-`}
-    </pre>
+        Sorted: [20]
+        `}
+            </pre>
 
-    <p>
-      🔧 จากนั้นต้องทำ <strong>Heapify</strong> เพื่อปรับ Heap ใหม่
-    </p>
+            <p>
+              🔧 จากนั้นต้องทำ <strong>Heapify</strong> เพื่อปรับ Heap ใหม่
+            </p>
 
-    <pre style={{textAlign:"center"}}>
-{`
-        15
-      /    \\
-    12      9
-   /  \\    /
- 10    2   4
-`}
-    </pre>
+            <pre style={{textAlign:"center"}}>
+        {`
+                15
+              /    \\
+            12      9
+          /  \\    /
+        10    2   4
+        `}
+            </pre>
 
-    <p style={{marginTop:"15px"}}>
-      3️⃣ ทำซ้ำ (Swap + Heapify)
-    </p>
+            <p style={{marginTop:"15px"}}>
+              3️⃣ ทำซ้ำ (Swap + Heapify)
+            </p>
 
-    <pre style={{textAlign:"center"}}>
-{`
-        4
-      /    \\
-    12      9
-   /  \\
- 10    2
+            <pre style={{textAlign:"center"}}>
+        {`
+                4
+              /    \\
+            12      9
+          /  \\
+        10    2
 
-Sorted: [15, 20]
-`}
-    </pre>
+        Sorted: [15, 20]
+        `}
+            </pre>
 
-    <pre style={{textAlign:"center"}}>
-{`
-        12
-      /    \\
-    10      9
-   /
-  4
+            <pre style={{textAlign:"center"}}>
+        {`
+                12
+              /    \\
+            10      9
+          /
+          4
 
-Sorted: [15, 20]
-`}
-    </pre>
+        Sorted: [15, 20]
+        `}
+            </pre>
 
-    <p style={{marginTop:"10px"}}>
-      🔁 ทำซ้ำขั้นตอนนี้จน Heap เหลือ 1 ค่า
-      <br/><br/>
-      ✅ ผลลัพธ์สุดท้าย:
-      <strong> 2, 4, 9, 10, 12, 15, 20</strong>
-    </p>
+            <p style={{marginTop:"10px"}}>
+              🔁 ทำซ้ำขั้นตอนนี้จน Heap เหลือ 1 ค่า
+              <br/><br/>
+              ✅ ผลลัพธ์สุดท้าย:
+              <strong> 2, 4, 9, 10, 12, 15, 20</strong>
+            </p>
 
-  </div>
-</section>
+          </div>
+        </section>
 
         {/* 6. Pseudo Code */}
-        {/* ================= PSEUDO CODE HEAPIFY ================= */}
-        <section className="fade-in-up">
-        <h3 className="section-header">💻 Pseudo Code : Heapify</h3>
-
-        <div className="concept-card">
-            <p>
-            <strong>หน้าที่:</strong> ฟังก์ชัน Heapify ใช้สำหรับปรับโครงสร้างต้นไม้ฮีป
-            ให้เป็นไปตามกฎ <strong>Heap Property</strong> 
-            โดยจะตรวจสอบโหนดพ่อกับโหนดลูก และสลับค่าถ้าจำเป็น
-            </p>
-        </div>
-
-        <div className="pseudo-code-box">
-            <div className="code-line">Algorithm Heapify(A, n, i)</div>
-            <div className="code-line">Begin</div>
-            <div className="code-line">&nbsp;&nbsp;largest ← i</div>
-            <div className="code-line">&nbsp;&nbsp;left ← 2*i + 1</div>
-            <div className="code-line">&nbsp;&nbsp;right ← 2*i + 2</div>
-
-            <div className="code-line">&nbsp;&nbsp;If left &lt; n and A[left] &gt; A[largest] Then</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;largest ← left</div>
-            <div className="code-line">&nbsp;&nbsp;End if</div>
-
-            <div className="code-line">&nbsp;&nbsp;If right &lt; n and A[right] &gt; A[largest] Then</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;largest ← right</div>
-            <div className="code-line">&nbsp;&nbsp;End if</div>
-
-            <div className="code-line">&nbsp;&nbsp;If largest ≠ i Then</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;swap A[i] and A[largest]</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;Heapify(A, n, largest)</div>
-            <div className="code-line">&nbsp;&nbsp;End if</div>
-
-            <div className="code-line">End Algorithm</div>
-        </div>
-        </section>
-
-
-        {/* ================= PSEUDO CODE HEAP SORT ================= */}
-        <section className="fade-in-up">
-        <h3 className="section-header">💻 Pseudo Code : Heap Sort</h3>
-
-        <div className="concept-card">
-            <p>
-            <strong>หน้าที่:</strong> อัลกอริทึมหลักสำหรับการจัดเรียงข้อมูล
-            โดยเริ่มจากการสร้าง <strong>Max Heap</strong>
-            แล้วดึงค่ามากที่สุด (Root) ไปไว้ท้ายอาร์เรย์
-            จากนั้นปรับโครงสร้างฮีปใหม่ ทำซ้ำจนเรียงครบ
-            </p>
-        </div>
-
-        <div className="pseudo-code-box">
-            <div className="code-line">Algorithm Heap_Sort(A)</div>
-            <div className="code-line">Begin</div>
-
-            <div className="code-line">&nbsp;&nbsp;n ← length(A)</div>
-
-            <div className="code-line">&nbsp;&nbsp;For i ← (n div 2) - 1 to 0 do</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;Heapify(A, n, i)</div>
-            <div className="code-line">&nbsp;&nbsp;End for</div>
-
-            <div className="code-line">&nbsp;&nbsp;For i ← n - 1 to 1 do</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;swap A[0] and A[i]</div>
-            <div className="code-line">&nbsp;&nbsp;&nbsp;&nbsp;Heapify(A, i, 0)</div>
-            <div className="code-line">&nbsp;&nbsp;End for</div>
-
-            <div className="code-line">End Algorithm</div>
-        </div>
-        </section>
+      <CodeBlock title="Pseudo Code : Heapify" code={heapifyCode} />
+      <CodeBlock title="Pseudo Code : Heap Sort" code={heapSortCode} />
 
        {/* 7. ประสิทธิภาพเชิงเวลา */}
       <section className="fade-in-up">
