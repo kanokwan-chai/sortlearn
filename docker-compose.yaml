@@ -1,0 +1,13 @@
+services:
+  frontend:
+    build: .
+    container_name: Sortlearn
+    restart: always
+    ports:
+      - "2500:2500"
+    networks:
+      - sortlearn_network
+
+networks:
+  sortlearn_network:
+    driver: bridge
