@@ -1,4 +1,7 @@
-http://Btct.ced.kmutnb.ac.th, http://localhost {
+:80 {
+    redir /sortlearn /SortLearn
+    redir /sortlearn/* /SortLearn/{path}
+    
     handle_path /SortLearn* {
         reverse_proxy frontend:2500
     }
