@@ -1,5 +1,3 @@
 :80 {
-    redir /sortlearn /SortLearn
-
-    reverse_proxy /SortLearn* frontend:80
+    reverse_proxy /sortlearn* frontend:80
 }
