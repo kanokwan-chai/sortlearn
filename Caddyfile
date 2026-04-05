@@ -1,5 +1,5 @@
 :80 {
-    handle_path /sortlearn* {
+    handle_path /SortLearn* {
         reverse_proxy frontend:80
     }
 }
