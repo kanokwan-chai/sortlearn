@@ -3,6 +3,6 @@
     redir /sortlearn/* /SortLearn/{path}
     
     handle_path /SortLearn* {
-        reverse_proxy frontend:2500
+        reverse_proxy frontend:80
     }
 }
