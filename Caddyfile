@@ -1,4 +1,7 @@
 :80 {
+    @upper path /SortLearn*
+    redir @upper /sortlearn{uri} 301
+
     handle_path /sortlearn* {
         reverse_proxy frontend:80
     }
