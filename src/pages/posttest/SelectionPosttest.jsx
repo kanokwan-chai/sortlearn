@@ -146,7 +146,7 @@ export default function SelectionPosttest() {
               </span>
             </div>
 
-            <button className="result-btn-next" onClick={() => navigate("/sortlearn/home")}>
+            <button className="result-btn-next" onClick={() => navigate("/home")}>
               กลับหน้าหลัก 🏠
             </button>
           </div>

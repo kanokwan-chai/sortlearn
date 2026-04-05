@@ -154,7 +154,7 @@ export default function MergePosttest() {
               <span className="score-divider" style={{ color: '#666666' }}>/</span>
               <span className="score-total" style={{ color: '#666666' }}>{questions.length || 10}</span>
             </div>
-            <button className="result-btn-next" onClick={() => navigate("/sortlearn/home")}>กลับหน้าหลัก 🏠</button>
+            <button className="result-btn-next" onClick={() => navigate("/home")}>กลับหน้าหลัก 🏠</button>
           </div>
         </div>
       </MainLayout>

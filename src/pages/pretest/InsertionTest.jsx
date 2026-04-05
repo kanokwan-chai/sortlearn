@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import MainLayout from "../../layouts/MainLayout";
-import "../../styles/test.css"; 
+import "../../styles/test.css";
 import { useNavigate } from "react-router-dom";
 import { quizImages } from "../../utils/imageMap";
 
@@ -17,12 +17,12 @@ export default function InsertionTest() {
   const [showResult, setShowResult] = useState(false);
   const [isAlreadyDone, setIsAlreadyDone] = useState(false);
 
-  const QUESTION_API = "https://script.google.com/macros/s/AKfycbwyxhS44YfJ743L1MIb57lN0CSpq5EUOZWMuUKSw7npDemfARhfeseneXrrVVxpLifC2w/exec"; 
-  const SCORE_API    = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
+  const QUESTION_API = "https://script.google.com/macros/s/AKfycbwyxhS44YfJ743L1MIb57lN0CSpq5EUOZWMuUKSw7npDemfARhfeseneXrrVVxpLifC2w/exec";
+  const SCORE_API = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
 
   const getUserKey = () => {
     let user = {};
-    try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch {}
+    try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch { }
     if (user.email) return user.email;
     let guestId = localStorage.getItem("guest_id");
     if (!guestId) {
@@ -45,9 +45,9 @@ export default function InsertionTest() {
           const response = await fetch(`${SCORE_API}?action=getScores`);
           const allData = await response.json();
           const user = JSON.parse(localStorage.getItem("user")) || {};
-          
-          const record = allData.find(st => 
-            (st.firstname === user.firstname || st.firstname === userKey) && 
+
+          const record = allData.find(st =>
+            (st.firstname === user.firstname || st.firstname === userKey) &&
             st.activityName === "Insertion Sort Pretest"
           );
 
@@ -94,7 +94,7 @@ export default function InsertionTest() {
   const submitScore = async () => {
     const userKey = getUserKey();
     let user = {};
-    try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch {}
+    try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch { }
 
     const payload = {
       activity: "PRETEST",
@@ -102,7 +102,7 @@ export default function InsertionTest() {
       lastname: user.lastname || FALLBACK_USER.lastname,
       testName: "Insertion Sort Pretest", // ✨ ชื่อกิจกรรมตรงกับระบบ Filter ใน Admin
       score: score,
-      allAnswers: userAnswers.join(" | ") 
+      allAnswers: userAnswers.join(" | ")
     };
 
     try {
@@ -135,24 +135,24 @@ export default function InsertionTest() {
   if (showResult) {
     return (
       <MainLayout>
-        <div className="test-hero" style={{backgroundImage: `url(${require('../../assets/bg-pattern.png')})`}}>
+        <div className="test-hero" style={{ backgroundImage: `url(${require('../../assets/bg-pattern.png')})` }}>
           <div className="hero-center">
             <h1 className="test-title">INSERTION SORT</h1>
             <h3 className="test-sub">ผลการทดสอบก่อนเรียน</h3>
           </div>
         </div>
-        <div className="test-box-container" style={{display:'flex', justifyContent:'center'}}>
+        <div className="test-box-container" style={{ display: 'flex', justifyContent: 'center' }}>
           <div className="result-card-fancy fade-in">
-              {isAlreadyDone && <div style={{color:'#e53e3e', fontWeight:'bold', marginBottom:'10px'}}>⚠️ คุณทำแบบทดสอบนี้ไปแล้ว</div>}
-              <span className="result-icon">🎉</span>
-              <div className="result-score-circle">
-                <span className="score-big" style={{ color: '#333333' }}>{score}</span>
-                <span className="score-divider" style={{ color: '#666666' }}>/</span>
-                <span className="score-total" style={{ color: '#666666' }}>{questions.length}</span>
-              </div>
-              <button className="result-btn-next" onClick={() => navigate(isAlreadyDone ? "/home" : "/insertion-sort")}>
-                {isAlreadyDone ? "กลับหน้าหลัก 🏠" : "เข้าสู่บทเรียน ▶"}
-              </button>
+            {isAlreadyDone && <div style={{ color: '#e53e3e', fontWeight: 'bold', marginBottom: '10px' }}>⚠️ คุณทำแบบทดสอบนี้ไปแล้ว</div>}
+            <span className="result-icon">🎉</span>
+            <div className="result-score-circle">
+              <span className="score-big" style={{ color: '#333333' }}>{score}</span>
+              <span className="score-divider" style={{ color: '#666666' }}>/</span>
+              <span className="score-total" style={{ color: '#666666' }}>{questions.length || 10}</span>
+            </div>
+            <button className="result-btn-next" onClick={() => navigate(isAlreadyDone ? "/home" : "/insertion-sort")}>
+              {isAlreadyDone ? "กลับหน้าหลัก 🏠" : "เข้าสู่บทเรียน ▶"}
+            </button>
           </div>
         </div>
       </MainLayout>
@@ -161,29 +161,29 @@ export default function InsertionTest() {
 
   return (
     <MainLayout>
-      <div className="test-hero" style={{backgroundImage: `url(${require('../../assets/bg-pattern.png')})`}}>
+      <div className="test-hero" style={{ backgroundImage: `url(${require('../../assets/bg-pattern.png')})` }}>
         <div className="hero-center">
-            <h1 className="test-title">INSERTION SORT</h1>
-            <h3 className="test-sub">แบบทดสอบก่อนเรียน</h3>
+          <h1 className="test-title">INSERTION SORT</h1>
+          <h3 className="test-sub">แบบทดสอบก่อนเรียน</h3>
         </div>
       </div>
-      <div className="test-box-container" style={{display:'flex', justifyContent:'center'}}>
-          <div className="test-box shadow-sm">
-            <div className="test-number">{questions[current]?.no}</div>
-            <div className="test-question">{questions[current]?.question}</div>
-            
-            {questions[current]?.image && quizImages[questions[current].image] && (
-              <div className="test-image-box" style={{ textAlign: 'center', marginBottom: '15px' }}>
-                <img src={quizImages[questions[current].image]} alt="โจทย์ประกอบ" style={{ maxWidth: '100%', borderRadius: '8px', border: '1px solid #ddd' }} />
-              </div>
-            )}
-            
-            <div className="choice-grid">
-              {questions[current]?.choices.map((choice, idx) => (
-                <button key={idx} className="choice-btn" onClick={() => handleAnswer(idx)}>{choice}</button>
-              ))}
+      <div className="test-box-container" style={{ display: 'flex', justifyContent: 'center' }}>
+        <div className="test-box shadow-sm">
+          <div className="test-number">{questions[current]?.no}</div>
+          <div className="test-question">{questions[current]?.question}</div>
+
+          {questions[current]?.image && quizImages[questions[current].image] && (
+            <div className="test-image-box" style={{ textAlign: 'center', marginBottom: '15px' }}>
+              <img src={quizImages[questions[current].image]} alt="โจทย์ประกอบ" style={{ maxWidth: '100%', borderRadius: '8px', border: '1px solid #ddd' }} />
             </div>
+          )}
+
+          <div className="choice-grid">
+            {questions[current]?.choices.map((choice, idx) => (
+              <button key={idx} className="choice-btn" onClick={() => handleAnswer(idx)}>{choice}</button>
+            ))}
           </div>
+        </div>
       </div>
     </MainLayout>
   );
