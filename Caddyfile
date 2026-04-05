@@ -1,6 +1,5 @@
 :80 {
-    @lower path /sortlearn*
-    redir @lower /SortLearn{uri}
+    redir /sortlearn /SortLearn
 
     reverse_proxy /SortLearn* frontend:80
 }
