@@ -29,9 +29,9 @@ RUN npm install -g serve
 COPY --from=build /app/build ./build
 
 # ระบุพอร์ตที่ตัว serve จะรัน (ค่าเริ่มต้นของ serve ส่วนมากคือ 3000)
-EXPOSE 2500
+EXPOSE 80
 
 # รันคำสั่งเปิดเซิร์ฟเวอร์
 # -s คือโหมด SPA (Single Page Application) ซึ่งจะช่วยให้รองรับ React Router
 # -p ระบุพอร์ต
-CMD ["serve", "-s", "build", "-p", "2500"]
+CMD ["serve", "-s", "build", "-p", "80"]
