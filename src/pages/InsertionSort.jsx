@@ -1,34 +1,34 @@
 import React from "react";
 import MainLayout from "../layouts/MainLayout";
-import "../styles/lesson-detail.css"; 
-import bg2 from "../assets/bg-pattern.png"; 
+import "../styles/lesson-detail.css";
+import bg2 from "../assets/bg-pattern.png";
 
 export default function InsertionSortLesson() {
   // ประกาศตัวแปร n เพื่อป้องกัน Error [eslint] 'n' is not defined ในสูตรคำนวณ
-  const n = "n"; 
+  const n = "n";
   const code = [
-  { line: 1, text: <><span className="keyword">Algorithm</span> Insertion_Sort(A)</>, level: 0 },
-  { line: 2, text: <><span className="keyword">Begin</span></>, level: 0 },
+    { line: 1, text: <><span className="keyword">Algorithm</span> Insertion_Sort(A)</>, level: 0 },
+    { line: 2, text: <><span className="keyword">Begin</span></>, level: 0 },
 
-  { line: 3, text: <>n ← length(A)</>, level: 1 },
+    { line: 3, text: <>n ← length(A)</>, level: 1 },
 
-  { line: 4, text: <><span className="keyword">For</span> i ← 1 to n - 1 <span className="keyword">do</span> <span className="comment">// เริ่มพิจารณาตัวที่สอง</span></>, level: 1 },
+    { line: 4, text: <><span className="keyword">For</span> i ← 1 to n - 1 <span className="keyword">do</span> <span className="comment">// เริ่มพิจารณาตัวที่สอง</span></>, level: 1 },
 
-  { line: 5, text: <>key ← A[i] <span className="comment">// เก็บค่าที่จะนำไปแทรก</span></>, level: 2 },
-  { line: 6, text: <>j ← i - 1 <span className="comment">// ตำแหน่งก่อนหน้า</span></>, level: 2 },
+    { line: 5, text: <>key ← A[i] <span className="comment">// เก็บค่าที่จะนำไปแทรก</span></>, level: 2 },
+    { line: 6, text: <>j ← i - 1 <span className="comment">// ตำแหน่งก่อนหน้า</span></>, level: 2 },
 
-  { line: 7, text: <><span className="keyword">While</span> j ≥ 0 <span className="keyword">and</span> A[j] &gt; key <span className="keyword">do</span></>, level: 2 },
+    { line: 7, text: <><span className="keyword">While</span> j ≥ 0 <span className="keyword">and</span> A[j] &gt; key <span className="keyword">do</span></>, level: 2 },
 
-  { line: 8, text: <>A[j+1] ← A[j] <span className="comment">// เลื่อนข้อมูลไปทางขวา</span></>, level: 3 },
-  { line: 9, text: <>j ← j - 1</>, level: 3 },
+    { line: 8, text: <>A[j+1] ← A[j] <span className="comment">// เลื่อนข้อมูลไปทางขวา</span></>, level: 3 },
+    { line: 9, text: <>j ← j - 1</>, level: 3 },
 
-  { line: 10, text: <><span className="keyword">End while</span></>, level: 2 },
+    { line: 10, text: <><span className="keyword">End while</span></>, level: 2 },
 
-  { line: 11, text: <>A[j+1] ← key <span className="comment">// แทรกข้อมูลลงในตำแหน่งที่ถูกต้อง</span></>, level: 2 },
+    { line: 11, text: <>A[j+1] ← key <span className="comment">// แทรกข้อมูลลงในตำแหน่งที่ถูกต้อง</span></>, level: 2 },
 
-  { line: 12, text: <><span className="keyword">End for</span></>, level: 1 },
+    { line: 12, text: <><span className="keyword">End for</span></>, level: 1 },
 
-  { line: 13, text: <><span className="keyword">End</span></>, level: 0 },
+    { line: 13, text: <><span className="keyword">End</span></>, level: 0 },
   ];
 
   return (
@@ -36,21 +36,21 @@ export default function InsertionSortLesson() {
       {/* ---------------- HERO SECTION ---------------- */}
       <div className="lesson-detail-hero" style={{ backgroundImage: `url(${bg2})` }}>
         <div className="hero-center">
-            <p className="hero-sub">หน่วยการเรียนรู้ที่ 2</p>
-            <h1 className="hero-title">Insertion Sort</h1>
-            <p className="hero-desc">การจัดเรียงข้อมูลแบบแทรก</p>
+          <p className="hero-sub">หน่วยการเรียนรู้ที่ 2</p>
+          <h1 className="hero-title">Insertion Sort</h1>
+          <p className="hero-desc">การจัดเรียงข้อมูลแบบแทรก</p>
         </div>
       </div>
 
       <div className="lesson-detail-container">
-        
+
         {/* 1. CONCEPT - อ้างอิงจากใบเนื้อหา หน้า 1/8 */}
         <section className="fade-in-up">
           <h3 className="section-header">🔍 ความหมายของการจัดเรียงข้อมูลแบบแทรก</h3>
           <div className="concept-card">
             <p>
-              <strong>การจัดเรียงข้อมูลแบบแทรก (Insertion Sort)</strong> หมายถึง การจัดเรียงลำดับโดยการพิจารณาข้อมูลทีละตัว 
-              แล้วนำข้อมูลนั้นไป <span className="highlight-text">“แทรก” ในตำแหน่งที่เหมาะสม</span> 
+              <strong>การจัดเรียงข้อมูลแบบแทรก (Insertion Sort)</strong> หมายถึง การจัดเรียงลำดับโดยการพิจารณาข้อมูลทีละตัว
+              แล้วนำข้อมูลนั้นไป <span className="highlight-text">“แทรก” ในตำแหน่งที่เหมาะสม</span>
               ของชุดข้อมูลที่จัดเรียงเรียบร้อยแล้ว โดยจะแบ่งพื้นที่ออกเป็น 2 ส่วน คือส่วนที่จัดเรียงแล้ว และส่วนที่ยังไม่ได้จัดเรียง
             </p>
           </div>
@@ -91,7 +91,7 @@ export default function InsertionSortLesson() {
           </div>
         </section>
 
-        
+
         {/* 3. PSEUDO CODE  */}
         <section className="fade-in-up">
           <h3 className="section-header">💻 รหัสเทียม (Pseudo Code)</h3>
@@ -115,37 +115,37 @@ export default function InsertionSortLesson() {
         {/* 4. EFFICIENCY - อ้างอิงจากใบเนื้อหา หน้า 6/8 */}
         <section className="fade-in-up">
           <h3 className="section-header">📊 การวิเคราะห์ประสิทธิภาพเชิงเวลา</h3>
-          
+
           <div className="formula-card">
-             <p>สูตรคำนวณจำนวนครั้งในการเปรียบเทียบทั้งหมด (Worst Case):</p>
-             <h2 className="math-big"> C(n) = n(n - 1) / 2 </h2>
-             <p>ประสิทธิภาพเชิงเวลา (Time Complexity): <strong className="highlight-o">O({n}²)</strong></p>
+            <p>สูตรคำนวณจำนวนครั้งในการเปรียบเทียบทั้งหมด (Worst Case):</p>
+            <h2 className="math-big"> C(n) = n(n - 1) / 2 </h2>
+            <p>ประสิทธิภาพเชิงเวลา (Time Complexity): <strong className="highlight-o">O({n}²)</strong></p>
           </div>
 
-          
-          <div className="table-container" style={{marginTop:'30px'}}>
-             <table className="analysis-table big-o">
-               <thead>
-                 <tr><th>กรณี (Case)</th><th>Time Complexity</th><th>คำอธิบาย</th></tr>
-               </thead>
-               <tbody>
-                 <tr>
-                    <td>กรณีที่ดีที่สุด (Best Case)</td>
-                    <td className="highlight-o" style={{color:'#2e7d32'}}>O({n})</td>
-                    <td>ข้อมูลเรียงลำดับอยู่แล้ว เปรียบเทียบเพียงรอบละ 1 ครั้ง และไม่มีการเลื่อนข้อมูล</td>
-                 </tr>
-                 <tr>
-                    <td>กรณีโดยเฉลี่ย (Average Case)</td>
-                    <td>O({n}²)</td>
-                    <td>ข้อมูลอยู่ในลักษณะสุ่ม ต้องเลื่อนตำแหน่งข้อมูลโดยเฉลี่ยครึ่งหนึ่งในแต่ละรอบ</td>
-                 </tr>
-                 <tr>
-                    <td>กรณีที่เลวร้ายที่สุด (Worst Case)</td>
-                    <td className="highlight-o" style={{color:'#c62828'}}>O({n}²)</td>
-                    <td>ข้อมูลเรียงลำดับตรงกันข้ามทั้งหมด ต้องเลื่อนข้อมูลในส่วนที่เรียงแล้วทั้งหมดทุกรอบ</td>
-                 </tr>
-               </tbody>
-             </table>
+
+          <div className="table-container" style={{ marginTop: '30px' }}>
+            <table className="analysis-table big-o">
+              <thead>
+                <tr><th>กรณี (Case)</th><th>Time Complexity</th><th>คำอธิบาย</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>กรณีที่ดีที่สุด (Best Case)</td>
+                  <td className="highlight-o" style={{ color: '#2e7d32' }}>O({n})</td>
+                  <td>ข้อมูลเรียงลำดับอยู่แล้ว เปรียบเทียบเพียงรอบละ 1 ครั้ง และไม่มีการเลื่อนข้อมูล</td>
+                </tr>
+                <tr>
+                  <td>กรณีโดยเฉลี่ย (Average Case)</td>
+                  <td>O({n}²)</td>
+                  <td>ข้อมูลอยู่ในลักษณะสุ่ม ต้องเลื่อนตำแหน่งข้อมูลโดยเฉลี่ยครึ่งหนึ่งในแต่ละรอบ</td>
+                </tr>
+                <tr>
+                  <td>กรณีที่เลวร้ายที่สุด (Worst Case)</td>
+                  <td className="highlight-o" style={{ color: '#c62828' }}>O({n}²)</td>
+                  <td>ข้อมูลเรียงลำดับตรงกันข้ามทั้งหมด ต้องเลื่อนข้อมูลในส่วนที่เรียงแล้วทั้งหมดทุกรอบ</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </section>
 
@@ -181,10 +181,10 @@ export default function InsertionSortLesson() {
         {/* 6. Video CTA */}
         <div className="lesson-detail-video fade-in-up">
           <h3>🎬 พร้อมเรียนรู้วิธีการแทรกข้อมูลหรือยัง?</h3>
-          <p style={{marginBottom: '30px', opacity: 0.9}}>
+          <p style={{ marginBottom: '30px', opacity: 0.9 }}>
             รับชมวิดีโอแอนิเมชันสาธิตขั้นตอนการทำงานของ Insertion Sort เพื่อช่วยให้คุณเห็นภาพการแทรกข้อมูลที่ชัดเจนยิ่งขึ้น
           </p>
-          <a href="/video/insertion-sort" className="video-btn-styled">
+          <a href="/sortlearn/video/insertion-sort" className="video-btn-styled">
             เข้าสู่บทเรียนวิดีโอ ▶
           </a>
         </div>
