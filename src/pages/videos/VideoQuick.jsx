@@ -27,8 +27,6 @@ export default function QuickSortVideo() {
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [answeredIds, setAnsweredIds] = useState([]);
-  const [isAlreadyDone, setIsAlreadyDone] = useState(false);
-
   const [showModal, setShowModal] = useState(false);
 
   const GET_QUIZ_URL =
@@ -65,12 +63,6 @@ export default function QuickSortVideo() {
 const progressKey = `progress_${userKey}_quick`;
 
     const history = JSON.parse(localStorage.getItem(progressKey)) || {};
-
-    if (history.video === true) {
-      setIsAlreadyDone(true);
-      setLoading(false);
-      return;
-    }
 
     fetch(`${GET_QUIZ_URL}?type=video_quick`)
       .then((res) => res.json())
@@ -159,45 +151,12 @@ const progressKey = `progress_${userKey}_quick`;
     });
 
         const userKey = getUserKey();
-const key = `progress_${userKey}_quick`;
-localStorage.setItem(key, JSON.stringify({ video: true }));
-
+        const key = `progress_${userKey}_quick`;
+        const currentProgress = JSON.parse(localStorage.getItem(key)) || {};
+    
+    // บันทึกว่า video: true เพื่อปลดล็อคบทเรียนอื่น แต่ไม่ทำให้หน้านี้ล็อค
+    localStorage.setItem(key, JSON.stringify({ ...currentProgress, video: true }));
   };
-
-  // ================================================
-  // UI เริ่มต้น ถ้าเคยดูแล้ว
-  // ================================================
-if (isAlreadyDone) return (
-  <MainLayout>
-          <div className="lesson-detail-hero" style={{ backgroundImage: `url(${bg2})` }}>
-            <div className="hero-center">
-                <p className="hero-sub">บทเรียน</p>
-                <h1 className="hero-title">Quick Sort</h1>
-            </div>
-          </div>
-
-    <div className="video-quiz-container">
-      <div className="done-box">
-        
-        <div className="done-icon">🎉</div>
-
-        <h2 className="done-title">
-          คุณเคยดูวิดีโอและตอบคำถามครบแล้ว
-        </h2>
-
-        <p className="done-text">
-          ระบบบันทึกความสำเร็จไว้เรียบร้อย สามารถกลับไปหน้าหลักหรือเลือกบทเรียนต่อไปได้เลย
-        </p>
-
-        <button className="done-btn" onClick={() => navigate("/home")}>
-          กลับหน้าหลัก 🏠
-        </button>
-
-      </div>
-    </div>
-  </MainLayout>
-);
-
 
   // ================================================
   // MAIN UI

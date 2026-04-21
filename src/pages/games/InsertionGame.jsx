@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import MainLayout from "../../layouts/MainLayout";
 import "../../styles/insertion-master.css"; 
 import { useNavigate } from "react-router-dom";
+import { getAuth } from "../../utils/auth";
 
 // Image Imports
 import imgPunter from "../../assets/i1.png"; 
@@ -126,32 +127,38 @@ export default function InsertionGame() {
   };
 
   // --- 1. CHECK STATUS ---
+  // --- ✅ 1. CHECK STATUS & RESTORE ---
   useEffect(() => {
     const checkGameStatus = () => {
       try {
         const user = JSON.parse(localStorage.getItem("user")) || {};
-        const userKey =
-  user.email ||
-  user.id ||
-  user.username ||
-  user.firstname ||
-  "guest";
-
+        const userKey = user.email || user.id || user.username || user.firstname || "guest";
         const storageKey = `progress_${userKey}_${LESSON_KEY}`;
+        
         const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
 
-        if (savedData.game === true) {
-          setGameState("ALREADY_WIN");
-          return;
+        // 2. กู้คืนคะแนน
+        if (typeof savedData.score === 'number') {
+             setScore(savedData.score);
+             scoreRef.current = savedData.score; // ✅ ต้องอัปเดต Ref ให้ตรงกันด้วย!
         }
 
-        // กู้คืนข้อมูล
-        if (savedData.score) setScore(savedData.score);
-        if (savedData.level && savedData.level > 1) setUnlockedLevel(savedData.level);
+        // 3. กู้คืน Level & ตรวจสอบการเล่นซ้ำ
+        let currentLvl = 1;
+        if (savedData.level && savedData.level > LEVELS.length) {
+             setUnlockedLevel(1);
+             currentLvl = 1;
+        } else if (savedData.level && savedData.level > 1) {
+             setUnlockedLevel(savedData.level);
+             currentLvl = savedData.level;
+        }
 
-        // ถ้าเลือกตัวละครแล้ว ข้ามไป Map
-        if (savedData.charId) {
-             const char = DEALERS.find(d => d.id === savedData.charId);
+        // 4. ถ้าอยู่ด่าน 1 บังคับเลือกตัวละครใหม่เสมอ
+        if (currentLvl === 1) {
+             setDealer(null);
+             setGameState("SELECT_CHAR");
+        } else if (savedData.charId) {
+             const char = DEALERS.find(c => c.id === savedData.charId);
              if (char) {
                  setDealer(char);
                  setGameState("MAP");
@@ -161,6 +168,7 @@ export default function InsertionGame() {
         } else {
              setGameState("SELECT_CHAR");
         }
+
       } catch (e) {
         console.error("Check status error", e);
         setGameState("SELECT_CHAR");
@@ -326,6 +334,10 @@ export default function InsertionGame() {
   const saveScoreToSheet = async (finalScore) => {
     try {
         const user = JSON.parse(localStorage.getItem("user")) || {};
+        
+        // ✅ 1. ดึง email และ token มาใช้งาน
+        const { email, token } = getAuth(); 
+
         const payload = {
             activity: "GAMES",
             firstname: user.firstname || "Guest",
@@ -333,15 +345,25 @@ export default function InsertionGame() {
             gameName: "Insertion Casino (Toon)",
             score: finalScore
         };
+
+        // ✅ 2. เพิ่ม mode: "no-cors" และแนบ email, token ไปพร้อมกับ payload
         await fetch(SCORE_API, {
             method: "POST",
-            body: JSON.stringify(payload),
-            headers: { "Content-Type": "text/plain;charset=utf-8" }
+            mode: "no-cors",
+            body: JSON.stringify({
+                ...payload,
+                email,
+                token
+            })
         });
-    } catch (e) { console.error("Save failed", e); }
+        console.log("ส่งคะแนนไป Google Sheet เรียบร้อยแล้ว!");
+    } catch (e) { 
+        console.error("Save failed", e); 
+    }
   };
 
-  const handleWin = () => {
+  // ✅ เติม async ด้านหน้าฟังก์ชัน
+  const handleWin = async () => {
     playSound("win"); // 🔊
     const levelBonus = 200;
     const hpBonus = hp * 10;
@@ -351,18 +373,22 @@ export default function InsertionGame() {
     setScore(finalScore);
     scoreRef.current = finalScore;
 
-    // บันทึกความก้าวหน้า
-    const nextLvl = levelIdx + 2;
-    const updateData = { score: finalScore };
-    if (nextLvl > unlockedLevel) {
-        setUnlockedLevel(prev => Math.max(prev, nextLvl));
-        updateData.level = nextLvl;
-    }
-    saveProgressToStorage(updateData);
-
     if (levelIdx === LEVELS.length - 1) {
+        // --- 🏆 กรณีจบด่าน 3 (ด่านสุดท้าย) ---
+        console.log("กำลังส่งคะแนนด่านสุดท้าย:", finalScore);
         saveScoreToSheet(finalScore);
-        saveProgressToStorage({ game: true, level: LEVELS.length + 1 });
+        
+        // บันทึกเกมว่าผ่านแล้ว (game: true) แต่บังคับรีเซ็ต Level และ Score ในเครื่องเป็น 0
+        saveProgressToStorage({ game: true, level: 1, charId: "", score: 0 });
+    } else {
+        // --- ⏩ กรณีจบด่าน 1 หรือ 2 ---
+        const nextLvl = levelIdx + 2;
+        if (nextLvl > unlockedLevel) {
+            setUnlockedLevel(prev => Math.max(prev, nextLvl));
+            saveProgressToStorage({ score: finalScore, level: nextLvl });
+        } else {
+            saveProgressToStorage({ score: finalScore });
+        }
     }
 
     setGameState("FINISH");
@@ -581,9 +607,25 @@ export default function InsertionGame() {
                     </div>
                     <div className="control-bar" style={{justifyContent:'center'}}>
                         <button className="casino-btn btn-back" onClick={() => navigate("/home")}>กลับหน้าหลัก</button>
-                        {gameState === "FINISH" && levelIdx < 2 && (
+                        
+                        {/* ด่านปกติ -> ไปด่านถัดไป */}
+                        {gameState === "FINISH" && levelIdx < LEVELS.length - 1 && (
                             <button className="casino-btn btn-insert" onClick={() => setGameState("MAP")}>ด่านถัดไป ➡️</button>
                         )}
+                        
+                        {/* ✅ จบด่าน 3 -> แสดงปุ่มเล่นอีกครั้ง */}
+                        {gameState === "FINISH" && levelIdx === LEVELS.length - 1 && (
+                            <button className="casino-btn btn-insert" onClick={() => {
+                                setScore(0);
+                                scoreRef.current = 0; // ✅ ล้างคะแนนในหน่วยความจำเกมด้วย
+                                setUnlockedLevel(1);
+                                setLevelIdx(0);
+                                setDealer(null);
+                                setGameState("SELECT_CHAR");
+                                saveProgressToStorage({ level: 1, charId: "", score: 0 });
+                            }}>เล่นอีกครั้ง 🔄</button>
+                        )}
+
                         {gameState === "GAMEOVER" && (
                             <button className="casino-btn btn-insert" onClick={() => setGameState("MAP")}>ลองใหม่ 🔄</button>
                         )}

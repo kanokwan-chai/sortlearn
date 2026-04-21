@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import MainLayout from "../../layouts/MainLayout";
 import { useNavigate } from "react-router-dom";
 import "../../styles/bubble-game.css";
+import { getAuth } from "../../utils/auth";
 
 
 // Assets Mapping
@@ -83,22 +84,45 @@ export default function BubbleSortGame() {
     }
   };
 
+  // --- ✅ 1. CHECK STATUS & RESTORE (ปลดล็อกให้เล่นซ้ำได้ตลอด) ---
   useEffect(() => {
     const userKey = getUserKey();
     const key = `progress_${userKey}_${LESSON_KEY}`;
     const saved = JSON.parse(localStorage.getItem(key));
 
     if (saved) {
-      if (saved.charId)
-        setSelectedChar(CHARACTERS.find(c => c.id === saved.charId));
+      // 1. กู้คืนคะแนน
       if (saved.score) {
         setScore(saved.score);
         scoreRef.current = saved.score;
       }
-      if (saved.level) setUnlockedLevel(saved.level);
-      if (saved.game === true) setGameState("ALREADY_DONE");
-      else if (saved.charId) setGameState("MAP");
-      else setGameState("SELECT_CHAR");
+
+      // 2. เช็คด่านปัจจุบัน
+      let currentLvl = 1;
+      if (saved.level && saved.level > LEVELS.length) {
+        // ถ้าเล่นจบแล้ว ให้รีเซ็ตกลับมาด่าน 1 (แต่ Progress ในหน้าหลักยังติ๊กถูกอยู่)
+        setUnlockedLevel(1);
+        currentLvl = 1;
+      } else if (saved.level) {
+        setUnlockedLevel(saved.level);
+        currentLvl = saved.level;
+      }
+
+      // 🔥 3. กฎเหล็ก: ถ้าอยู่ด่าน 1 บังคับเลือกตัวละครใหม่เสมอ
+      if (currentLvl === 1) {
+        setSelectedChar(null);
+        setGameState("SELECT_CHAR");
+      } else if (saved.charId) {
+        const found = CHARACTERS.find(c => c.id === saved.charId);
+        if (found) {
+          setSelectedChar(found);
+          setGameState("MAP");
+        } else {
+          setGameState("SELECT_CHAR");
+        }
+      } else {
+        setGameState("SELECT_CHAR");
+      }
     } else {
       setGameState("SELECT_CHAR");
     }
@@ -208,23 +232,23 @@ const handleDecision = (userWantsSwap) => {
     const timeBonus = timeLeft * 2;
     const finalScore = scoreRef.current + levelBonus + timeBonus;
     const isLastLevel = levelIdx === LEVELS.length - 1;
-    const nextLvlNum = levelIdx + 2;
-    const updateData = { score: finalScore };
-
-    if (isLastLevel) {
-      updateData.game = true;
-      updateData.level = LEVELS.length + 1;
-       updateData.bubble = true;
-      setGameState("WIN");
-      submitScoreToSheet(finalScore);
-    } else {
-      updateData.level = Math.max(unlockedLevel, nextLvlNum);
-      setGameState("MAP");
-    }
-    setUnlockedLevel(updateData.level || unlockedLevel);
+    
     setScore(finalScore);
     scoreRef.current = finalScore;
-    saveProgress(updateData);
+
+    if (isLastLevel) {
+      // ✅ ส่งคะแนนทันที (ไม่ใช้ await เพื่อความเร็ว)
+      submitScoreToSheet(finalScore);
+
+      // ✅ บันทึก Progress แต่รีเซ็ตเลเวลเป็น 1 เพื่อให้วนเล่นใหม่ได้
+      saveProgress({ game: true, level: 1, charId: "", score: 0 });
+      setGameState("WIN");
+    } else {
+      const nextLvlNum = levelIdx + 2;
+      setUnlockedLevel(prev => Math.max(prev, nextLvlNum));
+      saveProgress({ level: Math.max(unlockedLevel, nextLvlNum), score: finalScore });
+      setGameState("MAP");
+    }
   };
 
   const handleGameOver = (msg) => {
@@ -233,9 +257,10 @@ const handleDecision = (userWantsSwap) => {
     setGameState("GAMEOVER");
   };
 
-  // ✅ แก้ไข: ปิดปีกกาฟังก์ชันให้ถูกต้องและใส่ fetch logic
-  const submitScoreToSheet = async (finalScore) => {
+  const submitScoreToSheet = (finalScore) => {
     const user = JSON.parse(localStorage.getItem("user")) || {};
+    const { email, token } = getAuth(); // อย่าลืม import { getAuth } from "../../utils/auth"; ที่หัวไฟล์
+
     const payload = { 
         activity: "GAMES", 
         firstname: user.firstname || "Guest", 
@@ -244,15 +269,13 @@ const handleDecision = (userWantsSwap) => {
         score: finalScore 
     };
 
-    try { 
-        await fetch(SCORE_API, { 
-            method: "POST", 
-            body: JSON.stringify(payload), 
-            headers: { "Content-Type": "text/plain" } 
-        }); 
-    } catch (e) {
-        console.error("Submit Error:", e);
-    }
+    // ✅ ยิงแบบ no-cors (เร็วมาก ไม่ต้องรอ)
+    fetch(SCORE_API, { 
+        method: "POST", 
+        mode: "no-cors",
+        body: JSON.stringify({ ...payload, email, token }), 
+        headers: { "Content-Type": "text/plain" } 
+    }).catch(e => console.error("Submit Error:", e));
   };
 
   return (
@@ -457,8 +480,8 @@ const handleDecision = (userWantsSwap) => {
             padding: '20px'
           }}>
             <div className="glass-ui" style={{ 
-              padding: '30px 40px', // ✅ ลดจาก 50px เหลือ 30px
-              maxWidth: '400px',    // ✅ บีบความกว้างลงจาก 480px ให้ดูกระชับ
+              padding: '30px 40px', 
+              maxWidth: '400px', 
               width: '100%', 
               textAlign: 'center', 
               background: 'rgba(255, 255, 255, 0.2)', 
@@ -471,7 +494,7 @@ const handleDecision = (userWantsSwap) => {
               <span style={{ fontSize: '3.5rem', display: 'block', marginBottom: '10px' }}>🏆</span>
               
               <h1 style={{ 
-                fontSize: '2.4rem', // ✅ ลดจาก 3.2rem เพื่อไม่ให้ล้น
+                fontSize: '2.4rem', 
                 color: '#fff', 
                 fontWeight: '900',
                 marginBottom: '5px',
@@ -480,14 +503,14 @@ const handleDecision = (userWantsSwap) => {
                 ภารกิจสำเร็จ!
               </h1>
 
-              {/* วงกลมโชว์ตัวละคร (ปรับขนาดเล็กลง) */}
+              {/* วงกลมโชว์ตัวละคร */}
               <div style={{ 
-                width: '120px', // ✅ ลดจาก 150px
-                height: '120px', // ✅ ลดจาก 150px
+                width: '120px', 
+                height: '120px', 
                 margin: '20px auto', 
                 borderRadius: '50%', 
                 background: '#fff', 
-                border: '5px solid #ffca28', // เปลี่ยนเป็นสีทองให้เข้ากับถ้วย
+                border: '5px solid #ffca28', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
@@ -496,9 +519,9 @@ const handleDecision = (userWantsSwap) => {
                   {selectedChar && <img src={selectedChar.img} alt="Char" style={{ width: '80%', objectFit: 'contain' }} />}
               </div>
 
-              {/* ตัวเลขคะแนน (ปรับให้พอดี) */}
+              {/* ตัวเลขคะแนน */}
               <div style={{ 
-                fontSize: '4rem', // ✅ ลดจาก 5.5rem เพื่อความสมดุล
+                fontSize: '4rem', 
                 fontWeight: '900', 
                 color: '#fff',
                 marginBottom: '5px',
@@ -508,27 +531,59 @@ const handleDecision = (userWantsSwap) => {
               </div>
               <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '25px', fontSize: '1rem' }}>คะแนนรวมที่ทำได้</p>
 
-              {/* ปุ่มกลับหน้าหลัก */}
-              <button 
-                className="btn-res" 
-                onClick={() => navigate("/home")} 
-                style={{ 
-                  background: 'linear-gradient(90deg, #00d2ff, #3a7bd5)', 
-                  color: '#fff', 
-                  padding: '12px 50px', // ✅ ลดจาก 18px 70px ให้ดูคลีนขึ้น
-                  borderRadius: '30px', 
-                  border: 'none', 
-                  fontWeight: '900',
-                  fontSize: '1.1rem',
-                  cursor: 'pointer',
-                  boxShadow: '0 10px 20px rgba(58, 123, 213, 0.3)',
-                  transition: '0.3s'
-                }}
-                onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-                onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
-              >
-                กลับหน้าหลัก 🏠
-              </button>
+              {/* ✅ กลุ่มปุ่ม Action */}
+              <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexDirection: 'column' }}>
+                
+                {/* ปุ่มเล่นอีกครั้ง */}
+                <button 
+                  className="btn-res" 
+                  onClick={() => {
+                      setScore(0);
+                      scoreRef.current = 0;
+                      setUnlockedLevel(1);
+                      setSelectedChar(null);
+                      setGameState("SELECT_CHAR");
+                  }} 
+                  style={{ 
+                    background: 'rgba(255, 255, 255, 0.15)', 
+                    color: '#fff', 
+                    padding: '12px 30px', 
+                    borderRadius: '30px', 
+                    border: '2px solid rgba(255,255,255,0.5)', 
+                    fontWeight: '900',
+                    fontSize: '1.1rem',
+                    cursor: 'pointer',
+                    transition: '0.3s'
+                  }}
+                  onMouseOver={(e) => { e.target.style.background = 'rgba(255,255,255,0.3)'; e.target.style.transform = 'scale(1.05)'; }}
+                  onMouseOut={(e) => { e.target.style.background = 'rgba(255,255,255,0.15)'; e.target.style.transform = 'scale(1)'; }}
+                >
+                  เล่นอีกครั้ง 🔄
+                </button>
+
+                {/* ปุ่มกลับหน้าหลัก */}
+                <button 
+                  className="btn-res" 
+                  onClick={() => navigate("/home")} 
+                  style={{ 
+                    background: 'linear-gradient(90deg, #00d2ff, #3a7bd5)', 
+                    color: '#fff', 
+                    padding: '12px 30px', 
+                    borderRadius: '30px', 
+                    border: 'none', 
+                    fontWeight: '900',
+                    fontSize: '1.1rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 10px 20px rgba(58, 123, 213, 0.3)',
+                    transition: '0.3s'
+                  }}
+                  onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                >
+                  กลับหน้าหลัก 🏠
+                </button>
+              </div>
+              
             </div>
           </div>
         )}

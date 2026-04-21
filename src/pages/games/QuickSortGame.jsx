@@ -451,55 +451,53 @@ const updateGameScore = (points) => {
     });
 };
 const handleLevelComplete = () => {
+  // 1. คำนวณคะแนนที่ทำได้ "เฉพาะด่านนี้"
   const levelBonus = 200;
-  const timeBonus = time * 2;   // ⭐ โบนัสเวลา
-  const currentLvlScore = score + levelBonus + timeBonus;
+  const timeBonus = time * 2; 
+  const currentLvlScore = score + levelBonus + timeBonus; // คะแนนด่านนี้ + โบนัส
 
   const userKey = getUserKey();
   const key = `progress_${userKey}_${LESSON_KEY}`;
   const old = JSON.parse(localStorage.getItem(key)) || {};
 
-  const finalTotal = (old.score || 0) + currentLvlScore;
+  // 🔥 จุดสำคัญ: ส่งคะแนนด่านนี้เข้า Sheet ทันที (ไม่เอาไปรวมกับด่านอื่นใน Sheet)
+  submitScoreToSheet(currentLvlScore); 
 
-  // ---------- ด่านสุดท้าย ----------
-if (level.id === LEVELS.length) {
+  // 2. คำนวณคะแนนรวม "เฉพาะรอบนี้" เพื่อแสดงผลใน Map/Final
+  // ถ้าเป็นด่าน 1 ให้เริ่มนับจาก 0 เสมอ ไม่เอา old.score มาบวก
+  const isFirstLevel = level.id === 1;
+  const newRunTotal = (isFirstLevel ? 0 : (old.score || 0)) + currentLvlScore;
 
-  playSfx("win");
+  if (level.id === LEVELS.length) {
+    // 🏆 จบด่านสุดท้าย (ด่าน 3)
+    playSfx("win");
 
-  const updated = {
-    ...old,
-    score: finalTotal,
-    level: LEVELS.length,
-    game: true,
-    submitted: true
-  };
+    const completedData = {
+      ...old,
+      score: 0,        // รีเซ็ตคะแนนสะสมเป็น 0 เพื่อไม่ให้รอบหน้ามาดึงไปบวกต่อ
+      game: true,      // ปลดล็อก Dashboard
+      level: 1,        // รอบหน้าเริ่มด่าน 1
+      charId: null,    // รอบหน้าเลือกตัวละครใหม่
+      submitted: true
+    };
+    localStorage.setItem(key, JSON.stringify(completedData));
 
-  localStorage.setItem(key, JSON.stringify(updated));
-
-  submitScoreToSheet(finalTotal); // 🔥 ตัวจริง
-
-  setTotalScore(finalTotal);
-  setUnlockedLevel(LEVELS.length);
-
-  setScreen("level"); // ยังใช้ได้ปกติ
-
-  return;
-}
-
-  // ---------- ด่านปกติ ----------
-  const nextLevel = level.id + 1;
-
-  const updated = {
-    ...old,
-    score: finalTotal,
-    level: nextLevel
-  };
-
-  localStorage.setItem(key, JSON.stringify(updated));
-
-  setUnlockedLevel(nextLevel);
-  setTotalScore(finalTotal);
-  setScreen("level");
+    setTotalScore(newRunTotal); // โชว์คะแนนรวมของรอบนี้ในหน้า Final
+    setScreen("final");
+  } else {
+    // ⏩ จบด่านปกติ (1 หรือ 2)
+    const nextLevelId = level.id + 1;
+    const updated = { 
+      ...old, 
+      score: newRunTotal, // เก็บผลรวมของด่าน 1+2 ไว้เพื่อไปบวกต่อในด่าน 3
+      level: nextLevelId 
+    };
+    localStorage.setItem(key, JSON.stringify(updated));
+    
+    setUnlockedLevel(nextLevelId);
+    setTotalScore(newRunTotal);
+    setScreen("level");
+  }
 };
 
   useEffect(() => {
@@ -532,29 +530,26 @@ useEffect(() => {
     return;
   }
 
-  // โหลดตัวละคร
-  if (saved.charId) {
-    const found = CHARACTERS.find(c => c.id === saved.charId);
-    if (found) {
-      setCharacter(found);
-      setHp(found.hp);
-    }
+  setTotalScore(saved.score || 0);
+
+  // 🚩 ถ้าเล่นจบแล้ว (game: true) หรือยังไม่ได้เลือกตัวละคร ให้ไปหน้าเลือกตัวละคร
+  if (saved.game === true || !saved.charId) {
+    // ถ้าจบแล้วและ unlockedLevel ยังค้างที่ด่านสุดท้าย ให้รีเซ็ต UI state
+    setUnlockedLevel(1);
+    setScreen("character");
+    return;
   }
 
-  // โหลดด่านปัจจุบัน
-  setUnlockedLevel(saved.level || 1);
-
-  // โหลดคะแนนสะสม
-  setTotalScore(saved.score || 0);
-
-  // ถ้าเกมจบแล้ว → อยู่หน้า map แบบล็อก
-  if (saved.game === true) {
-  setTotalScore(saved.score || 0);
-  setScreen("final");   // ⭐ เปลี่ยนตรงนี้
-  return;
-}
-
-  setScreen("level");
+  // 🚩 ถ้ากำลังเล่นค้างอยู่ ให้โหลดตัวละครและไปหน้าแผนที่
+  const found = CHARACTERS.find(c => c.id === saved.charId);
+  if (found) {
+    setCharacter(found);
+    setHp(found.hp);
+    setUnlockedLevel(saved.level || 1);
+    setScreen("level");
+  } else {
+    setScreen("character");
+  }
 }, []);
   
   // ------------------ SCREENS ------------------
@@ -609,35 +604,40 @@ if (screen === "character") {
 if (screen === "final") {
   return (
     <MainLayout>
-      <div
-        className="final-mine-overlay"
-        style={{ backgroundImage: `url(${bgMining})` }}
-      >
-        <div className="final-dark-layer"></div>
+      <div className="final-mine-overlay" style={{ backgroundImage: `url(${bgMining})`, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div className="final-dark-layer" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)' }}></div>
 
-        <div className="final-mine-card">
+        <div className="final-mine-card" style={{ 
+          position: 'relative', zIndex: 1, padding: '40px', borderRadius: '30px', 
+          background: 'rgba(30, 20, 10, 0.9)', border: '2px solid #ffcc00', textAlign: 'center', maxWidth: '500px' 
+        }}>
+          <div style={{ fontSize: '4rem', marginBottom: '10px' }}>🏆</div>
+          <h1 style={{ color: '#ffcc00', fontSize: '2.5rem', marginBottom: '10px' }}>ภารกิจสำเร็จ!</h1>
+          <div style={{ fontSize: '3.5rem', color: '#fff', fontWeight: 'bold', margin: '20px 0' }}>{totalScore.toLocaleString()}</div>
+          <p style={{ color: '#aaa', marginBottom: '30px' }}>คะแนนรวมทั้งหมดที่คุณทำได้</p>
 
-          <div className="final-trophy">🏆</div>
-
-          <h1 className="final-mine-title">
-            ภารกิจสำเร็จ!
-          </h1>
-
-          <div className="final-mine-score">
-            {totalScore.toLocaleString()}
+          <div style={{ display: 'flex', gap: '15px' }}>
+            <button
+              className="final-mine-btn"
+              onClick={() => {
+                // รีเซ็ต State ในเครื่องให้เริ่มด่าน 1 ใหม่
+                setScore(0);
+                setTotalScore(0);
+                setUnlockedLevel(1); 
+                setCharacter(null);
+                setScreen("character"); // ไปหน้าเลือกตัวละคร
+              }}
+            >
+              เล่นอีกครั้ง 🔄
+            </button>
+            <button 
+              className="final-mine-btn" 
+              style={{ background: '#333', color: '#fff', flex: 1 }}
+              onClick={() => navigate("/home")}
+            >
+              🏠 หน้าหลัก
+            </button>
           </div>
-
-          <div className="final-mine-sub">
-            คะแนนรวมที่ทำได้
-          </div>
-
-          <button
-            className="final-mine-btn"
-            onClick={() => navigate("/home")}
-          >
-            กลับหน้าหลัก 🏠
-          </button>
-
         </div>
       </div>
     </MainLayout>
@@ -645,11 +645,13 @@ if (screen === "final") {
 }
 
 if (screen === "level") {
-
   const userKey = getUserKey();
   const key = `progress_${userKey}_${LESSON_KEY}`;
   const savedProgress = JSON.parse(localStorage.getItem(key));
-  const isGameDone = savedProgress?.game === true;
+  
+  // ✅ แก้ตรงนี้: ให้เช็คว่า "จบเกมจริงๆ" เฉพาะตอนที่ด่านปลดล็อกเกินจำนวนด่านที่มี
+  // ถ้า unlockedLevel ยังเป็น 1-3 แปลว่าผู้เล่นกำลังเล่นรอบใหม่ ให้โชว์แมพปกติ
+  const isGameFinishedNow = unlockedLevel > LEVELS.length;
 
   const progressPercent =
     unlockedLevel <= 1
@@ -658,87 +660,48 @@ if (screen === "level") {
 
   return (
     <MainLayout>
-      <div
-        className="mine-map-screen-v2"
-        style={{ backgroundImage: `url(${bgMining})` }}
-      >
+      <div className="mine-map-screen-v2" style={{ backgroundImage: `url(${bgMining})` }}>
         <div className="mine-overlay-dark"></div>
-
         <div className="mine-map-panel-v2">
+          <h2 className="mine-map-title">⛏️ แผนที่เส้นทางเหมือง</h2>
 
-          {/* ===== HEADER ===== */}
-          <h2 className="mine-map-title">
-            ⛏️ แผนที่เส้นทางเหมือง
-          </h2>
-
-          <p className="mine-map-sub">
-            ผ่านทีละด่านเพื่อขุดลึกลงไป
-          </p>
-
-          {/* ===== SCORE ===== */}
-          <div style={{
-            margin: "10px 0 20px 0",
-            fontSize: "1.1rem",
-            fontWeight: "bold",
-            color: "#a8ff78"
-          }}>
-            💎 คะแนนสะสมทั้งหมด: {totalScore}
-          </div>
-
-          {/* ===== GAME COMPLETE MESSAGE ===== */}
-          {isGameDone && (
-            <div style={{
-              marginBottom: "25px",
-              padding: "12px 20px",
-              background: "rgba(0,255,120,0.15)",
-              borderRadius: "12px",
-              fontWeight: "bold",
-              color: "#a8ff78"
-            }}>
+          {/* ✅ เปลี่ยนเงื่อนไขการโชว์ข้อความสำเร็จ */}
+          {isGameFinishedNow && (
+            <div style={{ marginBottom: "20px", padding: "10px", background: "rgba(0,255,120,0.1)", borderRadius: "10px", color: "#a8ff78" }}>
               🎉 ภารกิจสำเร็จครบทุกด่านแล้ว!
             </div>
           )}
 
-          {/* ===== PROGRESS BAR ===== */}
           <div className="mine-progress-container">
-
             <div className="mine-track-base"></div>
-
-            <div
-              className="mine-track-progress"
-              style={{ width: `${progressPercent}%` }}
-            ></div>
+            <div className="mine-track-progress" style={{ width: `${progressPercent}%` }}></div>
 
             {LEVELS.map((lvl) => {
+              const isCurrent = lvl.id === unlockedLevel;
+              // ✅ แก้ตรงนี้: ให้เครื่องหมายถูกโชว์เฉพาะด่านที่ผ่านมาแล้วในรอบ "ปัจจุบัน" เท่านั้น
+              const isDone = lvl.id < unlockedLevel; 
+              const isLocked = lvl.id > unlockedLevel;
 
-            const isCurrent = lvl.id === unlockedLevel;
-
-            const isDone = isGameDone
-              ? true
-              : lvl.id < unlockedLevel;
-
-            const isLocked = !isGameDone && lvl.id > unlockedLevel;
-
-            return (
-              <button
-                key={lvl.id}
-                className={`mine-node-v2 
-                  ${isCurrent && !isGameDone ? "current" : ""} 
-                  ${isDone ? "completed" : ""} 
-                  ${isLocked ? "locked" : ""}`
-                }
-                disabled={isGameDone || !isCurrent}
-                onClick={() => {
-                  if (isGameDone) return;
-                  setLevel(lvl);
-                  setScreen("rule");
-                }}
-              >
-                {isDone ? "✔" : lvl.id}
-              </button>
-            );
-          })}
-
+              return (
+                <button
+                  key={lvl.id}
+                  className={`mine-node-v2 
+                    ${isCurrent ? "current" : ""} 
+                    ${isDone ? "completed" : ""} 
+                    ${isLocked ? "locked" : ""}`
+                  }
+                  // ✅ แก้ตรงนี้: ปลดล็อก disabled ให้กดเล่นด่านปัจจุบันได้เสมอ แม้จะเคยจบเกมไปแล้ว
+                  disabled={!isCurrent} 
+                  onClick={() => {
+                    playClick();
+                    setLevel(lvl);
+                    setScreen("rule");
+                  }}
+                >
+                  {isDone ? "✔" : lvl.id}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

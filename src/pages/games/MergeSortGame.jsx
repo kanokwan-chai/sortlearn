@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
+import { getAuth } from "../../utils/auth";
 
 // Assets
 import bgMerge from "../../assets/mergecity.png";
@@ -26,58 +27,62 @@ const LEVELS = [
 ];
 
 const CHARACTERS = [
-  { 
-    id: "reindeer", 
-    name: "Reindeer Guardian", 
-    skillName: "เกราะน้ำแข็ง (Durability)", 
-    desc: "เหมาะสำหรับผู้เริ่มต้น มีโอกาสผิดพลาดได้มากที่สุด",
-    hp: 5,           // เลือดเยอะที่สุดเพื่อรองรับความผิดพลาดในการเรียง
-    bonus: 10,       // โบนัสเวลาเล็กน้อย
-    img: reindeer, 
-    color: "#fbbf24" // สีทองสว่าง (High Contrast)
-  },
-  { 
-    id: "spirit", 
-    name: "Ice Spirit", 
-    skillName: "จิตวิญญาณแห่งความเร็ว (Speedster)", 
-    desc: "เหมาะสำหรับผู้ที่แม่นยำและต้องการทำเวลาสูงสุด",
-    hp: 2,           // เลือดน้อย ต้องใช้ความแม่นยำสูง
-    bonus: 45,       // โบนัสเวลาเยอะที่สุด (+45 วินาที)
-    img: spirit, 
-    color: "#0ea5e9" // สีฟ้าสดใส
-  },
-  { 
-    id: "penguin", 
-    name: "Penguin Explorer", 
-    skillName: "นักสำรวจสมดุล (Balanced)", 
-    desc: "ค่าพลังระดับกลาง เหมาะสำหรับทุกระดับการเล่น",
-    hp: 3,           // เลือดระดับปกติ
-    bonus: 25,       // โบนัสเวลาปานกลาง (+25 วินาที)
-    img: penguin, 
-    color: "#f8fafc" // สีขาวสะอาดตา
-  }
+  { id: "reindeer", name: "Reindeer Guardian", skillName: "เกราะน้ำแข็ง", hp: 5, bonus: 10, img: reindeer, color: "#fbbf24" },
+  { id: "spirit", name: "Ice Spirit", skillName: "จิตวิญญาณแห่งความเร็ว", hp: 2, bonus: 45, img: spirit, color: "#0ea5e9" },
+  { id: "penguin", name: "Penguin Explorer", skillName: "นักสำรวจสมดุล", hp: 3, bonus: 25, img: penguin, color: "#f8fafc" }
 ];
 
-/* ---------------- 2. COMPONENT ---------------- */
+/* ---------------- 2. HELPER FUNCTIONS (จัดนอก Component เพื่อความเร็ว) ---------------- */
+const getCurrentUserKey = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem("user")) || {};
+    return user.email || user.firstname || "guest";
+  } catch (e) { return "guest"; }
+};
+
+const submitScoreToSheet = (finalTotal) => {
+  try {
+    const { email, token } = getAuth(); 
+    const user = JSON.parse(localStorage.getItem("user")) || {};
+
+    const payload = {
+      activity: "GAMES",
+      firstname: user.firstname || "Guest",
+      lastname: user.lastname || "-",
+      gameName: "Merge Sort Adventure",
+      score: finalTotal
+    };
+
+    fetch(SCORE_API, {
+      method: "POST",
+      mode: "no-cors",
+      body: JSON.stringify({ ...payload, email, token }),
+      headers: { "Content-Type": "text/plain;charset=utf-8" }
+    });
+  } catch (error) { console.error("Submit Error:", error); }
+};
+
+/* ---------------- 3. MAIN COMPONENT ---------------- */
 export default function MergeSortGame() {
   const navigate = useNavigate();
-  // Game Flow States
-  const [screen, setScreen] = useState("character"); // character, level, game, result
+  
+  // Game States
+  const [screen, setScreen] = useState("character");
+  const [score, setScore] = useState(0);
   const [finalScore, setFinalScore] = useState(0);
+  const [unlockedLevel, setUnlockedLevel] = useState(1);
   const [currentLevelIdx, setCurrentLevelIdx] = useState(0);
   const [character, setCharacter] = useState(null);
 
-  // Game Logic States
+  // Logic States
   const [root, setRoot] = useState(null);
-  const [phase, setPhase] = useState("DIVIDE"); // DIVIDE, MERGE_SELECT, MERGING
+  const [phase, setPhase] = useState("DIVIDE");
   const [instruction, setInstruction] = useState("");
-  
-  // Stats
   const [hp, setHp] = useState(3);
   const [mistakes, setMistakes] = useState(0);
   const [time, setTime] = useState(null);
 
-  // Merging Workspace
+  // Merging States
   const [activeNode, setActiveNode] = useState(null);
   const [mergeLeft, setMergeLeft] = useState([]);
   const [mergeRight, setMergeRight] = useState([]);
@@ -85,311 +90,185 @@ export default function MergeSortGame() {
   const [isCompared, setIsCompared] = useState(false);
 
   const sounds = useRef({
-  correct: new Audio(sfxCorrect),
-  wrong: new Audio(sfxWrong),
-  win: new Audio(sfxWin),
-  split: new Audio(sfxSplit),
-  click: new Audio(sfxClick)
-});
-const playClick = () => playSound("click");
+    correct: new Audio(sfxCorrect),
+    wrong: new Audio(sfxWrong),
+    win: new Audio(sfxWin),
+    split: new Audio(sfxSplit),
+    click: new Audio(sfxClick)
+  });
+
   const playSound = (type) => {
     const s = sounds.current[type];
     if (s) { s.currentTime = 0; s.play().catch(() => {}); }
   };
 
-  /* ---------------- 3. CORE FUNCTIONS ---------------- */ 
-  // ✅ เพิ่มฟังก์ชันนี้ไว้บนสุดเพื่อหา Key ของผู้ใช้แต่ละคน
-  const getCurrentUserKey = () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user")) || {};
-      return user.email || user.firstname || "guest";
-    } catch (e) {
-      return "guest";
-    }
-  };
-  const getStorageKey = () => {
-  const userKey = getCurrentUserKey();
-  return `progress_${userKey}_merge`;
-};
+  /* --- ✅ 1. CHECK STATUS (ตรวจสอบการโหลดเกม) --- */
+  useEffect(() => {
+    const userKey = getCurrentUserKey();
+    const storageKey = `progress_${userKey}_merge`;
+    const saved = JSON.parse(localStorage.getItem(storageKey));
 
-  const getRandomArray = (size) => {
+    if (saved) {
+      setScore(saved.score || 0);
+      const lvl = (saved.unlockedLevel > 3) ? 1 : (saved.unlockedLevel || 1);
+      setUnlockedLevel(lvl);
 
-  const nums = [];
-
-  while (nums.length < size) {
-
-    const n = Math.floor(Math.random() * 99) + 1;
-
-    if (!nums.includes(n)) {
-      nums.push(n);
-    }
-
-  }
-
-  return nums;
-};
-
-  const startLevel = (idx) => {
-  const lvl = LEVELS[idx];
-  const arr = getRandomArray(lvl.size);
-  
-  // 1. ตั้งค่า Logic ภายในก่อน
-  setRoot({
-    id: "root",
-    values: arr,
-    left: null,
-    right: null,
-    isMerged: false,
-    isLeaf: arr.length === 1
-  });
-
-  // 2. ตั้งค่า Stats ให้เรียบร้อย
-  setHp(character.hp);
-  setMistakes(0);
-  
-  // ✅ ตั้งค่าเวลาให้มีค่าก่อนเปลี่ยนหน้าจอ
-  const totalTime = lvl.time + character.bonus;
-  setTime(totalTime); 
-  
-  setPhase("DIVIDE");
-  setInstruction("❄️ กดที่กล่องตัวเลขเพื่อ 'แยกครึ่ง (Divide)'");
-  
-  // 3. เปลี่ยนหน้าจอเป็นลำดับสุดท้าย
-  setScreen("game");
-};
-
-  // 4️⃣ Divide Logic
-  const handleDivide = (node) => {
-    if (phase !== "DIVIDE" || node.values.length <= 1 || node.left) return;
-
-    playSound("split");
-    const mid = Math.floor(node.values.length / 2);
-    node.left = {
-      id: crypto.randomUUID(),
-      values: node.values.slice(0, mid),
-      left: null, right: null, isMerged: mid === 1, isLeaf: mid === 1
-    };
-    node.right = {
-      id: crypto.randomUUID(),
-      values: node.values.slice(mid),
-      left: null, right: null, isMerged: (node.values.length - mid) === 1, isLeaf: (node.values.length - mid) === 1
-    };
-
-    setScore(s => s + 10);
-    setRoot({ ...root });
-    checkDividePhaseComplete();
-  };
-
-  const checkDividePhaseComplete = () => {
-    const check = (n) => {
-      if (!n.left && n.values.length > 1) return false;
-      return (n.left ? check(n.left) : true) && (n.right ? check(n.right) : true);
-    };
-    if (check(root)) {
-      setPhase("MERGE_SELECT");
-      setInstruction("✨ แยกเสร็จแล้ว! เลือกโหนดคู่ล่างสุดเพื่อ 'ผสาน (Merge)'");
-    }
-  };
-
-  // 5️⃣ Merge Logic
-const isLeafPair = (node) => {
-  return node.left?.isMerged && node.right?.isMerged;
-};
-
-
-const selectMergeTarget = (node) => {
-  if (phase !== "MERGE_SELECT") return;
-
-  const nextNode = findNextMergeNode(root);
-
-  if (node.id !== nextNode?.id) {
-    // แจ้งเตือนให้ชัดเจนว่าต้องทำก้อนซ้ายให้จบก่อน
-    setInstruction("⚠️ อัลกอริทึม Merge Sort ต้องจัดการก้อนซ้ายให้เสร็จสมบูรณ์ก่อนจะไปก้อนขวานะ!");
-    applyError(); // หัก HP หรือคะแนนตามที่คุณตั้งไว้
-    return;
-  }
-
-  setActiveNode(node);
-  setMergeLeft([...node.left.values]);
-  setMergeRight([...node.right.values]);
-  setMergeResult([]);
-  setIsCompared(false);
-
-  setPhase("MERGING");
-  setInstruction("🔍 กดเปรียบเทียบก่อนเลือกตัวเลข");
-
-};
-  // 6️⃣ ตรวจสอบการเลือก (ถูก/ผิด)
-  const handleChoice = (side) => {
-  if (!isCompared) {
-    setInstruction("❌ ห้ามเลือกก่อนกดเปรียบเทียบ!");
-    applyError();
-    return;
-  }
-
-const lVal = mergeLeft.length ? mergeLeft[0] : null;
-const rVal = mergeRight.length ? mergeRight[0] : null;
-  const mode = LEVELS[currentLevelIdx].mode;
-
-  let correctSide;
-
-if (lVal !== null && rVal !== null) {
-
-  correctSide =
-    mode === "asc"
-      ? (lVal <= rVal ? "left" : "right")
-      : (lVal >= rVal ? "left" : "right");
-
-} else if (lVal !== null) {
-
-  correctSide = "left";
-
-} else {
-
-  correctSide = "right";
-
-}
-
-  if (side === correctSide) {
-    playSound("correct");
-
-    const picked = side === "left" ? lVal : rVal;
-
-    setMergeResult(prev => [...prev, picked]);
-
-    if (side === "left") {
-      setMergeLeft(prev => prev.slice(1));
-    } else {
-      setMergeRight(prev => prev.slice(1));
-    }
-
-    setScore(s => s + 20);
-    setIsCompared(false);
-
-  } else {
-    setInstruction("❌ เลือกผิดแล้ว!");
-    applyError();
-  }
-};
-
-const getMood = () => {
-  if (instruction.includes("❌") || instruction.includes("⚠️")) return "alert";
-  if (instruction.includes("✅") || instruction.includes("🎉")) return "success";
-  if (instruction.includes("🔍")) return "action";
-  return "info";
-};
-
-const applyError = () => {
-    playSound("wrong");
-    setHp(h => {
-      if (h <= 1) { 
-        setScreen("fail"); // ✅ เด้งไปหน้าแพ้แทนการเริ่มใหม่ทันที
-        return 0; 
+      if (lvl === 1) {
+        setCharacter(null);
+        setScreen("character");
+      } else if (saved.charId) {
+        const char = CHARACTERS.find(c => c.id === saved.charId);
+        if (char) { setCharacter(char); setScreen("level"); }
       }
-      return h - 1;
-    });
-    setScore(s => Math.max(0, s - 10)); // หักคะแนนความผิดพลาด
-    setMistakes(m => m + 1);
-  };
-const isSubtreeMerged = (node) => {
-  if (!node) return true;
+    }
+  }, []);
 
-  if (!node.isMerged && node.left && node.right) {
-    return false;
-  }
+  /* --- ✅ 2. TIMER SYSTEM --- */
+  useEffect(() => {
+    let timerId;
+    if (screen === "game" && time > 0) {
+      timerId = setInterval(() => {
+        setTime(prev => {
+          if (prev <= 1) { clearInterval(timerId); setScreen("fail"); return 0; }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timerId);
+  }, [screen, time]);
 
-  return (
-    isSubtreeMerged(node.left) &&
-    isSubtreeMerged(node.right)
-  );
-};
-const findNextMergeNode = (node) => {
-  if (!node || node.isMerged) return null;
-
-  // 1. ตรวจสอบฝั่งซ้ายก่อนเสมอ: ถ้าลูกซ้ายยัง Merge ไม่เสร็จ 
-  // ต้องมุดลงไปจัดการในก้อนซ้ายให้จบก่อน
-  if (node.left && !node.left.isMerged) {
-    return findNextMergeNode(node.left);
-  }
-
-  // 2. ถ้าก้อนฝั่งซ้ายเสร็จหมดแล้ว (isMerged === true) 
-  // ถึงจะยอมให้ข้ามมาดูฝั่งขวาได้
-  if (node.right && !node.right.isMerged) {
-    return findNextMergeNode(node.right);
-  }
-
-  // 3. ถ้าทั้งลูกซ้ายและลูกขวาเสร็จแล้ว (isMerged ทั้งคู่) 
-  // แต่ตัวเอง (โหนดแม่) ยังไม่เสร็จ นี่คือโหนดที่ต้อง Merge ต่อไปครับ
-  if (node.left?.isMerged && node.right?.isMerged && !node.isMerged) {
-    return node;
-  }
-
-  return null;
-};
+  /* --- ✅ 3. MERGE CHECK LOGIC --- */
   useEffect(() => {
     if (phase === "MERGING" && mergeLeft.length === 0 && mergeRight.length === 0 && mergeResult.length > 0) {
       activeNode.values = [...mergeResult];
       activeNode.isMerged = true;
-      setScore(s => s + 50); // ✅ โบนัสเมื่อผสาน Sub-array สำเร็จ
+      setScore(s => s + 50);
       setRoot({ ...root });
       setPhase("MERGE_SELECT");
       setActiveNode(null);
 
       if (root.isMerged) {
-  playSound("win");
-  setInstruction("🎉 ยอดเยี่ยม! คุณผสานครบทุกโหนดแล้ว");
-
-  const levelBonus = 200 + (time * 2);
-
-  handleLevelComplete(levelBonus);
-} else {
+        playSound("win");
+        const bonus = 200 + (time * 2);
+        handleLevelComplete(bonus);
+      } else {
         setInstruction("✅ ผสานสำเร็จ! เลือกโหนดถัดไป");
       }
     }
   }, [mergeLeft, mergeRight, mergeResult]);
 
-  // Timer
-  // 2. แก้ไขเมื่อเวลาหมด (Timer)
-  useEffect(() => {
-  let timerId;
-
-  if (screen === "game" && time > 0) {
-    timerId = setInterval(() => {
-
-      setTime(prev => {
-
-        if (prev <= 1) {
-          clearInterval(timerId);
-          setScreen("fail");
-          return 0;
-        }
-
-        return prev - 1;
-
-      });
-
-    }, 1000);
-  }
-
-  return () => clearInterval(timerId);
-
-}, [screen, time]);
-
-  /* ---------------- 4. RENDER UI ---------------- */
-
-// ✅ เพิ่มฟังก์ชันบันทึกตัวละครแบบแยกบัญชี
-  const handleSelectCharacter = (c) => {
+  /* --- ✅ 4. CORE PROGRESS LOGIC (จบด่าน/ส่งคะแนน/เล่นซ้ำ) --- */
+  const handleLevelComplete = (lvlScore) => {
     const userKey = getCurrentUserKey();
     const storageKey = `progress_${userKey}_merge`;
-    
-    // ดึงข้อมูลเดิม (เช่น score, level) มาอัปเดต
     const existingData = JSON.parse(localStorage.getItem(storageKey)) || {};
-    const updatedData = { ...existingData, charId: c.id };
+
+    const newTotal = score + lvlScore;
+    setScore(newTotal);
+    setFinalScore(newTotal);
+
+    const isFinal = (currentLevelIdx + 1) === LEVELS.length;
+
+    if (isFinal) {
+      submitScoreToSheet(newTotal);
+      localStorage.setItem(storageKey, JSON.stringify({
+        ...existingData, game: true, score: 0, charId: null, unlockedLevel: 1
+      }));
+      setScreen("result");
+    } else {
+      const next = currentLevelIdx + 2;
+      setUnlockedLevel(next);
+      localStorage.setItem(storageKey, JSON.stringify({
+        ...existingData, score: newTotal, unlockedLevel: next
+      }));
+      setScreen("level");
+    }
+  };
+
+  /* --- ✅ 5. GAME ACTIONS --- */
+  const startLevel = (idx) => {
+    const lvl = LEVELS[idx];
+    const nums = [];
+    while (nums.length < lvl.size) {
+      const r = Math.floor(Math.random() * 99) + 1;
+      if (!nums.includes(r)) nums.push(r);
+    }
+    setRoot({ id: "root", values: nums, left: null, right: null, isMerged: false, isLeaf: nums.length === 1 });
+    setHp(character.hp);
+    setMistakes(0);
+    setTime(lvl.time + character.bonus);
+    setPhase("DIVIDE");
+    setInstruction("❄️ กดที่กล่องตัวเลขเพื่อ 'แยกครึ่ง (Divide)'");
+    setScreen("game");
+  };
+
+  const handleDivide = (node) => {
+    if (phase !== "DIVIDE" || node.values.length <= 1 || node.left) return;
+    playSound("split");
+    const mid = Math.floor(node.values.length / 2);
+    node.left = { id: crypto.randomUUID(), values: node.values.slice(0, mid), left: null, right: null, isMerged: mid === 1, isLeaf: mid === 1 };
+    node.right = { id: crypto.randomUUID(), values: node.values.slice(mid), left: null, right: null, isMerged: (node.values.length - mid) === 1, isLeaf: (node.values.length - mid) === 1 };
+    setScore(s => s + 10);
+    setRoot({ ...root });
     
-    localStorage.setItem(storageKey, JSON.stringify(updatedData));
-    
-    setCharacter(c);
-    setScreen("level");
+    const checkComplete = (n) => {
+      if (!n.left && n.values.length > 1) return false;
+      return (n.left ? checkComplete(n.left) : true) && (n.right ? checkComplete(n.right) : true);
+    };
+    if (checkComplete(root)) {
+      setPhase("MERGE_SELECT");
+      setInstruction("✨ แยกเสร็จแล้ว! เลือกโหนดคู่ล่างสุดเพื่อ 'ผสาน (Merge)'");
+    }
+  };
+
+  const selectMergeTarget = (node) => {
+    if (phase !== "MERGE_SELECT") return;
+    const findNext = (n) => {
+      if (!n || n.isMerged) return null;
+      if (n.left && !n.left.isMerged) return findNext(n.left);
+      if (n.right && !n.right.isMerged) return findNext(n.right);
+      if (n.left?.isMerged && n.right?.isMerged) return n;
+      return null;
+    };
+    const target = findNext(root);
+    if (node.id !== target?.id) {
+      setInstruction("⚠️ ต้องจัดการก้อนซ้ายให้เสร็จก่อนนะ!");
+      applyError();
+      return;
+    }
+    setActiveNode(node);
+    setMergeLeft([...node.left.values]);
+    setMergeRight([...node.right.values]);
+    setMergeResult([]);
+    setIsCompared(false);
+    setPhase("MERGING");
+    setInstruction("🔍 กดเปรียบเทียบก่อนเลือกตัวเลข");
+  };
+
+  const handleChoice = (side) => {
+    if (!isCompared) { applyError(); return; }
+    const lVal = mergeLeft[0], rVal = mergeRight[0];
+    const mode = LEVELS[currentLevelIdx].mode;
+    let correct;
+    if (lVal !== undefined && rVal !== undefined) correct = mode === "asc" ? (lVal <= rVal ? "left" : "right") : (lVal >= rVal ? "left" : "right");
+    else correct = lVal !== undefined ? "left" : "right";
+
+    if (side === correct) {
+      playSound("correct");
+      const picked = side === "left" ? lVal : rVal;
+      setMergeResult(prev => [...prev, picked]);
+      if (side === "left") setMergeLeft(prev => prev.slice(1));
+      else setMergeRight(prev => prev.slice(1));
+      setScore(s => s + 20);
+      setIsCompared(false);
+    } else { setInstruction("❌ เลือกผิดแล้ว!"); applyError(); }
+  };
+
+  const applyError = () => {
+    playSound("wrong");
+    setHp(h => { if (h <= 1) { setScreen("fail"); return 0; } return h - 1; });
+    setScore(s => Math.max(0, s - 10));
+    setMistakes(m => m + 1);
   };
 
   const renderTree = (node) => {
@@ -397,10 +276,8 @@ const findNextMergeNode = (node) => {
     const isSelected = activeNode?.id === node.id;
     return (
       <div className="tree-node-wrapper">
-        <div 
-          className={`node-box ${node.isMerged ? "merged" : ""} ${isSelected ? "active" : ""} ${node.values.length === 1 ? "leaf" : ""}`}
-          onClick={() => phase === "DIVIDE" ? handleDivide(node) : selectMergeTarget(node)}
-        >
+        <div className={`node-box ${node.isMerged ? "merged" : ""} ${isSelected ? "active" : ""} ${node.values.length === 1 ? "leaf" : ""}`}
+             onClick={() => phase === "DIVIDE" ? handleDivide(node) : selectMergeTarget(node)}>
           {node.values.join(", ")}
         </div>
         {(node.left || node.right) && (
@@ -412,666 +289,312 @@ const findNextMergeNode = (node) => {
       </div>
     );
   };
-  // ✅ แก้ไข useEffect ตัวนี้ให้ดึงข้อมูลตาม User Key
-  useEffect(() => {
-  const userKey = getCurrentUserKey();
-  const storageKey = `progress_${userKey}_merge`;
-  const savedData = JSON.parse(localStorage.getItem(storageKey));
-  
-  // ถ้าเจอข้อมูลตัวละครที่เคยเลือกไว้
-  if (savedData?.charId) {
-    const savedChar = CHARACTERS.find(c => c.id === savedData.charId);
-    if (savedChar) {
-      setCharacter(savedChar);
-      setScreen("level"); // ✅ เด้งไปหน้าเลือกด่านทันที
+
+    // ✅ ถ้าฝั่งใดฝั่งหนึ่งหมด ให้เผยตัวเลขอีกฝั่งโดยอัตโนมัติ ไม่ต้องกด Compare
+useEffect(() => {
+  if (phase === "MERGING" && (mergeLeft.length === 0 || mergeRight.length === 0)) {
+    setIsCompared(true);
+    if (mergeLeft.length === 0 && mergeRight.length > 0) {
+      setInstruction("❄️ ฝั่งซ้ายหมดแล้ว! เลือกเลขฝั่งขวาที่เหลือลงมาให้หมด");
+    } else if (mergeRight.length === 0 && mergeLeft.length > 0) {
+      setInstruction("❄️ ฝั่งขวาหมดแล้ว! เลือกเลขฝั่งซ้ายที่เหลือลงมาให้หมด");
     }
   }
-}, []);
-
-// ✅ เริ่มต้นที่ 0 และด่าน 1 เสมอสำหรับบัญชีใหม่
-const [score, setScore] = useState(0); 
-const [unlockedLevel, setUnlockedLevel] = useState(1);
-
-useEffect(() => {
-
-  const userKey = getCurrentUserKey();
-  const storageKey = `progress_${userKey}`;
-
-  const saved = JSON.parse(localStorage.getItem(storageKey));
-
-  if (saved) {
-
-    setScore(saved.score || 0);
-    setUnlockedLevel(saved.unlockedLevel || 1);
-
-    if (saved.unlockedLevel > LEVELS.length) {
-      setFinalScore(saved.score || 0);
-      setScreen("finished");
-    }
-
-  }
-
-}, []);
-
-const handleLevelComplete = (finalLevelScore) => {
-
-  const userKey = getCurrentUserKey();
-  const storageKey = `progress_${userKey}`;
-
-  const existingData =
-    JSON.parse(localStorage.getItem(storageKey)) || {};
-
-  const newTotalScore = score + finalLevelScore;
-  setScore(newTotalScore);
-
-  // ⭐ ต้องมีตัวนี้
-  const nextLvl = currentLevelIdx + 2;
-
-  let updatedLevel = unlockedLevel;
-
-  if (nextLvl > unlockedLevel) {
-    updatedLevel = nextLvl;
-    setUnlockedLevel(nextLvl);
-  }
-
-  const updateData = {
-    ...existingData,
-    score: newTotalScore,
-    unlockedLevel: updatedLevel
-  };
-
-  localStorage.setItem(storageKey, JSON.stringify(updateData));
-
-  if (currentLevelIdx + 1 === LEVELS.length) {
-    handleFinalWin(newTotalScore);
-  } else {
-    setScreen("level");
-  }
-};
-
-useEffect(() => {
-  const userKey = getCurrentUserKey();
-  const storageKey = `progress_${userKey}`;
-
-  const saved = JSON.parse(localStorage.getItem(storageKey));
-
-  if (saved) {
-    setScore(saved.score || 0);
-    setUnlockedLevel(saved.unlockedLevel || 1);
-  }
-}, []);
-
-// 3. ส่งคะแนนรวมเข้า Google Sheet เมื่อจบด่าน 3
-const handleFinalWin = (finalScore) => {
-  setFinalScore(finalScore);
-  const user = JSON.parse(localStorage.getItem("user")) || {};
-
-const userKey = getCurrentUserKey();
-const progressKey = `progress_${userKey}_merge`;
-
-const progress =
-  JSON.parse(localStorage.getItem(progressKey)) || {};
-
-localStorage.setItem(
-  progressKey,
-  JSON.stringify({
-    ...progress,
-    game: true
-  })
-);
-
-  const payload = {
-    activity: "GAMES",
-    firstname: user.firstname || "Guest",
-    lastname: user.lastname || "Player",
-    gameName: "Merge Sort Adventure",
-    score: finalScore
-  };
-
-  fetch(SCORE_API, {
-    method: "POST",
-    body: JSON.stringify(payload),
-    headers: { "Content-Type": "text/plain;charset=utf-8" }
-  }).catch(() => {});
-
-  setScreen("result");
-};
-
- /*====== หน้าจอ ======*/ 
-
-if (screen === "character") return (
-  <MainLayout>
-    <div id="ms-adventure-scoped">
-      <div className="snow-theme-bg" style={{backgroundImage: `url(${bgMerge})`}}>
-        <h1 className="title">❄️ MERGE SORT ADVENTURE ❄️</h1>
-        
-        <div className="char-grid">
-          {CHARACTERS.map(c => (
-          <div 
-            key={c.id} 
-            className={`char-tablet ${character?.id === c.id ? 'last-picked' : ''}`} 
-            onClick={() => {
-            playClick();
-            handleSelectCharacter(c);
-          }}
-          >
-              <div className="char-header">
-                <h3>{c.name}</h3>
-              </div>
-              
-              <div className="char-body">
-                <div className="char-platform"></div>
-                <img src={c.img} alt={c.name} />
-              </div>
-              
-              <div className="char-footer">
-                <div className="stat-pill">❤️ HP: {c.hp}</div>
-                <div className="stat-pill">⏳ Bonus: +{c.bonus}s</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </MainLayout>
-);
-
-if (screen === "level") return (
-  <MainLayout>
-    <div id="ms-adventure-scoped">
-      <div className="snow-theme-bg" style={{backgroundImage: `url(${bgMerge})`}}>
-        <div className="mission-map-pro fade-in">
-          
-          {/* Header Area: แถบคะแนนที่อ่านง่ายชัดเจนบนสีกรมท่าเข้ม */}
-          <div className="status-banner-compact glass">
-            <h1 className="title-text">❄️ MISSION CONTROL ❄️</h1>
-            <div className="banner-stats">
-              <div className="stat-item">SCORE: <span>{score}</span></div>
-              <div className="stat-item">PROGRESS: <span>{unlockedLevel}/3</span></div>
-            </div>
-          </div>
-
-          {/* Map Area: เส้นทางแนวนอนที่สมดุลและวงกลมใหญ่ */}
-          <div className="level-highway-pro">
-            <div className="highway-line-pro"></div>
-            
-            <div className="nodes-flex-row">
-              {LEVELS.map((lvl, idx) => {
-
-  const isCurrent = (idx + 1) === unlockedLevel;
-  const isCleared = (idx + 1) < unlockedLevel;
-  const isLocked = (idx + 1) > unlockedLevel;
-  const isFinished = unlockedLevel > LEVELS.length;
-
-  return (
-                  <div key={lvl.id} className="mission-point-wrapper">
-                    {/* ตัวละครลอยอยู่ใกล้กับวงกลมในระยะที่พอดี (ไม่ห่างเกินไป) */}
-                    {isCurrent && (
-                      <div className="avatar-pointer">
-                        <div className="tag-you">YOU</div>
-                        <img src={character?.img} alt="Me" className="avatar-mini-pro" />
-                      </div>
-                    )}
-                    <button 
-                      className={`giant-circle-btn 
-                          ${isCurrent ? 'active pulse' : ''} 
-                          ${isCleared ? 'cleared' : ''} 
-                          ${isLocked ? 'locked' : ''}`
-                      }
-
-                      disabled={!isCurrent || isFinished}
-
-                      onClick={() => {
-                        if (isCurrent) {
-                          playClick();
-                          setCurrentLevelIdx(idx);
-                          setScreen("rule");
-                        }
-                      }}
-                    >
-                      {isCurrent ? lvl.id : isCleared ? "✅" : "🔒"}
-                    </button>
-
-                    {/* ป้ายชื่อด่านด้านล่าง: พื้นหลังเข้มอ่านออกง่าย */}
-                    <div className={`node-info-pill ${(isCurrent || isCleared) ? 'visible' : 'hidden'}`}>
-                      <strong>ด่าน {lvl.id}</strong>
-                      <p>{lvl.label}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </MainLayout>
-);
-
-if (screen === "rule") {
-  return (
+}, [mergeLeft, mergeRight, phase]);
+  /* --- ✅ 6. RENDER SCREENS --- */
+  if (screen === "character") return (
     <MainLayout>
       <div id="ms-adventure-scoped">
-        <div className="snow-theme-bg" style={{ backgroundImage: `url(${bgMerge})` }}>
-          <div className="rules-compact-card glass fade-in">
-            
-            <div className="rules-header">
-              <h1 className="title-small">❄️ HOW TO PLAY ❄️</h1>
-              <p className="subtitle">ทำความเข้าใจภารกิจก่อนเริ่มผจญภัย</p>
-            </div>
-            
-            <div className="rules-main-content">
-              {/* ฝั่งซ้าย: ข้อมูลตัวละคร (ย่อส่วน) */}
-              <div className="rules-side-profile">
-                <div className="mini-frost-avatar">
-                  <img src={character?.img} alt={character?.name} />
-                </div>
-                <div className="char-mini-info">
-                  <h3>{character?.name}</h3>
-                  <div className="mini-stats">
-                    <span>❤️ HP: {character?.hp}</span>
-                    <span>⏳ +{character?.bonus}s</span>
-                  </div>
+        <div className="snow-theme-bg" style={{backgroundImage: `url(${bgMerge})`}}>
+          <h1 className="title">❄️ MERGE SORT ADVENTURE ❄️</h1>
+          <div className="char-grid">
+            {CHARACTERS.map(c => (
+              <div key={c.id} className="char-tablet" onClick={() => {
+                const userKey = getCurrentUserKey();
+                const storageKey = `progress_${userKey}_merge`;
+                const old = JSON.parse(localStorage.getItem(storageKey)) || {};
+                localStorage.setItem(storageKey, JSON.stringify({ ...old, charId: c.id }));
+                playSound("click"); setCharacter(c); setScreen("level");
+              }}>
+                <div className="char-header"><h3>{c.name}</h3></div>
+                <div className="char-body"><img src={c.img} alt={c.name} /></div>
+                <div className="char-footer">
+                  <div className="stat-pill">❤️ HP: {c.hp}</div>
+                  <div className="stat-pill">⏳ Bonus: +{c.bonus}s</div>
                 </div>
               </div>
-
-              {/* ฝั่งขวา: กติกา 4 ขั้นตอน (แบบประหยัดพื้นที่) */}
-              <div className="rules-steps-list">
-                {[
-                  { id: 1, title: "DIVIDE", desc: "คลิกกล่องเพื่อแยก (Split) ข้อมูล" },
-                  { id: 2, title: "SELECT", desc: "เลือกโหนดคู่ล่างสุดที่พร้อมจะรวม" },
-                  { id: 3, title: "COMPARE", desc: "กด 'เปรียบเทียบ' ก่อนเลือกตัวเลขเสมอ" },
-                  { id: 4, title: "SORT", desc: "เลือกเลขตามเงื่อนไขด่าน (น้อยไปมาก/มากไปน้อย)" }
-                ].map(step => (
-                  <div key={step.id} className="compact-step-item">
-                    <div className="step-num-icon">{step.id}</div>
-                    <div className="step-text">
-                      <strong>{step.title}:</strong> {step.desc}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rules-footer">
-              <button className="btn-mission-start" onClick={() => 
-                startLevel(currentLevelIdx)}>
-                เริ่มภารกิจ 🚀
-              </button>
-            </div>
-
+            ))}
           </div>
         </div>
       </div>
     </MainLayout>
   );
-}
 
-
-if (screen === "finished") return (
-
-  <MainLayout>
-
-    <div 
-      className="snow-theme-bg result-scene"
-      style={{backgroundImage:`url(${bgMerge})`}}
-    >
-
-      <div className="result-overlay"></div>
-
-      <div className="result-panel glass-dark fade-in">
-
-        <div className="result-icon">🏆</div>
-
-        <h2 className="result-title">
-          ภารกิจสำเร็จ!
-        </h2>
-
-        <p className="result-sub">
-          คุณผ่าน Merge Sort Adventure แล้ว
-        </p>
-
-        <div className="final-score">
-          {finalScore.toLocaleString()}
-        </div>
-
-        <p className="result-desc">
-          คะแนนรวมที่ทำได้
-        </p>
-
-        <button
-          className="next-btn"
-          onClick={() => navigate("/home")}
-        >
-          กลับหน้าหลัก 🏠
-        </button>
-
-      </div>
-
-    </div>
-
-  </MainLayout>
-
-);
-
-if (screen === "result") return (
-  <MainLayout>
-
-    <div 
-      className="snow-theme-bg result-scene"
-      style={{backgroundImage: `url(${bgMerge})`}}
-    >
-
-      <div className="result-overlay"></div>
-
-      <div className="result-panel glass-dark fade-in">
-
-        <div className="result-icon">🏆</div>
-
-        <h2 className="result-title">
-          MISSION COMPLETE
-        </h2>
-
-        <p className="result-sub">
-          คุณจัดเรียงข้อมูลด้วย Merge Sort ได้สำเร็จ!
-        </p>
-
-        <div className="result-stats glass">
-
-          <div className="r-stat">
-            💎 SCORE
-            <span>{score}</span>
+  if (screen === "level") return (
+    <MainLayout>
+      <div id="ms-adventure-scoped">
+        <div className="snow-theme-bg" style={{backgroundImage: `url(${bgMerge})`}}>
+          <div className="mission-map-pro fade-in">
+            <div className="status-banner-compact glass">
+              <h1 className="title-text">❄️ MISSION CONTROL ❄️</h1>
+              <div className="banner-stats">
+                <div className="stat-item">SCORE: <span>{score}</span></div>
+                <div className="stat-item">PROGRESS: <span>{unlockedLevel}/3</span></div>
+              </div>
+            </div>
+            <div className="level-highway-pro">
+              <div className="highway-line-pro"></div>
+              <div className="nodes-flex-row">
+                {LEVELS.map((lvl, idx) => {
+                  const isCurrent = (idx + 1) === unlockedLevel;
+                  const isCleared = (idx + 1) < unlockedLevel;
+                  return (
+                    <div key={lvl.id} className="mission-point-wrapper">
+                      {isCurrent && <div className="avatar-pointer"><img src={character?.img} className="avatar-mini-pro" /></div>}
+                      <button className={`giant-circle-btn ${isCurrent ? 'active pulse' : ''} ${isCleared ? 'cleared' : ''} ${idx+1 > unlockedLevel ? 'locked' : ''}`}
+                              disabled={idx+1 !== unlockedLevel} onClick={() => { playSound("click"); setCurrentLevelIdx(idx); setScreen("rule"); }}>
+                        {isCleared ? "✅" : lvl.id}
+                      </button>
+                      <div className="node-info-pill visible"><strong>ด่าน {lvl.id}</strong><p>{lvl.label}</p></div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-
-          <div className="r-stat">
-            ❌ MISTAKES
-            <span>{mistakes}</span>
-          </div>
-
         </div>
-
-        <div className="result-actions">
-
-          <button
-            className="next-btn"
-            onClick={() => {
-              if (currentLevelIdx < LEVELS.length - 1) {
-                const next = currentLevelIdx + 1;
-                setCurrentLevelIdx(next);
-                startLevel(next);
-              } else {
-                navigate("/lessons/home");
-              }
-            }}
-          >
-            {currentLevelIdx < LEVELS.length - 1 
-              ? "🚀 ไปด่านถัดไป" 
-              : "🏠 กลับหน้าหลัก"}
-          </button>
-
-        </div>
-
       </div>
+    </MainLayout>
+  );
 
-    </div>
+  if (screen === "rule") return (
+    <MainLayout>
+      <div id="ms-adventure-scoped">
+        <div className="snow-theme-bg" style={{ backgroundImage: `url(${bgMerge})` }}>
+          <div className="rules-compact-card glass fade-in">
+            <h1 className="title-small">❄️ HOW TO PLAY ❄️</h1>
+            <div className="rules-main-content">
+              <div className="rules-side-profile">
+                <img src={character?.img} style={{width: '100px'}} />
+                <h3>{character?.name}</h3>
+              </div>
+              <div className="rules-steps-list">
+                <p>1. <b>DIVIDE:</b> แยกข้อมูลจนเหลือ 1</p>
+                <p>2. <b>SELECT:</b> เลือกโหนดเพื่อรวม</p>
+                <p>3. <b>COMPARE:</b> กดเปรียบเทียบก่อนเลือก</p>
+                <p>4. <b>SORT:</b> เลือกเลขตามลำดับที่กำหนด</p>
+              </div>
+            </div>
+            <button className="btn-mission-start" onClick={() => startLevel(currentLevelIdx)}>เริ่มภารกิจ 🚀</button>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
 
-  </MainLayout>
-);
+  if (screen === "result") return (
+    <MainLayout>
+      <div className="snow-theme-bg result-scene" style={{backgroundImage: `url(${bgMerge})`}}>
+        <div className="result-panel glass-dark fade-in">
+          <div className="result-icon">🏆</div>
+          <h2 className="result-title">MISSION COMPLETE</h2>
+          <div className="result-stats glass">
+            <div className="r-stat">💎 SCORE <span>{finalScore.toLocaleString()}</span></div>
+            <div className="r-stat">❌ MISTAKES <span>{mistakes}</span></div>
+          </div>
+          <div className="result-actions" style={{display:'flex', gap:'15px'}}>
+            <button className="next-btn" style={{background:'rgba(255,255,255,0.2)', border:'2px solid white'}}
+                    onClick={() => { setScore(0); setUnlockedLevel(1); setCurrentLevelIdx(0); setCharacter(null); setScreen("character"); }}>
+              เล่นอีกครั้ง 🔄
+            </button>
+            <button className="next-btn" onClick={() => navigate("/home")}>กลับหน้าหลัก 🏠</button>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
 
-if (screen === "fail") return (
-  <MainLayout>
-    <div id="ms-adventure-scoped">
-
-      <div 
-        className="snow-theme-bg fail-scene"
-        style={{backgroundImage: `url(${bgMerge})`}}
-      >
-
-        <div className="fail-overlay"></div>
-
+  if (screen === "fail") return (
+    <MainLayout>
+      <div className="snow-theme-bg fail-scene" style={{backgroundImage: `url(${bgMerge})`}}>
         <div className="fail-panel glass-dark fade-in">
-
           <div className="fail-icon">⏰</div>
-
-          <h1 className="fail-title">
-            MISSION FAILED
-          </h1>
-
-          <p className="fail-desc">
-            {time === 0 
-              ? "เวลาหมดเสียก่อน!" 
-              : "พลังชีวิตของคุณหมดลงแล้ว"} 
-            <br/>
-          </p>
-
-          <div className="fail-stats glass">
-
-            <div className="f-stat">
-              💎 SCORE
-              <span>{score}</span>
-            </div>
-
-            <div className="f-stat">
-              ❌ MISTAKES
-              <span>{mistakes}</span>
-            </div>
-
-          </div>
-
-          <div className="fail-actions">
-
-            <button
-              className="btn-retry"
-              onClick={() => startLevel(currentLevelIdx)}
-            >
-              🔄 ลองใหม่อีกครั้ง
-            </button>
-
-            <button
-              className="btn-map"
-              onClick={() => setScreen("level")}
-            >
-              🗺️ กลับไปหน้าแผนที่
-            </button>
-
-          </div>
-
+          <h1 className="fail-title">MISSION FAILED</h1>
+          <button className="btn-retry" onClick={() => setScreen("level")}>🗺️ กลับไปแผนที่</button>
         </div>
-
       </div>
-    </div>
-  </MainLayout>
-);
+    </MainLayout>
+  );
 
-return (
-  <MainLayout>
-    <div id="ms-adventure-scoped">
-
-      {/* ❄️ SNOW WORLD BACKGROUND */}
-      <div
-        className="gameplay-container snow-theme-bg"
-        style={{ backgroundImage: `url(${bgMerge})` }}
-      >
-        <div className="snow-overlay"></div>
-        <div className="ambient-glow"></div>
-
-        {/* ================= HUD ================= */}
-        <div className="game-hud-v2 glass-dark-pro">
-
-          <div className="hud-left">
-            <div className="hud-stat hp">
-              <span className="icon">❤️</span>
-              <span className="value">{hp}</span>
-            </div>
-
-            <div className="hud-stat score">
-              <span className="icon">💎</span>
-              <span className="value gold-text">{score}</span>
-            </div>
+  // Default Gameplay Screen
+  return (
+    <MainLayout>
+      <div id="ms-adventure-scoped">
+        <div className="gameplay-container snow-theme-bg" style={{ backgroundImage: `url(${bgMerge})` }}>
+          <div className="game-hud-v2 glass-dark-pro">
+            <div className="hud-left">❤️ {hp} | 💎 {score}</div>
+            <div className="hud-center">⏳ {Math.floor(time/60)}:{String(time%60).padStart(2,'0')}</div>
+            <div className="hud-right">{LEVELS[currentLevelIdx].label}</div>
           </div>
+          <div className={`instruction-master-v2 info fade-in`}><p>{instruction}</p></div>
+          <div className="main-workspace-final-v1 fade-in">
+            {phase === "MERGING" ? (
+              <div className="battle-crystal-frame glass-dark-pro">
+                <div className="comparison-row" style={{ display: 'flex', alignItems: 'center', gap: '30px', marginBottom: '30px' }}>
 
-          <div className="hud-center">
-            <div className={`timer-pill ${time <= 10 ? "urgent" : ""}`}>
-              <span className="timer-icon">⏳</span>
-              <span className="timer-text">
-                {Math.floor(time / 60)}:
-                {String(time % 60).padStart(2, "0")}
-              </span>
-            </div>
-          </div>
+  {/* ✅ กล่องซ้าย ✅ */}
+  <div className="crystal-node-pro" style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      // ถ้าเลขหมด (isCompared เป็น true และความยาวเป็น 0) ให้จางลงมากเป็นพิเศษ
+      opacity: (isCompared && mergeLeft.length === 0) ? 0.2 : 1,
+      transition: '0.3s'
+  }}>
+    {isCompared ? (
+      /* --- เมื่อกดเทียบแล้ว --- */
+      <span key="left-num" style={{ fontSize: '2.2rem', fontWeight: '900', color: '#fff' }}>
+        {/* ✅ ถ้ามีเลขโชว์เลข ถ้าไม่มีปล่อยว่างไปเลย ✅ */}
+        {mergeLeft.length > 0 ? mergeLeft[0] : ""}
+      </span>
+    ) : (
+      /* --- เมื่อยังไม่กดเทียบ --- */
+      <span key="left-q" style={{ fontSize: '2.5rem', fontWeight: '900', color: '#fff', opacity: 0.3 }}>
+        ?
+      </span>
+    )}
+  </div>
 
-          <div className="hud-right">
-            <div className="mode-tag-v2">
-              {LEVELS[currentLevelIdx].mode === "asc"
-                ? "น้อย ⮕ มาก"
-                : "มาก ⮕ น้อย"}
-            </div>
-          </div>
+  <div className="vs-emblem-neon" style={{ fontSize: '1.2rem', color: '#00d2ff', fontWeight: 'bold', opacity: 0.6 }}>VS</div>
 
-        </div>
+  {/* ✅ กล่องขวา ✅ */}
+  <div className="crystal-node-pro" style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      opacity: (isCompared && mergeRight.length === 0) ? 0.2 : 1,
+      transition: '0.3s'
+  }}>
+    {isCompared ? (
+      <span key="right-num" style={{ fontSize: '2.2rem', fontWeight: '900', color: '#fff' }}>
+        {/* ✅ ถ้ามีเลขโชว์เลข ถ้าไม่มีปล่อยว่างไปเลย ✅ */}
+        {mergeRight.length > 0 ? mergeRight[0] : ""}
+      </span>
+    ) : (
+      <span key="right-q" style={{ fontSize: '2.5rem', fontWeight: '900', color: '#fff', opacity: 0.3 }}>
+        ?
+      </span>
+    )}
+  </div>
 
-        {/* ================= INSTRUCTION ================= */}
-        <div className={`instruction-master-v2 ${getMood()} fade-in`}>
+</div>
 
-          <div className="instruction-glow"></div>
-
-          <div className="inner-content">
-            <span className="mood-icon">
-              {getMood() === "action" ? "⚡" : "❄️"}
-            </span>
-
-            <p className="instruction-text">
-              {instruction}
-            </p>
-          </div>
-
-        </div>
-
-        {/* ================= MAIN WORKSPACE ================= */}
-        <div className="main-workspace-final-v1 fade-in">
-
-          {phase === "MERGING" ? (
-
-            <div className="battle-crystal-frame glass-dark-pro">
-
-              {/* -------- Comparison Arena -------- */}
-              <div className="comparison-row">
-
-                <div
-                  className={`crystal-node-pro left ${
-                    isCompared ? "reveal" : "hide"
-                  }`}
-                >
-                  <div className="fog-layer"></div>
-
-                  <span className="number-val">
-                    {mergeLeft.length > 0 ? mergeLeft[0] : "-"}
-                  </span>
-
-                  <small className="label">
-                    ฝั่งซ้าย
-                  </small>
+                <div className="control-action-panel">
+                  <button className="btn-gem" disabled={!isCompared || !mergeLeft.length} onClick={()=>handleChoice("left")}>เลือกซ้าย</button>
+                  <button
+  className="btn-compare-gem-main"
+  disabled={mergeLeft.length === 0 || mergeRight.length === 0} // 👈 เพิ่มบรรทัดนี้
+  onClick={() => {
+    playSound("click");
+    setIsCompared(true);
+  }}
+>
+  <span>เปรียบเทียบ</span>
+</button>
+                  <button className="btn-gem" disabled={!isCompared || !mergeRight.length} onClick={()=>handleChoice("right")}>เลือกขวา</button>
                 </div>
+                {/* -------- ส่วนแสดงผลเลขที่เรียงแล้ว (แนวนอน) -------- */}
+{/* --- ส่วนแสดงผลตัวเลขที่เรียงแล้ว (Output Tray ใหม่) --- */}
+<div style={{
+  width: '100%',
+  maxWidth: '800px', // จำกัดความกว้างเพื่อให้ดูสมดุล
+  margin: '30px auto 0', // ยกให้สูงขึ้นจากขอบล่างนิดหน่อย
+  padding: '20px',
+  background: 'rgba(15, 23, 42, 0.6)', // สีพื้นหลังเข้มขึ้นเพื่อเน้นความโปร่งแสง
+  backdropFilter: 'blur(15px)', // เพิ่มเอฟเฟกต์เบลอพื้นหลัง
+  borderRadius: '24px', // ขอบโค้งมนดูนุ่มนวล
+  border: '2px solid rgba(148, 163, 184, 0.3)', // ขอบสีเงินบางๆ
+  boxShadow: '0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(148, 163, 184, 0.1)', // เงาลึก
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '15px' // ระยะห่างระหว่าง Title และ Container
+}}>
+  
+  {/* หัวข้อเล็กๆ */}
+  <span style={{
+    fontSize: '0.8rem',
+    textTransform: 'uppercase', // ตัวพิมพ์ใหญ่ทั้งหมด
+    letterSpacing: '2px', // ระยะห่างระหว่างตัวอักษร
+    color: '#94a3b8', // สีเทาอ่อน
+    opacity: 0.8,
+    fontWeight: '600'
+  }}>
+    ลำดับที่จัดเรียงแล้ว
+  </span>
 
-                <div className="vs-emblem-neon">
-                  <span>VS</span>
-                </div>
-
-                <div
-                  className={`crystal-node-pro right ${
-                    isCompared ? "reveal" : "hide"
-                  }`}
-                >
-                  <div className="fog-layer"></div>
-
-                  <span className="number-val">
-                    {mergeRight.length > 0 ? mergeRight[0] : "-"}
-                  </span>
-
-                  <small className="label">
-                    ฝั่งขวา
-                  </small>
-                </div>
-
-              </div>
-
-              {/* -------- Control Panel -------- */}
-              <div className="control-action-panel">
-
-                <button
-                  className="btn-gem pick-left"
-                  disabled={mergeLeft.length === 0 || !isCompared}
-                  onClick={() => handleChoice("left")}
-                >
-                  ← เลือกเลือกแผ่นน้ำแข็งฝั่งซ้าย
-                </button>
-
-                <button
-                  className="btn-compare-gem-main"
-                  onClick={() => {
-                    playClick();
-                    setIsCompared(true);
-                    setInstruction(
-                      "🔍 เลือกค่าที่ถูกต้องตามเงื่อนไขด่าน"
-                    );
-                  }}
-                >
-                  <div className="shine-sweep"></div>
-                  <span>เปรียบเทียบ</span>
-                </button>
-
-                <button
-                  className="btn-gem pick-right"
-                  disabled={mergeRight.length === 0 || !isCompared}
-                  onClick={() => handleChoice("right")}
-                >
-                  เลือกแผ่นน้ำแข็งฝั่งขวา →
-                </button>
-
-              </div>
-
-              {/* -------- Output Result -------- */}
-              <div className="output-sequence-stable glass-dark">
-
-                <span className="tray-info">
-                  ลำดับที่จัดเรียงแล้ว
-                </span>
-
-                <div className="sequence-container-grid">
-
-                  {mergeResult.map((v, i) => (
-                    <div
-                      key={`node-${v}-${i}`}
-                      className="output-crystal-pill fade-in-pop"
-                    >
-                      {v}
-                    </div>
-                  ))}
-
-                  {mergeResult.length === 0 && (
-                    <div className="sequence-placeholder">
-                      รอการผสานข้อมูล...
-                    </div>
-                  )}
-
-                </div>
-
-              </div>
-
-            </div>
-
-          ) : (
-
-            <div className="tree-exploration-v2">
-              {renderTree(root)}
-            </div>
-
-          )}
-
-        </div>
-
+  {/* Container สำหรับตัวเลขแบบแนวราบ (Flex Row) */}
+  <div style={{ 
+    display: 'flex', 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', // ให้ตัดบรรทัดได้ถ้ามีตัวเลขเยอะเกิน
+    gap: '15px', 
+    justifyContent: 'center', // จัดกึ่งกลางแนวนอน
+    width: '100%',
+    minHeight: '70px',
+    padding: '10px 0'
+  }}>
+    
+    {mergeResult.map((v, i) => (
+      /* เม็ดยา (Pill) แสดงผลตัวเลข */
+      <div key={i} className="fade-in-pop" style={{
+        // สไลต์ Plll
+        padding: '10px 25px',
+        background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(14, 165, 233, 0.1))', // Gradient สีฟ้าโปร่งแสง
+        borderRadius: '50px', // เม็ดยาสมบูรณ์
+        
+        // สไตล์ขอบและเงา
+        border: '1px solid rgba(56, 189, 248, 0.4)', 
+        boxShadow: '0 0 15px rgba(56, 189, 248, 0.2)', // เรืองแสงสีฟ้าอ่อน
+        
+        // สไตล์ตัวเลข
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: '70px'
+      }}>
+        <span style={{
+          fontSize: '1.6rem',
+          fontWeight: 'bold',
+          color: '#e2e8f0', // สีขาวนวล
+          fontFamily: 'sans-serif', // เลือก Font ที่คุณชอบ
+          textShadow: '0 2px 5px rgba(0, 0, 0, 0.3)' // เงาใต้ตัวอักษรให้ดูชัด
+        }}>
+          {v}
+        </span>
       </div>
-    </div>
-  </MainLayout>
-);
+    ))}
+
+    {/* สถานะรอ (Placeholder) */}
+    {mergeResult.length === 0 && (
+      <div style={{
+        color: 'rgba(148, 163, 184, 0.4)',
+        fontStyle: 'italic',
+        fontSize: '1.1rem',
+        marginTop: '15px'
+      }}>
+        รอการผสานข้อมูล...
+      </div>
+    )}
+  </div>
+</div>
+              </div>
+            ) : (
+              <div className="tree-exploration-v2">{renderTree(root)}</div>
+            )}
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
 }

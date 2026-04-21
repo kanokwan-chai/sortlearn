@@ -3,6 +3,7 @@ import MainLayout from "../../layouts/MainLayout";
 // ✅ IMPORT CSS
 import "../../styles/selection-game.css"; 
 import { useNavigate } from "react-router-dom";
+import { getAuth } from "../../utils/auth";
 
 // Image Imports
 import bgMain from "../../assets/bg-selection.png"; 
@@ -111,12 +112,6 @@ export default function SelectionGame() {
 
         
         const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
-
-        // 1. ถ้าจบเกมแล้ว
-        if (savedData.game === true) {
-          setGameState("ALREADY_WIN");
-          return;
-        }
 
         // 2. กู้คืนคะแนน (สำคัญ!)
         if (typeof savedData.score === 'number') {
@@ -255,6 +250,9 @@ export default function SelectionGame() {
   };
 
   const handleSwap = () => {
+    // ✅ 1. ล็อกไว้เลย! ถ้าไม่ใช่จังหวะให้กด Swap ห้ามทำงานเด็ดขาด (กันการกดรัว)
+    if (phase !== "READY_TO_SWAP") return;
+
     playSound("swap");
     const newBooks = [...books];
     [newBooks[sortedIndex], newBooks[candidateIndex]] = [newBooks[candidateIndex], newBooks[sortedIndex]];
@@ -264,6 +262,12 @@ export default function SelectionGame() {
     setSortedIndex(nextSorted);
 
     if (nextSorted >= books.length - 1) {
+      clearInterval(timerRef.current);
+      setSortedIndex(books.length);
+      
+      // ✅ 2. เปลี่ยนสถานะเป็น "FINISHED" เพื่อเอาไปซ่อนปุ่ม
+      setPhase("FINISHED"); 
+
       setFeedback(`🎉 ผ่านด่าน! โบนัสเวลา +${timeLeft * 2}`);
       setTimeout(() => {
         handleLevelComplete();
@@ -308,30 +312,55 @@ export default function SelectionGame() {
     setGameState("GAMEOVER"); 
   };
 
-  const handleGameWin = (finalScore) => { 
+  const handleGameWin = async (finalScore) => { 
     clearInterval(timerRef.current);
     playSound("win");
     
+    console.log("กำลังส่งคะแนนรวมไปที่ Sheet:", finalScore);
+    
+    // ✅ เรียกใช้ด้วย await (ฟังก์ชัน handleGameWin ต้องมี async นำหน้า)
+    saveScoreToSheet(finalScore); 
+
     saveProgressToStorage({ 
         game: true, 
-        level: LEVELS.length + 1,
-        score: finalScore 
+        level: 1, 
+        score: 0,
+        charId: "" 
     });
 
-    saveScoreToSheet(finalScore); 
     setGameState("WIN"); 
   };
 
   const saveScoreToSheet = async (finalScore) => {
-    let user = {}; try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch(e){}
+    let user = {}; 
+    try { user = JSON.parse(localStorage.getItem("user")) || {}; } catch(e){}
+    
+    // ✅ 1. ดึง email และ token ด้วย getAuth() เหมือนที่ทำใน QuickSortGame
+    const { email, token } = getAuth(); 
+
     const payload = {
       activity: "GAMES",
       firstname: user.firstname || "Guest",
-      lastname: user.lastname || "Player",
-      gameName: "Selection Sort Saga",
+      lastname: user.lastname || "-",
+      gameName: "Selection Sort Saga", // ชื่อเกมของหน้านี้
       score: finalScore
     };
-    try { await fetch(SCORE_API, { method: "POST", body: JSON.stringify(payload), headers: {"Content-Type": "text/plain;charset=utf-8"} }); } catch(e){}
+
+    try { 
+      // ✅ 2. อัปเดต Fetch API ให้แนบ email/token ไปด้วย และใช้ no-cors
+      await fetch(SCORE_API, { 
+        method: "POST", 
+        mode: "no-cors",
+        body: JSON.stringify({
+          ...payload,
+          email,
+          token
+        })
+      });
+      console.log("ส่งคะแนนไป Google Sheet เรียบร้อยแล้ว");
+    } catch(e){
+      console.error("เกิดข้อผิดพลาดในการส่งคะแนน:", e);
+    }
   };
 
   const renderStars = (finalScore) => {
@@ -353,23 +382,6 @@ export default function SelectionGame() {
       <div className="game-container" style={{ backgroundImage: `url(${bgMain})` }}>
         
         {gameState === "LOADING" && <div></div>}
-
-        {/* ALREADY WIN */}
-        {gameState === "ALREADY_WIN" && (
-          <div className="overlay-screen fade-in">
-             <div className="win-card pop-in" style={{maxWidth:'550px'}}>
-                <div className="win-header">MISSION COMPLETED</div>
-                <div className="win-body">
-                  <div style={{fontSize:'5rem', marginBottom:'15px'}}>🏆</div>
-                  <p className="win-desc">คุณได้พิชิตหอสมุดแห่งนี้เรียบร้อยแล้ว!</p>
-                  <p style={{color:'#aaa', fontSize:'0.9rem'}}>ไม่สามารถเล่นซ้ำได้</p>
-                </div>
-                <div className="btn-group-center">
-                  <button className="btn-primary" onClick={() => navigate("/home")}>กลับหน้าหลัก</button>
-                </div>
-             </div>
-          </div>
-        )}
 
         {/* SELECT CHAR */}
         {gameState === "SELECT_CHAR" && (
@@ -579,9 +591,18 @@ export default function SelectionGame() {
                     <div className="score-big">{score}</div>
                     <p className="win-desc">สุดยอดบรรณารักษ์แห่งตำนาน!</p>
                   </div>
-                  <div className="btn-group-center">
-                    <button className="btn-primary" onClick={() => navigate("/home")}>กลับหน้าหลัก</button>
-                  </div>
+                  <div className="btn-group-center" style={{ gap: '10px' }}>
+                  {/* ✅ เพิ่มปุ่มเล่นอีกครั้ง เพื่อรีเซ็ตหน้าจอให้กลับไปเลือกตัวละคร */}
+                  <button className="btn-secondary" onClick={() => {
+                      setScore(0);
+                      setUnlockedLevel(1);
+                      setCurrentLevelIdx(0);
+                      setSelectedChar(null);
+                      setGameState("SELECT_CHAR");
+                  }}>เล่นอีกครั้ง 🔄</button>
+                  
+                  <button className="btn-primary" onClick={() => navigate("/home")}>กลับหน้าหลัก 🏠</button>
+                </div>
                </div>
              ) : (
                <div className="modal-overlay fade-in">

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import MainLayout from "../../layouts/MainLayout";
 import "../../styles/heap-game.css"; 
 import { useNavigate } from "react-router-dom";
+import { getAuth } from "../../utils/auth";
 
 
 // ✅ 1. Assets Mapping 
@@ -67,70 +68,71 @@ export default function HeapSortGame() {
 const LESSON_KEY = "heap"; 
 const SCORE_API = "https://script.google.com/macros/s/AKfycbxaSnMhAZYVgAwDS7VOgJuINzO2Wn3r8EBMPMFt84nbjy4tn-O5i6OUQIHj19L9jFNJ/exec";
 
-// ✅ 2. ฟังก์ชันส่งคะแนนที่ฉลาดขึ้น (ส่งที่หน้า RESULT เท่านั้น)
-// ✅ 1. ฟังก์ชันส่งคะแนน: จะทำงานเมื่อบันทึกว่า "ผ่าน" เท่านั้น
-const saveScoreToSheet = async (finalScore) => {
-    if (isScoreSent) return; 
-
+// ✅ นำฟังก์ชันนี้ไปวางไว้ใต้ const SCORE_API = ...;
+const submitScoreToSheet = (finalScore) => {
     try {
         const user = JSON.parse(localStorage.getItem("user")) || {};
-const userKey =
-  user.email ||
-  user.id ||
-  user.username ||
-  user.firstname ||
-  "guest";
+        const { email, token } = getAuth(); // ดึง Auth เพื่อให้ส่งผ่าน
 
         const payload = {
             activity: "GAMES",
-            firstname: user.firstname || userKey,
+            firstname: user.firstname || "Guest",
             lastname: user.lastname || "-",
             gameName: "Heap Sort Game",
             score: finalScore,
-            status: "COMPLETED" // ส่งเฉพาะคนที่จบด่าน 3 จริงๆ
+            status: "COMPLETED"
         };
 
-        await fetch(SCORE_API, {
+        fetch(SCORE_API, {
             method: "POST",
-            body: JSON.stringify(payload),
+            mode: "no-cors", // ยิงแบบเบื้องหลัง
+            body: JSON.stringify({ ...payload, email, token }),
             headers: { "Content-Type": "text/plain;charset=utf-8" }
-        });
-        setIsScoreSent(true);
-    } catch (e) { console.error("Score sending failed", e); }
+        }).catch(e => console.error("Error sending score:", e));
+        
+        console.log("ส่งคะแนนไป Google Sheet สำเร็จ!");
+    } catch (error) {
+        console.error("Submit logic error:", error);
+    }
 };
 
-// ✅ แก้ไข useEffect ตัวแรก 
 useEffect(() => {
     const resumeJourney = () => {
         try {
             const user = JSON.parse(localStorage.getItem("user")) || {};
-            const userKey =
-                user.email ||
-                user.id ||
-                user.username ||
-                user.firstname ||
-                "guest";
-
+            const userKey = user.email || user.id || user.username || user.firstname || "guest";
             const storageKey = `progress_${userKey}_${LESSON_KEY}`;
-
             const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
 
-            // 🚫 ถ้าเล่นจบแล้ว (game: true) ให้โชว์หน้า ALREADY_WIN พร้อมคะแนนที่บันทึกไว้
-            if (savedData.game === true) {
-                setGameState("ALREADY_WIN");
-                setScore(savedData.score || 0); // โชว์คะแนนที่จบไปแล้ว
-                return;
+            // ❌ ลบการเช็ค ALREADY_WIN ออก เพื่อให้เล่นซ้ำได้
+
+            // เช็คด่านปัจจุบันเพื่อโหลดเกม หรือ บังคับกลับไปเลือกตัวละครใหม่
+            let currentLvl = 1;
+            if (savedData.level && savedData.level > STAGES.length) {
+                setScore(0);
+                setCurrentLvlIdx(0);
+                setCurrentTaskIdx(0);
+                currentLvl = 1; // จบเกมแล้ว กลับมาด่าน 1
+            } else if (savedData.level) {
+                currentLvl = savedData.level;
+                setCurrentLvlIdx(currentLvl - 1);
             }
 
-            // 🛡️ ถ้าเคยเลือกตัวละครไว้แล้ว (กำลังเล่นค้างอยู่)
-            if (savedData.charId) {
+            if (currentLvl === 1) {
+                 setSelectedChar(null);
+                 setGameState("HOME");
+            } else if (savedData.charId) {
                 const char = GUARDIANS.find(g => g.id === savedData.charId);
                 if (char) {
                     setSelectedChar(char);
-                    // ✅ ดึงคะแนนล่าสุดที่ "กำลังเล่นค้างอยู่" มาใช้
                     if (savedData.currentScore !== undefined) setScore(savedData.currentScore);
                     setHp(savedData.hp !== undefined ? savedData.hp : char.hp);
-                    setCurrentLvlIdx(savedData.level ? savedData.level - 1 : 0);
+                    
+                    // ซิงค์ Task ย่อย ให้ตรงกับด่านหลัก
+                    if (currentLvl === 1) setCurrentTaskIdx(0);
+                    else if (currentLvl === 2) setCurrentTaskIdx(2);
+                    else if (currentLvl === 3) setCurrentTaskIdx(3);
+
                     setGameState("MAP"); 
                 }
             } else {
@@ -141,16 +143,6 @@ useEffect(() => {
 
     if (gameState === "LOADING") resumeJourney();
 }, [gameState]);
-
-// ✅ 2. ตัวควบคุมการส่ง: ห้ามส่งถ้าไม่ใช่ "ชัยชนะในด่านสุดท้าย"
-useEffect(() => {
-    // เงื่อนไข: ต้องอยู่หน้า RESULT + ต้องเป็นด่านที่ 3 + ต้องยังมี HP (ชนะ)
-    const isStage3Win = currentTaskIdx === 3 && hp > 0;
-
-    if (gameState === "RESULT" && isStage3Win && !isScoreSent) {
-        saveScoreToSheet(score);
-    }
-}, [gameState, score, isScoreSent, currentTaskIdx, hp]);
 
 // ✅ ฟังก์ชันบันทึกความก้าวหน้า (วางไว้ก่อน useEffect)
 const saveProgressToStorage = (newData) => {
@@ -648,53 +640,47 @@ const handleSelectGuardian = (guardian) => {
     };
 
     if (currentTaskIdx === 0) { 
-        // ✅ 1. จบด่าน 1.1 (Max) -> ไป 1.2 (Min) 
-        // เปิดรางให้กรอกใหม่ตามคำสั่งครับ
+        // จบด่าน 1.1 ไป 1.2
         setSavedMaxHeap([...heap]); 
         setCurrentTaskIdx(1); 
-        
-        setHeap(new Array(7).fill(null));     // ล้างต้นไม้เก่า
-        setInputArray(new Array(7).fill("")); // ✅ เปิดรางให้กรอกมวลสารใหม่
-        setIsInputDone(false);                // ✅ ย้อนกลับไปหน้ากรอกเลข
-        setHp(selectedChar.hp);               // คืนเลือดเต็ม
-        // ไม่ต้องเด้ง RULES คั่น ตามที่เคยตกลงกันไว้ครับ
+        setHeap(new Array(7).fill(null));
+        setInputArray(new Array(7).fill(""));
+        setIsInputDone(false);
+        setHp(selectedChar.hp);
     } 
     else if (currentTaskIdx === 1) {
-        // ✅ 2. จบด่าน 1.2 (Min) -> ไปหน้ากติกา ด่าน 2
-        // ใช้ currentScore เพื่อไม่ให้คะแนนเก่า 2300 มาปนกับรอบนี้
+        // จบด่าน 1 ไป ด่าน 2
         saveProgressToStorage({ currentScore: score, level: 2 }); 
-
         setSavedMinHeap([...heap]);
         setCurrentTaskIdx(2); 
         setCurrentLvlIdx(1); 
         resetForSort();
         setHeap([...savedMaxHeap]);
         setViolationIdx(checkHeapProperty(savedMaxHeap, "SORT_ASC"));
-        setGameState("RULES"); 
+        setGameState("MAP"); // ✅ กลับหน้า MAP แล้ว!
     } 
     else if (currentTaskIdx === 2) {
-        // ✅ 3. จบด่าน 2 -> ไปหน้ากติกา ด่าน 3
+        // จบด่าน 2 ไป ด่าน 3
         saveProgressToStorage({ currentScore: score, level: 3 });
-
         setCurrentTaskIdx(3); 
         setCurrentLvlIdx(2); 
         resetForSort();
         setHeap([...savedMinHeap]);
         setViolationIdx(checkHeapProperty(savedMinHeap, "SORT_DESC"));
-        setGameState("RULES");
+        setGameState("MAP"); // ✅ กลับหน้า MAP แล้ว!
     }
     else if (currentTaskIdx === 3) {
-
-        const finalScore = score + 200 + timeLeft * 2;  // +200 ผ่านด่าน + โบนัสเวลา
-
-        saveProgressToStorage({ game: true, score: finalScore });
-
+        // จบด่าน 3 (ชนะ)
+        const finalScore = score + 200 + timeLeft * 2;
         setScore(finalScore);
-
+        
+        submitScoreToSheet(finalScore); // ✅ ยิงคะแนนเบื้องหลัง
+        saveProgressToStorage({ game: true, level: 1, charId: "", score: 0 }); // ✅ รีเซ็ตลูปเกม
+        
         setGameState("RESULT");
         playSound(sfxWin);
     }
-    }}>
+}}>
     {currentTaskIdx === 3 ? "ดูผลลัพธ์ 🏆" : "ต่อไป ⮕"}
 </button>
                                 )
@@ -724,12 +710,9 @@ const handleSelectGuardian = (guardian) => {
 
 {gameState === "RESULT" && (
   <div className="magical-home-container-wood result-view-clean fade-in">
-    
-    {/* ✨ เอฟเฟกต์ละอองเวทมนตร์ลอยรอบๆ */}
     <div className="magic-particles"></div>
 
     <div className="victory-medal-crest">
-      {/* 🏆 ส่วนยอดดวงตรา */}
       <div className="medal-crown">
         <span className="crown-icon">👑</span>
       </div>
@@ -737,7 +720,6 @@ const handleSelectGuardian = (guardian) => {
       <div className="medal-body">
         <h2 className="victory-text-glow">{currentTaskIdx === 3 && hp > 0 ? "MISSION CLEAR" : "MISSION FAILED"}</h2>
         
-        {/* 💎 วงล้อคะแนนแบบกระจกเวทมนตร์ */}
         <div className="score-glass-circle">
           <div className="score-inner-glow"></div>
           <span className="score-label-mini">TOTAL SCORE</span>
@@ -745,16 +727,26 @@ const handleSelectGuardian = (guardian) => {
         </div>
 
         <div className="victory-rank-text">
-                    {currentTaskIdx === 3 && hp > 0 
-                        ? (score >= 2000 ? "💎 จอมเวทย์ระดับตำนาน" : "🌟 นักแปรธาตุขั้นสูง")
-                        : `สิ้นฤทธิ์ที่ด่าน: ${STAGES_DATA[currentTaskIdx].title}`}
-                </div>
+            {currentTaskIdx === 3 && hp > 0 
+                ? (score >= 2000 ? "💎 จอมเวทย์ระดับตำนาน" : "🌟 นักแปรธาตุขั้นสูง")
+                : `สิ้นฤทธิ์ที่ด่าน: ${STAGES_DATA[currentTaskIdx].title}`}
+        </div>
       </div>
 
-      {/* 🔄 ปุ่มกดสไตล์มินิมอลแต่หรู */}
-      <div className="button-container-wood result-btn-box">
-        <button className="start-mission-btn-wood restart-btn-gold" onClick={() => window.location.reload()}>
-          🔄 กลับสู่หน้าหลัก
+      {/* ✅ ปุ่มเล่นอีกครั้ง & กลับหน้าหลัก */}
+      <div className="button-container-wood result-btn-box" style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+        <button className="start-mission-btn-wood restart-btn-gold" onClick={() => {
+            setScore(0);
+            setSelectedChar(null);
+            setCurrentLvlIdx(0);
+            setCurrentTaskIdx(0);
+            setGameState("HOME");
+        }}>
+          เล่นอีกครั้ง 🔄
+        </button>
+        
+        <button className="start-mission-btn-wood" onClick={() => navigate("/home")}>
+          กลับหน้าหลัก 🏠
         </button>
       </div>
     </div>
